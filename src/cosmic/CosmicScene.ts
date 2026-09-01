@@ -157,16 +157,17 @@ export class CosmicScene {
 
     const idleX = Math.sin(elapsed * 0.09) * 0.12
     const idleY = Math.cos(elapsed * 0.075) * 0.08
-    const targetX = this.pointer.x * 1.75 + idleX
-    const targetY = 5.4 + this.pointer.y * 0.92 + idleY
+    const targetX = this.pointer.x * 3.25 + idleX
+    const targetY = 5.4 + this.pointer.y * 1.72 + idleY
     this.camera.position.x = damp(this.camera.position.x, targetX, 2.6, dt)
     this.camera.position.y = damp(this.camera.position.y, targetY, 2.6, dt)
     this.camera.position.z = damp(this.camera.position.z, 18 - this.scrollVelocity * 0.085, 3.4, dt)
-    this.camera.rotation.y = damp(this.camera.rotation.y, -this.pointer.x * 0.042, 3.1, dt)
-    this.camera.rotation.x = damp(this.camera.rotation.x, -0.13 + this.pointer.y * 0.028, 3.1, dt)
+    this.camera.rotation.y = damp(this.camera.rotation.y, -this.pointer.x * 0.086, 3.1, dt)
+    this.camera.rotation.x = damp(this.camera.rotation.x, -0.13 + this.pointer.y * 0.056, 3.1, dt)
+    this.camera.rotation.z = damp(this.camera.rotation.z, -this.pointer.x * 0.007, 2.4, dt)
 
-    this.world.position.x = damp(this.world.position.x, this.pointer.x * 0.44, 1.9, dt)
-    this.world.position.y = damp(this.world.position.y, this.pointer.y * 0.20, 1.9, dt)
+    this.world.position.x = damp(this.world.position.x, this.pointer.x * 0.82, 1.9, dt)
+    this.world.position.y = damp(this.world.position.y, this.pointer.y * 0.38, 1.9, dt)
     this.stars.update(elapsed, this.travel, streak, this.pixelRatio)
     this.nebula.update(elapsed, this.pointer.x, this.pointer.y, this.travel)
     this.bodies.update(elapsed, this.travel, this.pointer.x, this.pointer.y)
