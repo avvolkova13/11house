@@ -1,0 +1,15 @@
+export const STAR_PROFILE = {
+  accentChance: 0.01,
+  accentSizeMin: 1.6,
+  accentSizeMax: 3,
+  regularSizeMin: 0.5,
+  regularSizeMax: 1.65,
+  maxPerspective: 5.5,
+  maxPointSize: 28,
+  streakStretch: 2.6,
+  streakOpacityLoss: 0.22,
+  coreRadius: 0.22,
+  haloStrength: 0.28,
+  flareStrength: 0.12,
+  coreBrightnessBoost: 0.72,
+} as const

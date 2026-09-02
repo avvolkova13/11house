@@ -1,3 +1,5 @@
+import { STAR_PROFILE } from '../starProfile'
+
 export const starVertexShader = /* glsl */ `
   attribute float aSize;
   attribute float aPhase;
@@ -28,14 +30,15 @@ export const starVertexShader = /* glsl */ `
     vec4 projected = projectionMatrix * mvPosition;
     gl_Position = projected;
 
-    float perspective = clamp(190.0 / max(4.0, -mvPosition.z), 0.35, 8.0);
+    float perspective = clamp(190.0 / max(4.0, -mvPosition.z), 0.35, ${STAR_PROFILE.maxPerspective.toFixed(1)});
     float twinkle = 0.72 + 0.28 * sin(uTime * (0.55 + aPhase) + aPhase * 24.0);
-    float stretch = 1.0 + uStreak * 4.2;
-    gl_PointSize = min(46.0, aSize * perspective * uPixelRatio * stretch * twinkle);
+    float stretch = mix(1.0, ${STAR_PROFILE.streakStretch.toFixed(1)}, uStreak);
+    gl_PointSize = min(${STAR_PROFILE.maxPointSize.toFixed(1)}, aSize * perspective * uPixelRatio * stretch * twinkle);
 
     vec2 ndc = projected.xy / max(projected.w, 0.0001);
     vAngle = atan(ndc.y, ndc.x);
-    vAlpha = twinkle * smoothstep(-236.0, -130.0, transformed.z);
+    float streakFade = 1.0 - uStreak * ${STAR_PROFILE.streakOpacityLoss.toFixed(2)};
+    vAlpha = twinkle * smoothstep(-236.0, -130.0, transformed.z) * streakFade;
     vTemperature = aTemperature;
     vStreak = uStreak;
   }
@@ -53,12 +56,12 @@ export const starFragmentShader = /* glsl */ `
     float s = sin(-vAngle);
     p = mat2(c, -s, s, c) * p;
 
-    float stretch = 1.0 + vStreak * 4.2;
+    float stretch = mix(1.0, ${STAR_PROFILE.streakStretch.toFixed(1)}, vStreak);
     p.y *= stretch;
     float d = length(p) * 2.0;
-    float core = smoothstep(0.28, 0.0, d);
-    float halo = smoothstep(1.0, 0.04, d) * 0.45;
-    float flare = exp(-abs(p.x) * 20.0) * exp(-abs(p.y) * 4.5) * 0.22;
+    float core = smoothstep(${STAR_PROFILE.coreRadius.toFixed(2)}, 0.0, d);
+    float halo = smoothstep(1.0, 0.04, d) * ${STAR_PROFILE.haloStrength.toFixed(2)};
+    float flare = exp(-abs(p.x) * 20.0) * exp(-abs(p.y) * 4.5) * ${STAR_PROFILE.flareStrength.toFixed(2)};
     float alpha = (core + halo + flare) * vAlpha;
 
     vec3 cool = vec3(0.57, 0.75, 1.0);
@@ -69,6 +72,6 @@ export const starFragmentShader = /* glsl */ `
       : mix(neutral, warm, (vTemperature - 0.5) * 2.0);
 
     if (alpha < 0.015) discard;
-    gl_FragColor = vec4(color * (1.0 + core * 1.35), alpha);
+    gl_FragColor = vec4(color * (1.0 + core * ${STAR_PROFILE.coreBrightnessBoost.toFixed(2)}), alpha);
   }
 `

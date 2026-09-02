@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { starFragmentShader, starVertexShader } from './shaders/star'
+import { STAR_PROFILE } from './starProfile'
 
 const seededRandom = (seed: number) => {
   let value = seed >>> 0
@@ -49,7 +50,11 @@ export class StarField {
         positions[i3 + 1] = Math.sin(angle) * radius * 0.64 - 4.8 - random() * 5.2
       }
       positions[i3 + 2] = depth
-      sizes[index] = random() > 0.978 ? 2.4 + random() * 2.8 : 0.58 + Math.pow(random(), 4) * 2.05
+      sizes[index] = random() < STAR_PROFILE.accentChance
+        ? STAR_PROFILE.accentSizeMin
+          + random() * (STAR_PROFILE.accentSizeMax - STAR_PROFILE.accentSizeMin)
+        : STAR_PROFILE.regularSizeMin
+          + Math.pow(random(), 4) * (STAR_PROFILE.regularSizeMax - STAR_PROFILE.regularSizeMin)
       phases[index] = random()
       temperatures[index] = random() < 0.2 ? 0.72 + random() * 0.28 : random() * 0.58
     }
