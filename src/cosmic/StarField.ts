@@ -30,14 +30,24 @@ export class StarField {
       const i3 = index * 3
       const depth = -232 + random() * 242
       const normalizedDepth = THREE.MathUtils.clamp((-depth + 10) / 242, 0, 1)
-      const angle = random() * Math.PI * 2
-      const cluster = Math.pow(random(), 0.58)
-      const tunnel = 6.5 + normalizedDepth * 34
-      const radius = tunnel + cluster * (16 + normalizedDepth * 60)
-      const horizontalBias = 0.78 + random() * 0.48
+      const isSkyFill = random() < 0.72
 
-      positions[i3] = Math.cos(angle) * radius * horizontalBias
-      positions[i3 + 1] = Math.sin(angle) * radius * 0.64 - 4.8 - random() * 5.2
+      if (isSkyFill) {
+        const cameraDistance = -depth + 5.4
+        const frustumHalfHeight = Math.tan(THREE.MathUtils.degToRad(29)) * cameraDistance
+        const frustumHalfWidth = frustumHalfHeight * (width / Math.max(height, 1))
+        positions[i3] = (random() * 2 - 1) * frustumHalfWidth * 1.18
+        positions[i3 + 1] = 5.4 + random() * frustumHalfHeight * 1.72
+      } else {
+        const angle = random() * Math.PI * 2
+        const cluster = Math.pow(random(), 0.58)
+        const tunnel = 6.5 + normalizedDepth * 34
+        const radius = tunnel + cluster * (16 + normalizedDepth * 60)
+        const horizontalBias = 0.78 + random() * 0.48
+
+        positions[i3] = Math.cos(angle) * radius * horizontalBias
+        positions[i3 + 1] = Math.sin(angle) * radius * 0.64 - 4.8 - random() * 5.2
+      }
       positions[i3 + 2] = depth
       sizes[index] = random() > 0.978 ? 2.4 + random() * 2.8 : 0.58 + Math.pow(random(), 4) * 2.05
       phases[index] = random()
