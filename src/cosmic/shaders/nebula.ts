@@ -25,7 +25,7 @@ const terrainNoise = /* glsl */ `
     return value;
   }
 
-  float terrainHeight(vec2 rawPosition) {
+  float baseTerrainHeight(vec2 rawPosition) {
     vec2 p = rawPosition;
     p.y += uTravel * 0.82;
     vec2 domain = vec2(p.x * 0.036, p.y * 0.024);
@@ -45,7 +45,9 @@ const terrainNoise = /* glsl */ `
     float centralChannel = exp(-abs(p.x + sin(p.y * 0.035) * 7.0) * 0.052) * smoothstep(-72.0, 68.0, p.y);
     float edgeLift = pow(abs(p.x) / 74.0, 1.7) * 10.0;
 
-    return broad + sculpted + edgeLift - pitA * 14.5 - pitB * 8.5 - pitC * 7.0 - centralChannel * 5.5;
+    float baseHeight = broad + sculpted + edgeLift
+      - pitA * 14.5 - pitB * 8.5 - pitC * 7.0 - centralChannel * 5.5;
+    return baseHeight;
   }
 `
 
@@ -53,6 +55,8 @@ export const terrainVertexShader = /* glsl */ `
   uniform float uTime;
   uniform float uTravel;
   uniform vec2 uPointer;
+  attribute float aInteraction;
+  attribute vec2 aInteractionGradient;
   varying vec2 vUv;
   varying vec3 vWorldPosition;
   varying vec3 vWorldNormal;
@@ -63,15 +67,20 @@ export const terrainVertexShader = /* glsl */ `
   void main() {
     vUv = uv;
     vec3 transformed = position;
-    float height = terrainHeight(position.xy);
+    float interaction = aInteraction;
+    float height = baseTerrainHeight(position.xy) + interaction;
     transformed.z = height;
 
     float epsilon = 0.72;
-    float leftHeight = terrainHeight(position.xy - vec2(epsilon, 0.0));
-    float rightHeight = terrainHeight(position.xy + vec2(epsilon, 0.0));
-    float downHeight = terrainHeight(position.xy - vec2(0.0, epsilon));
-    float upHeight = terrainHeight(position.xy + vec2(0.0, epsilon));
-    vec3 objectNormal = normalize(vec3(leftHeight - rightHeight, downHeight - upHeight, epsilon * 2.0));
+    float leftHeight = baseTerrainHeight(position.xy - vec2(epsilon, 0.0));
+    float rightHeight = baseTerrainHeight(position.xy + vec2(epsilon, 0.0));
+    float downHeight = baseTerrainHeight(position.xy - vec2(0.0, epsilon));
+    float upHeight = baseTerrainHeight(position.xy + vec2(0.0, epsilon));
+    vec3 objectNormal = normalize(vec3(
+      leftHeight - rightHeight - aInteractionGradient.x * epsilon * 2.0,
+      downHeight - upHeight - aInteractionGradient.y * epsilon * 2.0,
+      epsilon * 2.0
+    ));
 
     vec4 worldPosition = modelMatrix * vec4(transformed, 1.0);
     vWorldPosition = worldPosition.xyz;
@@ -125,21 +134,27 @@ export const terrainPointVertexShader = /* glsl */ `
   uniform float uTravel;
   uniform vec2 uPointer;
   uniform float uPixelRatio;
+  attribute float aInteraction;
   varying float vEnergy;
   varying float vFade;
+  varying float vInteraction;
   ${terrainNoise}
 
   void main() {
     vec3 transformed = position;
-    float height = terrainHeight(position.xy);
+    float interaction = aInteraction;
+    float height = baseTerrainHeight(position.xy) + interaction;
     transformed.z = height + 0.16;
     vec4 worldPosition = modelMatrix * vec4(transformed, 1.0);
     vec4 viewPosition = viewMatrix * worldPosition;
     float randomValue = hash21(position.xy + 19.7);
     float pulse = 0.76 + sin(uTime * (0.34 + randomValue * 0.24) + randomValue * 28.0) * 0.24;
-    vEnergy = smoothstep(-5.0, 9.0, height) * 0.55 + randomValue * 0.45;
+    vInteraction = smoothstep(0.04, 2.8, abs(interaction));
+    vEnergy = smoothstep(-5.0, 9.0, height) * 0.55 + randomValue * 0.45
+      + vInteraction * 0.62;
     vFade = (1.0 - smoothstep(120.0, 252.0, length(viewPosition.xyz))) * step(0.74, randomValue);
-    gl_PointSize = (0.42 + randomValue * 0.82 + vEnergy * 0.48) * uPixelRatio * pulse * (125.0 / max(66.0, -viewPosition.z));
+    gl_PointSize = (0.42 + randomValue * 0.82 + vEnergy * 0.48 + vInteraction * 0.34)
+      * uPixelRatio * pulse * (125.0 / max(66.0, -viewPosition.z));
     gl_Position = projectionMatrix * viewPosition;
   }
 `

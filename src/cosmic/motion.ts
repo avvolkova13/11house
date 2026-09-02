@@ -15,3 +15,9 @@ export const wrapDepth = (value: number, near: number, far: number) => {
   if (value < far) return near
   return value
 }
+
+export const wrapDepthLoop = (value: number, near: number, far: number) => {
+  const span = near - far
+  if (span <= 0) return value
+  return far + ((((value - far) % span) + span) % span)
+}

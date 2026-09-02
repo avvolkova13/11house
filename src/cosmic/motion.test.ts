@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clamp, damp, decayVelocity, getTravelSpeed, wrapDepth } from './motion'
+import { clamp, damp, decayVelocity, getTravelSpeed, wrapDepth, wrapDepthLoop } from './motion'
 
 describe('motion helpers', () => {
   it('damps toward a target without overshooting', () => {
@@ -18,6 +18,13 @@ describe('motion helpers', () => {
     expect(clamp(12, -2, 5)).toBe(5)
     expect(wrapDepth(3, 2, -20)).toBe(-20)
     expect(wrapDepth(-21, 2, -20)).toBe(2)
+  })
+
+  it('wraps arbitrarily large travel distances without leaving the depth corridor', () => {
+    expect(wrapDepthLoop(25, 20, -100)).toBe(-95)
+    expect(wrapDepthLoop(265, 20, -100)).toBe(-95)
+    expect(wrapDepthLoop(-105, 20, -100)).toBe(15)
+    expect(wrapDepthLoop(-345, 20, -100)).toBe(15)
   })
 
   it('maps signed scroll velocity to forward and backward travel', () => {

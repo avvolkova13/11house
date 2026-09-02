@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { CelestialBodies } from './CelestialBodies'
 import { NebulaField } from './NebulaField'
 import { PostProcessing } from './PostProcessing'
 import { StarField } from './StarField'
@@ -19,7 +18,6 @@ export class CosmicScene {
   private readonly world = new THREE.Group()
   private readonly stars: StarField
   private readonly nebula: NebulaField
-  private readonly bodies: CelestialBodies
   private readonly post: PostProcessing
   private readonly clock = new THREE.Clock()
   private raf = 0
@@ -30,9 +28,12 @@ export class CosmicScene {
   private pixelRatio = 1
   private pointerTarget = new THREE.Vector2()
   private pointer = new THREE.Vector2()
+  private pointerActive = false
   private scrollVelocity = 0
   private travel = 0
   private lastScrollY = window.scrollY
+  private recenterRaf = 0
+  private scrollRecentering = false
 
   constructor(canvas: HTMLCanvasElement, options: CosmicSceneOptions) {
     this.canvas = canvas
@@ -62,13 +63,13 @@ export class CosmicScene {
 
     this.pixelRatio = this.getPixelRatio()
     this.stars = new StarField(window.innerWidth, window.innerHeight, this.pixelRatio)
-    this.nebula = new NebulaField(this.pixelRatio)
-    this.bodies = new CelestialBodies()
-    this.world.add(this.nebula.group, this.bodies.group, this.stars.points)
+    this.nebula = new NebulaField(this.camera, this.pixelRatio, this.reducedMotion)
+    this.world.add(this.nebula.group, this.stars.points)
 
     this.post = new PostProcessing(this.renderer, this.scene, this.camera)
     this.resize()
     this.addListeners()
+    this.recenterRaf = window.requestAnimationFrame(() => this.centerScrollRunway())
   }
 
   private getPixelRatio() {
@@ -78,6 +79,7 @@ export class CosmicScene {
 
   private readonly onPointerMove = (event: PointerEvent) => {
     if (this.reducedMotion) return
+    this.pointerActive = true
     this.pointerTarget.set(
       (event.clientX / Math.max(window.innerWidth, 1)) * 2 - 1,
       -((event.clientY / Math.max(window.innerHeight, 1)) * 2 - 1),
@@ -85,11 +87,36 @@ export class CosmicScene {
   }
 
   private readonly onScroll = () => {
-    if (this.reducedMotion) return
     const next = window.scrollY
+    if (this.scrollRecentering) {
+      this.lastScrollY = next
+      return
+    }
     const delta = next - this.lastScrollY
     this.lastScrollY = next
-    this.scrollVelocity = clamp(this.scrollVelocity + delta * 0.018, -11, 14)
+    if (!this.reducedMotion) {
+      this.scrollVelocity = clamp(this.scrollVelocity + delta * 0.018, -11, 14)
+    }
+
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+    if (maxScroll > 0 && (next < maxScroll * 0.16 || next > maxScroll * 0.84)) {
+      window.cancelAnimationFrame(this.recenterRaf)
+      this.recenterRaf = window.requestAnimationFrame(() => this.centerScrollRunway())
+    }
+  }
+
+  private centerScrollRunway() {
+    if (this.disposed) return
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+    if (maxScroll <= 0) return
+    const center = Math.round(maxScroll * 0.5)
+    this.scrollRecentering = true
+    this.lastScrollY = center
+    window.scrollTo(0, center)
+    this.recenterRaf = window.requestAnimationFrame(() => {
+      this.lastScrollY = window.scrollY
+      this.scrollRecentering = false
+    })
   }
 
   private readonly onVisibilityChange = () => {
@@ -169,8 +196,14 @@ export class CosmicScene {
     this.world.position.x = damp(this.world.position.x, this.pointer.x * 0.82, 1.9, dt)
     this.world.position.y = damp(this.world.position.y, this.pointer.y * 0.38, 1.9, dt)
     this.stars.update(elapsed, this.travel, streak, this.pixelRatio)
-    this.nebula.update(elapsed, this.pointer.x, this.pointer.y, this.travel)
-    this.bodies.update(elapsed, this.travel, this.pointer.x, this.pointer.y)
+    this.nebula.update(
+      elapsed,
+      this.pointer.x,
+      this.pointer.y,
+      this.travel,
+      dt,
+      this.pointerActive,
+    )
     this.post.render(streak)
   }
 
@@ -191,10 +224,10 @@ export class CosmicScene {
     if (this.disposed) return
     this.disposed = true
     this.stop()
+    window.cancelAnimationFrame(this.recenterRaf)
     this.removeListeners()
     this.stars.dispose()
     this.nebula.dispose()
-    this.bodies.dispose()
     this.post.dispose()
     this.renderer.dispose()
   }

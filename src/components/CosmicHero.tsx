@@ -10,6 +10,7 @@ export function CosmicHero() {
     if (!canvas) return
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || (import.meta.env.DEV && new URLSearchParams(window.location.search).has('reduced-motion'))
     let scene: CosmicScene | undefined
 
     try {

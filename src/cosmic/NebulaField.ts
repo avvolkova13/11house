@@ -5,6 +5,7 @@ import {
   terrainPointVertexShader,
   terrainVertexShader,
 } from './shaders/nebula'
+import { PointerTrail } from './PointerTrail'
 
 export class NebulaField {
   readonly group = new THREE.Group()
@@ -15,10 +16,55 @@ export class NebulaField {
   private readonly sharedTime = { value: 0 }
   private readonly sharedTravel = { value: 0 }
   private readonly sharedPointer = { value: new THREE.Vector2() }
+  private readonly interactionWidth = 96
+  private readonly interactionHeight = 160
+  private readonly interactionHeights = new Float32Array(
+    this.interactionWidth * this.interactionHeight,
+  )
+  private readonly interactionValues: Float32Array
+  private readonly interactionLookup: Uint32Array
+  private readonly interactionAttribute: THREE.BufferAttribute
+  private readonly interactionNormalValues: Float32Array
+  private readonly interactionNormalAttribute: THREE.BufferAttribute
+  private interactionVisible = false
+  private readonly camera: THREE.Camera
+  private readonly reducedMotion: boolean
+  private readonly trail = new PointerTrail()
+  private readonly raycaster = new THREE.Raycaster()
+  private readonly interactionPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 6)
+  private readonly hitWorld = new THREE.Vector3()
+  private readonly hitLocal = new THREE.Vector3()
+  private readonly projectedPointer = new THREE.Vector2()
 
-  constructor(pixelRatio = 1) {
+  constructor(camera: THREE.Camera, pixelRatio = 1, reducedMotion = false) {
+    this.camera = camera
+    this.reducedMotion = reducedMotion
     this.geometry = new THREE.PlaneGeometry(152, 265, 248, 372)
     this.pointGeometry = this.geometry.clone()
+    const surfacePositions = this.geometry.attributes.position as THREE.BufferAttribute
+    this.interactionValues = new Float32Array(surfacePositions.count)
+    this.interactionLookup = new Uint32Array(surfacePositions.count)
+    this.interactionAttribute = new THREE.BufferAttribute(this.interactionValues, 1)
+    this.interactionAttribute.setUsage(THREE.DynamicDrawUsage)
+    this.interactionNormalValues = new Float32Array(surfacePositions.count * 2)
+    this.interactionNormalAttribute = new THREE.BufferAttribute(this.interactionNormalValues, 2)
+    this.interactionNormalAttribute.setUsage(THREE.DynamicDrawUsage)
+    for (let index = 0; index < surfacePositions.count; index += 1) {
+      const x = THREE.MathUtils.clamp(
+        Math.round((surfacePositions.getX(index) / 152 + 0.5) * (this.interactionWidth - 1)),
+        0,
+        this.interactionWidth - 1,
+      )
+      const y = THREE.MathUtils.clamp(
+        Math.round((surfacePositions.getY(index) / 265 + 0.5) * (this.interactionHeight - 1)),
+        0,
+        this.interactionHeight - 1,
+      )
+      this.interactionLookup[index] = y * this.interactionWidth + x
+    }
+    this.geometry.setAttribute('aInteraction', this.interactionAttribute)
+    this.geometry.setAttribute('aInteractionGradient', this.interactionNormalAttribute)
+    this.pointGeometry.setAttribute('aInteraction', this.interactionAttribute)
     const pointPositions = this.pointGeometry.attributes.position as THREE.BufferAttribute
     for (let index = 0; index < pointPositions.count; index += 1) {
       const randomX = Math.sin(index * 12.9898) * 43758.5453
@@ -78,10 +124,116 @@ export class NebulaField {
     this.particles.material.uniforms.uPixelRatio.value = pixelRatio
   }
 
-  update(elapsed: number, pointerX: number, pointerY: number, travel: number) {
+  private projectPointer() {
+    this.raycaster.setFromCamera(this.sharedPointer.value, this.camera)
+    const hit = this.raycaster.ray.intersectPlane(this.interactionPlane, this.hitWorld)
+    if (!hit) return null
+
+    this.surface.updateWorldMatrix(true, false)
+    this.hitLocal.copy(hit)
+    this.surface.worldToLocal(this.hitLocal)
+    if (Math.abs(this.hitLocal.x) > 73 || Math.abs(this.hitLocal.y) > 130) return null
+
+    return this.projectedPointer.set(this.hitLocal.x, this.hitLocal.y)
+  }
+
+  private stampInteraction(
+    centerX: number,
+    centerY: number,
+    weight: number,
+    coreRadius: number,
+    coreStrength: number,
+    moatRadius: number,
+    moatWidth: number,
+    moatStrength: number,
+  ) {
+    if (weight <= 0.002) return
+    const radius = Math.max(coreRadius * 3.4, moatRadius + moatWidth * 3.0)
+    const minX = Math.max(0, Math.floor(((centerX - radius) / 152 + 0.5) * this.interactionWidth))
+    const maxX = Math.min(this.interactionWidth - 1, Math.ceil(((centerX + radius) / 152 + 0.5) * this.interactionWidth))
+    const minY = Math.max(0, Math.floor(((centerY - radius) / 265 + 0.5) * this.interactionHeight))
+    const maxY = Math.min(this.interactionHeight - 1, Math.ceil(((centerY + radius) / 265 + 0.5) * this.interactionHeight))
+
+    for (let y = minY; y <= maxY; y += 1) {
+      const terrainY = ((y + 0.5) / this.interactionHeight - 0.5) * 265
+      for (let x = minX; x <= maxX; x += 1) {
+        const terrainX = ((x + 0.5) / this.interactionWidth - 0.5) * 152
+        const distance = Math.hypot(terrainX - centerX, terrainY - centerY)
+        const core = Math.exp(-0.5 * (distance / coreRadius) ** 2)
+        const moat = Math.exp(-0.5 * ((distance - moatRadius) / moatWidth) ** 2)
+        this.interactionHeights[y * this.interactionWidth + x] += (
+          core * coreStrength - moat * moatStrength
+        ) * weight
+      }
+    }
+  }
+
+  private updateInteractionMap() {
+    const hasInteraction = this.trail.cursorEnergy > 0
+      || this.trail.weights.some((weight) => weight > 0)
+    if (!hasInteraction && !this.interactionVisible) return
+    this.interactionVisible = hasInteraction
+    this.interactionHeights.fill(0)
+    this.stampInteraction(
+      this.trail.cursor.x,
+      this.trail.cursor.y,
+      this.trail.cursorEnergy,
+      10.5,
+      3.4,
+      13.5,
+      4.2,
+      0.64,
+    )
+    for (let index = 0; index < this.trail.centers.length; index += 1) {
+      const center = this.trail.centers[index]
+      this.stampInteraction(
+        center.x,
+        center.y,
+        this.trail.weights[index],
+        7.4,
+        1.8,
+        9.3,
+        3.2,
+        0.38,
+      )
+    }
+
+    for (let index = 0; index < this.interactionValues.length; index += 1) {
+      const fieldIndex = this.interactionLookup[index]
+      const x = fieldIndex % this.interactionWidth
+      const y = Math.floor(fieldIndex / this.interactionWidth)
+      const left = y * this.interactionWidth + Math.max(0, x - 1)
+      const right = y * this.interactionWidth + Math.min(this.interactionWidth - 1, x + 1)
+      const down = Math.max(0, y - 1) * this.interactionWidth + x
+      const up = Math.min(this.interactionHeight - 1, y + 1) * this.interactionWidth + x
+      this.interactionValues[index] = this.interactionHeights[fieldIndex]
+      this.interactionNormalValues[index * 2] = (
+        this.interactionHeights[right] - this.interactionHeights[left]
+      ) / (2 * 152 / (this.interactionWidth - 1))
+      this.interactionNormalValues[index * 2 + 1] = (
+        this.interactionHeights[up] - this.interactionHeights[down]
+      ) / (2 * 265 / (this.interactionHeight - 1))
+    }
+    this.interactionAttribute.needsUpdate = true
+    this.interactionNormalAttribute.needsUpdate = true
+  }
+
+  update(
+    elapsed: number,
+    pointerX: number,
+    pointerY: number,
+    travel: number,
+    dt: number,
+    pointerActive: boolean,
+  ) {
     this.sharedTime.value = elapsed
     this.sharedTravel.value = travel
     this.sharedPointer.value.set(pointerX, pointerY)
+    const target = !this.reducedMotion && pointerActive
+      ? this.projectPointer()
+      : null
+    this.trail.tick(dt, elapsed, target)
+    this.updateInteractionMap()
     this.group.rotation.z = Math.sin(elapsed * 0.035) * 0.0025
     this.group.position.x = pointerX * 0.52
     this.group.position.y = pointerY * 0.18
