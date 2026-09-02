@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ElevenHouse · Section 03 analytical reference board</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #07090e; color: #eef0f4; font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif; }
+      main { width: min(1540px, calc(100% - 72px)); margin: 0 auto; padding: 68px 0 92px; }
+      header { display: grid; grid-template-columns: 1.55fr .85fr; gap: 72px; align-items: end; }
+      .eyebrow { color: #ddbd62; font-size: 12px; letter-spacing: .17em; text-transform: uppercase; }
+      h1 { max-width: 900px; margin: 14px 0 0; font-size: clamp(54px, 6.2vw, 104px); font-weight: 400; letter-spacing: -.06em; line-height: .88; }
+      .brief { margin: 0; color: #aeb3bd; font-size: 17px; line-height: 1.55; }
+      section { margin-top: 54px; padding-top: 26px; border-top: 1px solid rgba(255,255,255,.13); }
+      h2 { margin: 0 0 22px; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; }
+      figure { margin: 0; overflow: hidden; border: 1px solid rgba(255,255,255,.12); background: #0c0f16; }
+      figure img { display: block; width: 100%; object-fit: cover; }
+      figcaption { padding: 14px 16px 17px; color: #adb3be; font-size: 13px; line-height: 1.45; }
+      figcaption strong { display: block; margin-bottom: 4px; color: #f3f4f6; }
+      .reference { display: grid; grid-template-columns: .9fr 1.1fr; gap: 18px; }
+      .reference img { aspect-ratio: 16/9; }
+      .reference article { display: grid; grid-template-columns: 84px 1fr; gap: 20px; min-height: 100%; padding: 24px; border: 1px solid rgba(255,255,255,.12); background: #0c0f16; }
+      .reference b { color: #ddbd62; font-size: 12px; letter-spacing: .12em; }
+      .reference h3 { margin: 0 0 10px; font-size: 32px; font-weight: 450; letter-spacing: -.035em; }
+      .reference p { margin: 0; color: #adb3be; line-height: 1.55; }
+      .evidence { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+      .evidence img { aspect-ratio: 4/3; }
+      .products img { object-position: 61% 47%; }
+      .calendar img { object-position: 72% 42%; }
+      .numbers img { object-position: 66% 46%; }
+      .journal img { object-position: 69% 46%; }
+      .funnel img { object-position: 62% 50%; }
+      .sequence { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.12); }
+      .sequence article { min-height: 250px; padding: 20px 18px; background: #0b0e14; }
+      .sequence b { color: #ddbd62; font-size: 11px; letter-spacing: .13em; }
+      .sequence h3 { margin: 34px 0 12px; font-size: 22px; font-weight: 480; letter-spacing: -.025em; }
+      .sequence p { margin: 0; color: #9fa5b0; font-size: 13px; line-height: 1.5; }
+      .blocked { color: #e39b84 !important; }
+      .rules { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+      .rules div { min-height: 170px; padding: 22px 24px; border-left: 3px solid #ddbd62; background: #10131a; }
+      .rules div:last-child { border-left-color: #666d79; }
+      .rules h3 { margin: 0 0 10px; font-size: 20px; }
+      .rules p { margin: 0; color: #afb5bf; line-height: 1.55; }
+      @media (max-width: 1000px) {
+        main { width: calc(100% - 32px); }
+        header, .reference, .rules { grid-template-columns: 1fr; }
+        .evidence { grid-template-columns: 1fr 1fr; }
+        .sequence { grid-template-columns: 1fr 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <span class="eyebrow">Analytical reference board · Section 03</span>
+          <h1>Один клиент. Один непрерывный контекст.</h1>
+        </div>
+        <p class="brief">История строится как один pinned product stage: не шесть feature-блоков, а последовательная смена фокуса вокруг Анны. Маркетинговый слой управляет камерой; продуктовые слои остаются точными screenshots.</p>
+      </header>
+
+      <section>
+        <h2>Reference ownership</h2>
+        <div class="reference">
+          <figure><img src="assets/produx-live-2026-09-02.png" alt="Live screenshot PRODUX" /><figcaption><strong>R8 · PRODUX</strong>Берём pinned stage, крупный типографический якорь и смену scale внутри одной сцены. Не берём брендинг, контент, кислотную палитру или интерфейс референса.</figcaption></figure>
+          <article><b>R5 + R10/R12</b><div><h3>Дисциплина UI и причинный motion</h3><p>R5 определяет чистые рамки, readable density и иерархию product crops. R10/R12 используются только как принцип: следующее состояние появляется из смысла предыдущего, без случайного fade-up. Визуальная форма и product anatomy берутся не из них, а из ElevenHouse.</p></div></article>
+        </div>
+      </section>
+
+      <section>
+        <h2>ElevenHouse evidence · exact product states</h2>
+        <div class="evidence">
+          <figure class="products"><img src="assets/eh-p05-products.png" alt="ElevenHouse products" /><figcaption><strong>3.1 · EH-P05</strong>Реальный выбор формата. Стоп до checkout.</figcaption></figure>
+          <figure class="calendar"><img src="assets/eh-p01-calendar.png" alt="ElevenHouse calendar" /><figcaption><strong>3.2 / 3.4 · EH-P01</strong>Клиент, запись, продукт, канал, вход в сессию.</figcaption></figure>
+          <figure class="numbers"><img src="assets/eh-p07-numerology.png" alt="ElevenHouse numerology" /><figcaption><strong>3.3 · EH-P07</strong>Подтверждённый рассчитанный профессиональный инструмент.</figcaption></figure>
+          <figure class="journal"><img src="assets/eh-p09-journal.png" alt="ElevenHouse Astrodiary" /><figcaption><strong>3.5 · EH-P09</strong>Приватный контекст, запись и ответ.</figcaption></figure>
+          <figure class="funnel"><img src="assets/eh-p04-funnel.png" alt="ElevenHouse funnel" /><figcaption><strong>3.6 · EH-P04</strong>Редактор сценария и специализированные узлы; execution не показываем.</figcaption></figure>
+        </div>
+      </section>
+
+      <section>
+        <h2>One stage · six focus states</h2>
+        <div class="sequence">
+          <article><b>01</b><h3>Выбор</h3><p>Каталог остаётся целым; одна реальная консультация выходит вперёд. Никакого public page или checkout.</p></article>
+          <article><b>02</b><h3>Контекст</h3><p>Анна — semantic anchor. Вокруг неё только подтверждённые рабочие контексты, без fake node graph и обещания автосинхронизации.</p></article>
+          <article><b>03</b><h3>Подготовка</h3><p>Natal pre-calc, Numerology и Matrix разрешены по inventory. В текущем workspace доступен точный asset Numerology; отсутствующие binaries не заменяются подделками.</p></article>
+          <article><b>04</b><h3>10:00</h3><p>Неделя отступает, инспектор записи становится главным. Стоп на «Войти в сессию»; call UI не существует в evidence.</p></article>
+          <article><b>05</b><h3>После</h3><p>Темп замедляется. Астродневник показывает возможность продолжать работу, но не притворяется журналом той же записи.</p></article>
+          <article><b>06</b><h3>Сценарий</h3><p class="blocked">Partially blocked: исходный prompt обрывается. Показываем только редактор и дословную утверждённую фразу; execution story не достраиваем.</p></article>
+        </div>
+      </section>
+
+      <section>
+        <h2>Implementation decision</h2>
+        <div class="rules">
+          <div><h3>В код идёт</h3><p>Одна длинная reversible sticky-сцена; persistent anchor «Анна»; последовательные camera moves; реальные P05/P01/P07/P09/P04; mobile показывает один state за раз; reduced-motion превращает историю в спокойную вертикальную последовательность.</p></div>
+          <div><h3>Не идёт в код</h3><p>Public profile, checkout, purchase confirmation, populated CRM profile, automatic relationship chain, calculated Natal, Human Design, video-call UI, auto-created diary, execution funnel и любой текст после физически обрезанного фрагмента задания.</p></div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

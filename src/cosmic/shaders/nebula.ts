@@ -96,6 +96,7 @@ export const terrainFragmentShader = /* glsl */ `
   uniform vec3 uShadowColor;
   uniform vec3 uRidgeColor;
   uniform vec3 uHotColor;
+  uniform float uOpacity;
   varying vec2 vUv;
   varying vec3 vWorldPosition;
   varying vec3 vWorldNormal;
@@ -125,7 +126,7 @@ export const terrainFragmentShader = /* glsl */ `
     float farFade = 1.0 - smoothstep(105.0, 248.0, vDistance);
     float sideFade = smoothstep(0.0, 0.10, vUv.x) * smoothstep(0.0, 0.10, 1.0 - vUv.x);
     float alpha = (0.62 + diffuse * 0.12) * farFade * sideFade;
-    gl_FragColor = vec4(color, alpha);
+    gl_FragColor = vec4(color, alpha * uOpacity);
   }
 `
 
@@ -162,6 +163,7 @@ export const terrainPointVertexShader = /* glsl */ `
 export const terrainPointFragmentShader = /* glsl */ `
   precision highp float;
   uniform vec3 uPointColor;
+  uniform float uOpacity;
   varying float vEnergy;
   varying float vFade;
 
@@ -173,6 +175,6 @@ export const terrainPointFragmentShader = /* glsl */ `
     float alpha = (core + glow * 0.32) * vFade;
     if (alpha < 0.01) discard;
     vec3 color = uPointColor * (0.42 + vEnergy * 0.72);
-    gl_FragColor = vec4(color, alpha);
+    gl_FragColor = vec4(color, alpha * uOpacity);
   }
 `

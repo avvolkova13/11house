@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { CosmicScene } from '../cosmic/CosmicScene'
+import type { HeroScrollAdapter } from '../scroll/HeroScrollAdapter'
+import { getStageTravelDirection } from '../cosmic/copyMotion'
 import {
-  easeOutCubic,
-  getDirectedSnapTarget,
-  getSettleDuration,
-  getStageTravelDirection,
-  type ScrollDirection,
-} from '../cosmic/copyMotion'
-
-const copyStages = ['ElevenHouse', 'Вся ваша практика', 'В одном пространстве']
+  HERO_LAST_STAGE_INDEX,
+  HERO_NARRATIVE_STAGES,
+  clampHeroProgress,
+  getLinearStageOffset,
+  getProductStageMotion,
+  getTunnelMix,
+} from '../hero/heroNarrative'
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
 
@@ -22,14 +23,6 @@ const randomUnit = (stageIndex: number, glyphIndex: number, fragmentIndex: numbe
     stageIndex * 91.73 + glyphIndex * 37.17 + fragmentIndex * 17.41 + salt * 53.29,
   ) * 43758.5453
   return value - Math.floor(value)
-}
-
-const getStageOffset = (progress: number, index: number) => {
-  let offset = index - progress
-  const half = copyStages.length / 2
-  if (offset > half) offset -= copyStages.length
-  if (offset < -half) offset += copyStages.length
-  return offset
 }
 
 const getFragmentStyle = (
@@ -62,7 +55,12 @@ const getFragmentStyle = (
   }
 }
 
-export function CosmicHero() {
+type CosmicHeroProps = {
+  scrollAdapter: HeroScrollAdapter
+  runwayStyle: CSSProperties
+}
+
+export function CosmicHero({ scrollAdapter, runwayStyle }: CosmicHeroProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [fallback, setFallback] = useState(false)
   const [copyProgress, setCopyProgress] = useState(0)
@@ -72,78 +70,32 @@ export function CosmicHero() {
   useEffect(() => {
     if (reducedMotion) return
 
-    let lastScrollY = window.scrollY
-    let progress = 0
+    let progress = clampHeroProgress(scrollAdapter.snapshot.travelProgress)
     let renderFrame = 0
-    let settleFrame = 0
-    let scrollEndTimer = 0
-    let initializing = true
-    const normalizeProgress = (value: number) => (
-      (value % copyStages.length + copyStages.length) % copyStages.length
-    )
     const renderProgress = () => {
       window.cancelAnimationFrame(renderFrame)
       renderFrame = window.requestAnimationFrame(() => {
-        setCopyProgress(normalizeProgress(progress))
+        setCopyProgress(clampHeroProgress(progress))
       })
     }
-    const settleToHeading = (target: number) => {
-      const start = progress
-      const distance = Math.abs(target - start)
-      if (distance < 0.0001) return
+    setCopyProgress(clampHeroProgress(progress))
 
-      const startedAt = performance.now()
-      const duration = getSettleDuration(distance)
-      const tick = (now: number) => {
-        const elapsed = (now - startedAt) / duration
-        progress = start + (target - start) * easeOutCubic(elapsed)
-        setCopyProgress(normalizeProgress(progress))
-
-        if (elapsed < 1) {
-          settleFrame = window.requestAnimationFrame(tick)
-          return
-        }
-
-        progress = normalizeProgress(target)
-        setCopyProgress(progress)
-        settleFrame = 0
-      }
-
-      settleFrame = window.requestAnimationFrame(tick)
-    }
-    const initializationTimer = window.setTimeout(() => {
-      lastScrollY = window.scrollY
-      progress = 0
-      setCopyProgress(0)
-      initializing = false
-    }, 420)
-
-    const onScroll = () => {
-      const nextScrollY = window.scrollY
-      const delta = nextScrollY - lastScrollY
-      lastScrollY = nextScrollY
-      if (initializing || Math.abs(delta) > 10_000) return
-
-      window.cancelAnimationFrame(settleFrame)
-      window.clearTimeout(scrollEndTimer)
-      settleFrame = 0
-
-      progress += delta / 760
-      const direction: ScrollDirection = delta > 0 ? 1 : -1
-      const target = getDirectedSnapTarget(progress, direction)
+    const unsubscribe = scrollAdapter.subscribe((snapshot) => {
+      progress = clampHeroProgress(snapshot.travelProgress)
       renderProgress()
-      scrollEndTimer = window.setTimeout(() => settleToHeading(target), 70)
-    }
+    })
 
-    window.addEventListener('scroll', onScroll, { passive: true })
     return () => {
-      window.removeEventListener('scroll', onScroll)
+      unsubscribe()
       window.cancelAnimationFrame(renderFrame)
-      window.cancelAnimationFrame(settleFrame)
-      window.clearTimeout(scrollEndTimer)
-      window.clearTimeout(initializationTimer)
     }
-  }, [reducedMotion])
+  }, [reducedMotion, scrollAdapter])
+
+  const tunnelMix = getTunnelMix(copyProgress)
+  const copyStyle = {
+    '--hero-progress': copyProgress,
+    '--hero-tunnel-mix': tunnelMix,
+  } as CSSProperties
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -155,6 +107,7 @@ export function CosmicHero() {
       scene = new CosmicScene(canvas, {
         reducedMotion,
         onFallback: () => setFallback(true),
+        scrollAdapter,
       })
       scene.start()
     } catch {
@@ -164,21 +117,79 @@ export function CosmicHero() {
     return () => {
       scene?.dispose()
     }
-  }, [])
+  }, [reducedMotion, scrollAdapter])
 
   return (
-    <section className="cosmic-runway">
+    <section
+      className="cosmic-runway"
+      data-motion={reducedMotion ? 'reduced' : 'full'}
+      style={runwayStyle}
+    >
       <section className={`cosmic-hero${fallback ? ' cosmic-hero--fallback' : ''}`}>
         <canvas ref={canvasRef} className="cosmic-canvas" />
-        <div className="hero-copy" aria-live="polite">
+        <div className="hero-copy" aria-live="polite" style={copyStyle}>
           <div className="hero-copy__stages" aria-label="ElevenHouse">
-            {copyStages.map((copy, index) => {
+            {HERO_NARRATIVE_STAGES.map((stage, index) => {
               const stageOffset = reducedMotion
-                ? (index === 0 ? 0 : copyStages.length)
-                : getStageOffset(copyProgress, index)
+                ? 0
+                : getLinearStageOffset(copyProgress, index)
+              const stageIsCurrent = reducedMotion || Math.abs(stageOffset) < 0.55
+              if (stage.mode === 'product') {
+                const motion = getProductStageMotion(stageOffset)
+                const sceneStyle = {
+                  '--product-opacity': motion.opacity,
+                  '--product-scale': motion.scale,
+                  '--product-y': `${motion.translateY}svh`,
+                  '--product-rotate-x': `${motion.rotateX}deg`,
+                  '--product-rotate-y': `${motion.rotateY}deg`,
+                } as CSSProperties
+
+                return (
+                  <article
+                    aria-label={stage.title}
+                    aria-hidden={!stageIsCurrent}
+                    className={`hero-product-scene hero-product-scene--${index}`}
+                    key={stage.title}
+                    style={sceneStyle}
+                  >
+                    <p aria-hidden="true" className="hero-product-scene__title hero-product-scene__title--back">
+                      {stage.title}
+                    </p>
+                    <figure className="hero-product-plane">
+                      <div className="hero-product-plane__viewport">
+                        <img alt="" src={stage.screenshot} />
+                      </div>
+                      <figcaption>
+                        <span>{stage.productLabel}</span>
+                        <small>{stage.productDetail}</small>
+                      </figcaption>
+                    </figure>
+                    <p aria-hidden="true" className="hero-product-scene__title hero-product-scene__title--front">
+                      {stage.title}
+                    </p>
+                  </article>
+                )
+              }
+
+              if (stage.mode === 'finale') {
+                const finaleOpacity = 1 - smoothstep(0.08, 0.72, Math.abs(stageOffset))
+                return (
+                  <p
+                    aria-hidden={!stageIsCurrent}
+                    className="hero-finale"
+                    key={stage.title}
+                    style={{ opacity: reducedMotion ? 1 : finaleOpacity }}
+                  >
+                    {stage.title}
+                  </p>
+                )
+              }
+
+              const copy = stage.title
               return (
                 <p
                   aria-label={copy}
+                  aria-hidden={!stageIsCurrent}
                   className="hero-copy__stage"
                   key={copy}
                 >
@@ -210,9 +221,17 @@ export function CosmicHero() {
               )
             })}
           </div>
-          <p className="hero-copy__description">
+          <p
+            aria-hidden={!reducedMotion && copyProgress > 0.62}
+            className="hero-copy__description"
+            style={{ opacity: reducedMotion ? 1 : 1 - smoothstep(0.05, 0.62, copyProgress) }}
+          >
             Клиенты, записи, продукты, оплаты, воронки и профессиональные инструменты — от натальной карты до Матрицы судьбы.<br />
             ElevenHouse собирает всё, на чём держится работа астролога, в единую систему.
+          </p>
+          <p className="hero-copy__progress" aria-hidden="true">
+            {String(Math.min(Math.round(copyProgress) + 1, HERO_LAST_STAGE_INDEX + 1)).padStart(2, '0')}
+            <span> / {String(HERO_LAST_STAGE_INDEX + 1).padStart(2, '0')}</span>
           </p>
         </div>
       </section>

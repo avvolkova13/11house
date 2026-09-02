@@ -2,11 +2,15 @@ import * as THREE from 'three'
 import { NebulaField } from './NebulaField'
 import { PostProcessing } from './PostProcessing'
 import { StarField } from './StarField'
+import { CosmicTunnel } from './CosmicTunnel'
+import type { HeroScrollAdapter } from '../scroll/HeroScrollAdapter'
 import { clamp, damp, decayVelocity, getTravelSpeed } from './motion'
+import { getTunnelMix } from '../hero/heroNarrative'
 
 type CosmicSceneOptions = {
   reducedMotion: boolean
   onFallback: () => void
+  scrollAdapter: HeroScrollAdapter
 }
 
 export class CosmicScene {
@@ -18,6 +22,7 @@ export class CosmicScene {
   private readonly world = new THREE.Group()
   private readonly stars: StarField
   private readonly nebula: NebulaField
+  private readonly tunnel: CosmicTunnel
   private readonly post: PostProcessing
   private readonly clock = new THREE.Clock()
   private raf = 0
@@ -31,13 +36,17 @@ export class CosmicScene {
   private pointerActive = false
   private scrollVelocity = 0
   private travel = 0
-  private lastScrollY = window.scrollY
-  private recenterRaf = 0
-  private scrollRecentering = false
+  private narrativeProgress = 0
+  private readonly removeScrollListener: () => void
 
   constructor(canvas: HTMLCanvasElement, options: CosmicSceneOptions) {
     this.canvas = canvas
     this.reducedMotion = options.reducedMotion
+    this.removeScrollListener = options.scrollAdapter.subscribe((snapshot) => {
+      this.narrativeProgress = this.reducedMotion ? 0 : snapshot.travelProgress
+      if (this.reducedMotion || snapshot.heroDelta === 0) return
+      this.scrollVelocity = clamp(this.scrollVelocity + snapshot.heroDelta * 0.018, -11, 14)
+    })
 
     try {
       this.renderer = new THREE.WebGLRenderer({
@@ -64,12 +73,12 @@ export class CosmicScene {
     this.pixelRatio = this.getPixelRatio()
     this.stars = new StarField(window.innerWidth, window.innerHeight, this.pixelRatio)
     this.nebula = new NebulaField(this.camera, this.pixelRatio, this.reducedMotion)
-    this.world.add(this.nebula.group, this.stars.points)
+    this.tunnel = new CosmicTunnel(this.pixelRatio)
+    this.world.add(this.nebula.group, this.tunnel.group, this.stars.points)
 
     this.post = new PostProcessing(this.renderer, this.scene, this.camera)
     this.resize()
     this.addListeners()
-    this.recenterRaf = window.requestAnimationFrame(() => this.centerScrollRunway())
   }
 
   private getPixelRatio() {
@@ -84,39 +93,6 @@ export class CosmicScene {
       (event.clientX / Math.max(window.innerWidth, 1)) * 2 - 1,
       -((event.clientY / Math.max(window.innerHeight, 1)) * 2 - 1),
     )
-  }
-
-  private readonly onScroll = () => {
-    const next = window.scrollY
-    if (this.scrollRecentering) {
-      this.lastScrollY = next
-      return
-    }
-    const delta = next - this.lastScrollY
-    this.lastScrollY = next
-    if (!this.reducedMotion) {
-      this.scrollVelocity = clamp(this.scrollVelocity + delta * 0.018, -11, 14)
-    }
-
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight
-    if (maxScroll > 0 && (next < maxScroll * 0.16 || next > maxScroll * 0.84)) {
-      window.cancelAnimationFrame(this.recenterRaf)
-      this.recenterRaf = window.requestAnimationFrame(() => this.centerScrollRunway())
-    }
-  }
-
-  private centerScrollRunway() {
-    if (this.disposed) return
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight
-    if (maxScroll <= 0) return
-    const center = Math.round(maxScroll * 0.5)
-    this.scrollRecentering = true
-    this.lastScrollY = center
-    window.scrollTo(0, center)
-    this.recenterRaf = window.requestAnimationFrame(() => {
-      this.lastScrollY = window.scrollY
-      this.scrollRecentering = false
-    })
   }
 
   private readonly onVisibilityChange = () => {
@@ -144,18 +120,17 @@ export class CosmicScene {
     this.post.setPixelRatio(nextPixelRatio)
     this.post.setSize(width, height)
     this.nebula.setPixelRatio(nextPixelRatio)
+    this.tunnel.setPixelRatio(nextPixelRatio)
   }
 
   private addListeners() {
     window.addEventListener('pointermove', this.onPointerMove, { passive: true })
-    window.addEventListener('scroll', this.onScroll, { passive: true })
     window.addEventListener('resize', this.resize, { passive: true })
     document.addEventListener('visibilitychange', this.onVisibilityChange)
   }
 
   private removeListeners() {
     window.removeEventListener('pointermove', this.onPointerMove)
-    window.removeEventListener('scroll', this.onScroll)
     window.removeEventListener('resize', this.resize)
     document.removeEventListener('visibilitychange', this.onVisibilityChange)
   }
@@ -181,6 +156,7 @@ export class CosmicScene {
     const streak = this.reducedMotion
       ? 0
       : THREE.MathUtils.smoothstep(Math.abs(this.scrollVelocity), 0.7, 9.5)
+    const tunnelMix = getTunnelMix(this.narrativeProgress)
 
     const idleX = Math.sin(elapsed * 0.09) * 0.12
     const idleY = Math.cos(elapsed * 0.075) * 0.08
@@ -204,6 +180,8 @@ export class CosmicScene {
       dt,
       this.pointerActive,
     )
+    this.nebula.setOpacity(1 - tunnelMix)
+    this.tunnel.update(elapsed, this.travel, tunnelMix)
     this.post.render(streak)
   }
 
@@ -224,10 +202,11 @@ export class CosmicScene {
     if (this.disposed) return
     this.disposed = true
     this.stop()
-    window.cancelAnimationFrame(this.recenterRaf)
+    this.removeScrollListener()
     this.removeListeners()
     this.stars.dispose()
     this.nebula.dispose()
+    this.tunnel.dispose()
     this.post.dispose()
     this.renderer.dispose()
   }

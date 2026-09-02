@@ -16,6 +16,7 @@ export class NebulaField {
   private readonly sharedTime = { value: 0 }
   private readonly sharedTravel = { value: 0 }
   private readonly sharedPointer = { value: new THREE.Vector2() }
+  private readonly sharedOpacity = { value: 1 }
   private readonly interactionWidth = 96
   private readonly interactionHeight = 160
   private readonly interactionHeights = new Float32Array(
@@ -86,6 +87,7 @@ export class NebulaField {
         uShadowColor: { value: new THREE.Color(0x020712) },
         uRidgeColor: { value: new THREE.Color(0x242d46) },
         uHotColor: { value: new THREE.Color(0xa66c32) },
+        uOpacity: this.sharedOpacity,
       },
       transparent: true,
       depthWrite: true,
@@ -101,6 +103,7 @@ export class NebulaField {
         uPointer: this.sharedPointer,
         uPixelRatio: { value: pixelRatio },
         uPointColor: { value: new THREE.Color(0xb27c3e) },
+        uOpacity: this.sharedOpacity,
       },
       transparent: true,
       depthWrite: false,
@@ -122,6 +125,13 @@ export class NebulaField {
 
   setPixelRatio(pixelRatio: number) {
     this.particles.material.uniforms.uPixelRatio.value = pixelRatio
+  }
+
+  setOpacity(opacity: number) {
+    const nextOpacity = THREE.MathUtils.clamp(opacity, 0, 1)
+    this.sharedOpacity.value = nextOpacity
+    this.surface.material.depthWrite = nextOpacity > 0.18
+    this.group.visible = nextOpacity > 0.002
   }
 
   private projectPointer() {

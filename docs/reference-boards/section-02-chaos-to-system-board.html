@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ElevenHouse · Section 02 analytical reference board</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: #080a0f;
+        color: #eef0f4;
+        font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+      }
+      main { width: min(1500px, calc(100% - 80px)); margin: 0 auto; padding: 72px 0 96px; }
+      header { display: grid; grid-template-columns: 1.6fr 1fr; gap: 80px; align-items: end; margin-bottom: 64px; }
+      .eyebrow { color: #d6b765; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; }
+      h1 { max-width: 920px; margin: 12px 0 0; font-size: clamp(46px, 6vw, 96px); font-weight: 400; letter-spacing: -.055em; line-height: .92; }
+      .brief { margin: 0; color: #a9afba; font-size: 18px; line-height: 1.5; }
+      section { border-top: 1px solid rgba(255,255,255,.13); padding-top: 28px; margin-top: 52px; }
+      h2 { margin: 0 0 24px; font-size: 16px; font-weight: 600; letter-spacing: .11em; text-transform: uppercase; }
+      .refs { display: grid; grid-template-columns: 1.15fr .85fr; gap: 18px; }
+      figure { margin: 0; border: 1px solid rgba(255,255,255,.12); background: #0d1017; overflow: hidden; }
+      figure img { display: block; width: 100%; aspect-ratio: 16/10; object-fit: cover; }
+      figcaption { padding: 16px 18px 18px; color: #b9bec8; font-size: 14px; line-height: 1.45; }
+      figcaption strong { display: block; margin-bottom: 4px; color: #f5f6f8; font-weight: 600; }
+      .evidence { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+      .evidence figure img { aspect-ratio: 4/3; }
+      .calendar img { object-position: 58% 45%; }
+      .finance img { object-position: 70% 40%; }
+      .funnel img { object-position: 59% 52%; }
+      .products img { object-position: 64% 48%; }
+      .journal img { object-position: 68% 48%; }
+      .logic { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .logic article { min-height: 218px; padding: 22px; border: 1px solid rgba(255,255,255,.12); background: #0d1017; }
+      .logic b { display: block; margin-bottom: 18px; color: #d6b765; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+      .logic h3 { margin: 0 0 12px; font-size: 28px; font-weight: 450; letter-spacing: -.025em; }
+      .logic p, .logic li { color: #a9afba; font-size: 15px; line-height: 1.5; }
+      .logic ul { margin: 0; padding-left: 18px; }
+      .decision { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+      .decision div { padding: 24px; border-left: 3px solid #d6b765; background: #11131a; }
+      .decision h3 { margin: 0 0 10px; font-size: 20px; }
+      .decision p { margin: 0; color: #b5bac4; line-height: 1.55; }
+      .removed { border-left-color: #5d6370 !important; }
+      @media (max-width: 900px) {
+        main { width: min(100% - 32px, 1500px); padding-top: 40px; }
+        header, .refs, .logic, .decision { grid-template-columns: 1fr; }
+        .evidence { grid-template-columns: 1fr 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <span class="eyebrow">Analytical reference board · Section 02</span>
+          <h1>Из разрозненных действий — в одну практику</h1>
+        </div>
+        <p class="brief">Board фиксирует только происхождение композиции и motion-логики. Реальный ElevenHouse UI остаётся неизменяемым source of truth; маркетинговая сцена меняет лишь crop, масштаб, положение и глубину.</p>
+      </header>
+
+      <section>
+        <h2>Reference ownership</h2>
+        <div class="refs">
+          <figure>
+            <img src="assets/mesh3d-live-2026-09-02.png" alt="Live screenshot Mesh3D" />
+            <figcaption><strong>R6 · Mesh3D</strong>Берём spatial corridor и выраженную глубину: объекты приходят из разных z-планов. Не берём зелёную палитру, частицы, брендинг и literal tunnel.</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/nothin-live-2026-09-02.png" alt="Live screenshot Nothin'" />
+            <figcaption><strong>R7 · Nothin'</strong>Берём резкую смену композиционного режима: из пространственного Hero — в сдержанную объектную сцену. Не берём сканированное сердце, логотип и монохромную айдентику.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <h2>ElevenHouse evidence · exact fragments</h2>
+        <div class="evidence">
+          <figure class="calendar"><img src="assets/eh-p01-calendar.png" alt="ElevenHouse calendar" /><figcaption><strong>EH-P01</strong>Запись, время, видеосессия.</figcaption></figure>
+          <figure class="finance"><img src="assets/eh-p03-finance.png" alt="ElevenHouse finance" /><figcaption><strong>EH-P03</strong>Оплата и операции.</figcaption></figure>
+          <figure class="funnel"><img src="assets/eh-p04-funnel.png" alt="ElevenHouse funnel" /><figcaption><strong>EH-P04</strong>Связанные узлы сценария.</figcaption></figure>
+          <figure class="products"><img src="assets/eh-p05-products.png" alt="ElevenHouse products" /><figcaption><strong>EH-P05</strong>Продукты и формат работы.</figcaption></figure>
+          <figure class="journal"><img src="assets/eh-p09-journal.png" alt="ElevenHouse journal" /><figcaption><strong>EH-P09</strong>Запись и ответ в сопровождении.</figcaption></figure>
+        </div>
+      </section>
+
+      <section>
+        <h2>Composition and motion implication</h2>
+        <div class="logic">
+          <article><b>01 · Dispersed</b><h3>Несвязанные планы</h3><ul><li>5–7 evidence crops, разные scale и z</li><li>асимметричный центр тяжести</li><li>широкое отрицательное пространство под copy</li></ul></article>
+          <article><b>02 · Recognition</b><h3>Один ритм</h3><ul><li>фрагменты выравниваются по общей оси</li><li>background depth затихает</li><li>каждый crop остаётся читаемым и документальным</li></ul></article>
+          <article><b>03 · System</b><h3>Единая плоскость</h3><ul><li>финальный workspace строится из реальных экранов</li><li>иерархия: copy → product plane → supporting fragments</li><li>движение обратимо и не блокирует scroll</li></ul></article>
+        </div>
+      </section>
+
+      <section>
+        <h2>Design check</h2>
+        <div class="decision">
+          <div><h3>Оставлено</h3><p>Spatial convergence обоснован R6; смена режима — R7; все продуктовые объекты взяты только из EH-P01/P03/P04/P05/P09. Цвет и UI anatomy не перерабатываются.</p></div>
+          <div class="removed"><h3>Удалено до кода</h3><p>Вихрь, wormhole, частицы, сторонние logos, fake message windows, придуманный dashboard, декоративные glow-карточки и любой state, которого нет в product evidence.</p></div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
