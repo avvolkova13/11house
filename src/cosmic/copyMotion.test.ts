@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   easeOutCubic,
   getDirectedSnapTarget,
+  getIntroGlyphDepth,
   getSettleDuration,
   getStageTravelDirection,
 } from './copyMotion'
@@ -46,5 +47,30 @@ describe('getSettleDuration', () => {
 describe('getStageTravelDirection', () => {
   it('alternates left-to-right and right-to-left for consecutive headings', () => {
     expect([0, 1, 2, 3].map(getStageTravelDirection)).toEqual([1, -1, 1, -1])
+  })
+})
+
+describe('getIntroGlyphDepth', () => {
+  it('pushes an outgoing heading toward the viewer', () => {
+    const motion = getIntroGlyphDepth(-0.7, 0.5)
+
+    expect(motion.translateZ).toBeGreaterThan(60)
+    expect(motion.scale).toBeGreaterThan(1.1)
+    expect(motion.blur).toBeGreaterThan(0)
+  })
+
+  it('keeps an incoming heading behind the focal plane', () => {
+    const motion = getIntroGlyphDepth(0.7, 0.5)
+
+    expect(motion.translateZ).toBeLessThan(-40)
+    expect(motion.scale).toBeLessThan(1)
+  })
+
+  it('is perfectly sharp and neutral at the active stage', () => {
+    expect(getIntroGlyphDepth(0, 0.5)).toEqual({
+      translateZ: 0,
+      scale: 1,
+      blur: 0,
+    })
   })
 })

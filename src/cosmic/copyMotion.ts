@@ -17,3 +17,28 @@ export const getSettleDuration = (distance: number) => (
 export const getStageTravelDirection = (stageIndex: number): ScrollDirection => (
   Math.abs(stageIndex) % 2 === 0 ? 1 : -1
 )
+
+export type IntroGlyphDepth = {
+  translateZ: number
+  scale: number
+  blur: number
+}
+
+export const getIntroGlyphDepth = (
+  stageOffset: number,
+  stagger: number,
+): IntroGlyphDepth => {
+  const distance = Math.min(1, Math.abs(stageOffset))
+  if (distance === 0) return { translateZ: 0, scale: 1, blur: 0 }
+
+  const outgoing = stageOffset < 0
+  const amount = easeOutCubic(distance)
+
+  return {
+    translateZ: (outgoing ? 1 : -1) * amount * (92 + stagger * 44),
+    scale: outgoing
+      ? 1 + amount * (0.18 + stagger * 0.06)
+      : 1 - amount * (0.14 + stagger * 0.04),
+    blur: amount * (0.35 + stagger * 1.15),
+  }
+}

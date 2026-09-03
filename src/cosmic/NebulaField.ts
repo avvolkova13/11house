@@ -22,6 +22,7 @@ export class NebulaField {
   private readonly sharedTunnelPresentation = { value: 0 }
   private readonly sharedTunnelDive = { value: 0 }
   private readonly sharedVelocity = { value: 0 }
+  private readonly sharedIntroEnergy = { value: 0 }
   private displayTunnelMix = 0
   private displayTunnelPresentation = 0
   private displayTunnelDive = 0
@@ -116,6 +117,7 @@ export class NebulaField {
         uTunnelPresentation: this.sharedTunnelPresentation,
         uTunnelDive: this.sharedTunnelDive,
         uVelocity: this.sharedVelocity,
+        uIntroEnergy: this.sharedIntroEnergy,
         uPointer: this.sharedPointer,
         uPixelRatio: { value: pixelRatio },
         uPointColor: { value: new THREE.Color(0xb27c3e) },
@@ -248,6 +250,10 @@ export class NebulaField {
     tunnelPresentation: number,
     tunnelDive: number,
     velocity: number,
+    introEnergy: number,
+    tunnelSurfaceDepth: number,
+    tunnelScale: number,
+    tunnelOrbit: number,
   ) {
     this.sharedTime.value = elapsed
     this.sharedTravel.value = travel
@@ -274,6 +280,7 @@ export class NebulaField {
     this.sharedTunnelPresentation.value = this.displayTunnelPresentation
     this.sharedTunnelDive.value = this.displayTunnelDive
     this.sharedVelocity.value = this.reducedMotion ? 0 : velocity
+    this.sharedIntroEnergy.value = this.reducedMotion ? 0 : introEnergy
     const target = !this.reducedMotion && pointerActive && this.displayTunnelMix < 0.12
       ? this.projectPointer()
       : null
@@ -281,15 +288,24 @@ export class NebulaField {
     this.updateInteractionMap()
     const tunnelInfluence = THREE.MathUtils.smoothstep(this.displayTunnelMix, 0.18, 0.72)
     const formedSurfaceZ = THREE.MathUtils.lerp(-109, -118, tunnelInfluence)
-    const surfaceZ = THREE.MathUtils.lerp(
+    const targetSurfaceZ = THREE.MathUtils.lerp(
       formedSurfaceZ,
-      -173,
+      tunnelSurfaceDepth,
       this.displayTunnelPresentation,
     )
+    const surfaceZ = damp(this.surface.position.z, targetSurfaceZ, 4.2, dt)
     this.surface.position.z = surfaceZ
     this.particles.position.z = surfaceZ
     this.surface.material.depthWrite = this.displayTunnelMix < 0.34
-    this.group.rotation.z = Math.sin(elapsed * 0.035) * THREE.MathUtils.lerp(0.0025, 0.012, tunnelInfluence)
+    this.group.rotation.z = Math.sin(elapsed * 0.035) * 0.0025
+      + tunnelOrbit * this.displayTunnelPresentation
+    const targetScale = THREE.MathUtils.lerp(
+      1,
+      tunnelScale,
+      this.displayTunnelPresentation,
+    )
+    const displayScale = damp(this.group.scale.x, targetScale, 4.2, dt)
+    this.group.scale.setScalar(displayScale)
     this.group.position.x = pointerX * THREE.MathUtils.lerp(0.52, 0.26, tunnelInfluence)
     this.group.position.y = pointerY * THREE.MathUtils.lerp(0.18, 0.12, tunnelInfluence)
   }

@@ -87,24 +87,29 @@ const terrainNoise = /* glsl */ `
     );
     float finalDepth = depth;
     float finalDepthEase = pow(finalDepth, 0.82);
-    float finalTwist = finalDepthEase * 2.34
-      + sin(finalDepth * 8.1 + uTime * 0.12 + flow + flight * 2.1) * 0.22
-      - finalDepth * 0.23;
+    float finalTwist = finalDepthEase * 6.4
+      + sin(finalDepth * 8.1 + uTime * 0.12 + flow + flight * 2.1) * 0.28
+      - finalDepth * 0.18;
     float finalAngle = lane * 3.14159265 + finalTwist - 1.57079633;
     float finalAngularNoise = sin(finalAngle * 3.0 + finalDepth * 7.8) * 0.048
       + sin(finalAngle * 7.0 - finalDepth * 12.7) * 0.022
       + sin(finalAngle * 11.0 + finalDepth * 4.4) * 0.01;
-    float finalRadius = mix(88.0, 4.6, finalDepthEase)
+    float finalShoulder = smoothstep(0.0, 0.68, finalDepth);
+    float finalTaper = smoothstep(0.68, 1.0, finalDepth);
+    float finalBodyRadius = mix(88.0, 62.0, finalShoulder);
+    float finalRadius = mix(finalBodyRadius, 6.2, finalTaper)
       * (1.0 + finalAngularNoise + breathing * 0.7);
-    float finalBendX = -12.0 + 84.0 * pow(finalDepth, 1.35)
-      + sin(finalDepth * 4.7 + uTime * 0.07) * 1.25 * finalDepth;
-    float finalBendZ = -10.0 + 75.0 * pow(finalDepth, 1.28)
-      + cos(finalDepth * 4.1 - uTime * 0.06) * 0.9 * finalDepth;
-    float referenceScale = mix(0.52, 0.46, flight);
+    float finalCenterArc = sin(finalDepth * 3.14159265);
+    float finalCenterEnvelope = finalDepth * (1.0 - finalDepth);
+    float finalBendX = -4.0 * (1.0 - finalDepth) + finalCenterArc * 14.0
+      + sin(finalDepth * 4.7 + uTime * 0.07) * 1.4 * finalCenterEnvelope;
+    float finalBendZ = -4.0 * (1.0 - finalDepth) + finalDepth * 26.0 + finalCenterArc * 8.0
+      + cos(finalDepth * 4.1 - uTime * 0.06) * 1.2 * finalCenterEnvelope;
+    float referenceScale = 0.52;
     vec3 referenceTunnel = vec3(
       finalBendX + cos(finalAngle) * finalRadius * referenceScale,
       rawPosition.y,
-      finalBendZ + sin(finalAngle) * finalRadius * 0.72 * referenceScale
+      finalBendZ + sin(finalAngle) * finalRadius * 1.08 * referenceScale
     );
     vec3 tunnel = mix(legacyTunnel, referenceTunnel, presentation);
     return mix(terrain, tunnel, formation);
@@ -156,12 +161,12 @@ export const terrainVertexShader = /* glsl */ `
     float angle = lane * 3.14159265 + twist - 1.57079633;
     float presentation = clamp(uTunnelPresentation, 0.0, 1.0);
     float finalDepth = depth;
-    float finalTwist = pow(finalDepth, 0.82) * 2.34
-      + sin(finalDepth * 8.1 + uTime * 0.12 + uTravel * 0.035 + uTunnelDive * 2.1) * 0.22
-      - finalDepth * 0.23;
+    float finalTwist = pow(finalDepth, 0.82) * 6.4
+      + sin(finalDepth * 8.1 + uTime * 0.12 + uTravel * 0.035 + uTunnelDive * 2.1) * 0.28
+      - finalDepth * 0.18;
     float finalAngle = lane * 3.14159265 + finalTwist - 1.57079633;
     vec3 legacyTunnelNormal = normalize(vec3(cos(angle), 0.0, sin(angle) * 0.74));
-    vec3 referenceTunnelNormal = normalize(vec3(cos(finalAngle), 0.0, sin(finalAngle) * 0.72));
+    vec3 referenceTunnelNormal = normalize(vec3(cos(finalAngle), 0.0, sin(finalAngle) * 1.08));
     vec3 tunnelNormal = normalize(mix(legacyTunnelNormal, referenceTunnelNormal, presentation));
     vec3 objectNormal = normalize(mix(terrainNormal, tunnelNormal, formation));
 
@@ -254,6 +259,7 @@ export const terrainPointVertexShader = /* glsl */ `
   uniform float uTunnelPresentation;
   uniform float uTunnelDive;
   uniform float uVelocity;
+  uniform float uIntroEnergy;
   uniform vec2 uPointer;
   uniform float uPixelRatio;
   attribute float aInteraction;
@@ -269,8 +275,16 @@ export const terrainPointVertexShader = /* glsl */ `
   void main() {
     float formation = easeSurface(uTunnelMix);
     float interaction = aInteraction * (1.0 - formation);
-    float height = baseTerrainHeight(position.xy) + interaction;
-    vec3 transformed = morphSurface(position.xy, height);
+    float presentation = clamp(uTunnelPresentation, 0.0, 1.0);
+    float baseDepth = clamp((position.y + 132.5) / 265.0, 0.0, 1.0);
+    float flowOffset = (uTime * 0.012 + uTravel * 0.0045) * presentation;
+    float flowingDepth = fract(baseDepth + flowOffset);
+    vec2 flowingPosition = vec2(
+      position.x,
+      mix(position.y, flowingDepth * 265.0 - 132.5, formation * presentation)
+    );
+    float height = baseTerrainHeight(flowingPosition) + interaction;
+    vec3 transformed = morphSurface(flowingPosition, height);
     transformed.z += mix(0.16, 0.08, formation);
     vec4 worldPosition = modelMatrix * vec4(transformed, 1.0);
     vec4 viewPosition = viewMatrix * worldPosition;
@@ -281,7 +295,7 @@ export const terrainPointVertexShader = /* glsl */ `
     vTunnelMix = formation;
     vEnergy = smoothstep(-5.0, 9.0, height) * 0.55 + randomValue * 0.45
       + vInteraction * 0.62;
-    float depth = clamp((position.y + 132.5) / 265.0, 0.0, 1.0);
+    float depth = clamp((flowingPosition.y + 132.5) / 265.0, 0.0, 1.0);
     float presentedDepth = depth;
     float halo = exp(-pow((presentedDepth - 0.72) / 0.24, 2.0));
     float tunnelThreshold = mix(0.88, 0.78, smoothstep(0.62, 1.0, depth));
@@ -309,16 +323,15 @@ export const terrainPointVertexShader = /* glsl */ `
       * mix(1.0, (0.34 + halo * 0.98) * sweep, uTunnelPresentation);
     vec2 ndc = projected.xy / max(projected.w, 0.0001);
     vPointAngle = atan(ndc.y - 0.18, ndc.x - 0.12);
-    vPointStretch = mix(
-      1.0,
-      1.0 + min(abs(uVelocity), 14.0) * 0.11 + uTunnelDive * 0.34,
-      uTunnelPresentation
-    );
+    float introStretch = 1.0 + abs(uIntroEnergy) * 2.15;
+    float tunnelStretch = 1.0 + min(abs(uVelocity), 14.0) * 0.11
+      + uTunnelDive * 0.34;
+    vPointStretch = mix(introStretch, tunnelStretch, uTunnelPresentation);
     vTunnelDepth = presentedDepth;
     gl_PointSize = (0.42 + randomValue * 0.82 + vEnergy * 0.48 + vInteraction * 0.34)
       * uPixelRatio * pulse * (125.0 / max(66.0, -viewPosition.z))
       * mix(1.0, 0.58 + min(abs(uVelocity), 12.0) * 0.028, formation)
-      * mix(1.0, vPointStretch, uTunnelPresentation);
+      * vPointStretch;
     gl_Position = projected;
   }
 `

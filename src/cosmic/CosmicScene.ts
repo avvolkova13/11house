@@ -9,7 +9,12 @@ import {
   getTunnelMix,
   getTunnelPresentation,
 } from '../hero/heroNarrative'
-import { getTunnelMotion, getTunnelViewportFraming } from './tunnelMotion'
+import {
+  getTunnelIdleMotion,
+  getTunnelMotion,
+  getTunnelViewportFraming,
+} from './tunnelMotion'
+import { getIntroScrollMotion } from './introMotion'
 
 type CosmicSceneOptions = {
   reducedMotion: boolean
@@ -155,11 +160,16 @@ export class CosmicScene {
       this.scrollVelocity = decayVelocity(this.scrollVelocity, 3.3, dt)
     }
 
-    const speed = getTravelSpeed(this.scrollVelocity, this.reducedMotion)
-    this.travel += speed * dt
-    const streak = this.reducedMotion
+    const baseStreak = this.reducedMotion
       ? 0
       : THREE.MathUtils.smoothstep(Math.abs(this.scrollVelocity), 0.7, 9.5)
+    const introMotion = getIntroScrollMotion({
+      progress: this.narrativeProgress,
+      velocity: this.scrollVelocity,
+      viewportWidth: this.width,
+      reducedMotion: this.reducedMotion,
+    })
+    const streak = Math.max(baseStreak, introMotion.streak)
     const tunnelMix = getTunnelMix(this.narrativeProgress)
     const tunnelPresentation = getTunnelPresentation(this.narrativeProgress)
     const tunnelDive = getTunnelDive(this.narrativeProgress)
@@ -172,6 +182,15 @@ export class CosmicScene {
       pointerY: this.pointer.y,
       reducedMotion: this.reducedMotion,
     })
+    const tunnelIdle = getTunnelIdleMotion({
+      elapsed,
+      presentation: tunnelPresentation,
+      reducedMotion: this.reducedMotion,
+    })
+    const speed = getTravelSpeed(this.scrollVelocity, this.reducedMotion)
+      + introMotion.travelBoost
+      + tunnelIdle.flowSpeed
+    this.travel += speed * dt
     const tunnelFraming = getTunnelViewportFraming(this.width)
     this.currentClearColor.lerpColors(
       this.heroClearColor,
@@ -185,15 +204,19 @@ export class CosmicScene {
 
     const idleX = Math.sin(elapsed * 0.09) * 0.12
     const idleY = Math.cos(elapsed * 0.075) * 0.08
-    const targetX = this.pointer.x * 3.25 + idleX
+    const targetX = this.pointer.x * 3.25 + idleX + tunnelIdle.cameraX
       + tunnelMotion.cameraX * tunnelPresentation * tunnelFraming.cameraScale
     const targetY = 5.4 + this.pointer.y * 1.72 + idleY
+      + introMotion.cameraY + tunnelIdle.cameraY
       + tunnelMotion.cameraY * tunnelPresentation * tunnelFraming.cameraScale
     this.camera.position.x = damp(this.camera.position.x, targetX, 2.6, dt)
     this.camera.position.y = damp(this.camera.position.y, targetY, 2.6, dt)
     this.camera.position.z = damp(
       this.camera.position.z,
-      18 - this.scrollVelocity * 0.085 + tunnelMotion.cameraZ * tunnelPresentation,
+      18 - this.scrollVelocity * 0.085
+        + introMotion.cameraZ
+        + tunnelMotion.cameraZ * tunnelPresentation
+        + tunnelIdle.cameraZ,
       3.4,
       dt,
     )
@@ -205,13 +228,13 @@ export class CosmicScene {
     )
     this.camera.rotation.x = damp(
       this.camera.rotation.x,
-      -0.13 + this.pointer.y * 0.056 - tunnelDive * 0.022,
+      -0.13 + this.pointer.y * 0.056 + introMotion.pitch - tunnelDive * 0.022,
       3.1,
       dt,
     )
     this.camera.rotation.z = damp(
       this.camera.rotation.z,
-      -this.pointer.x * 0.007 + tunnelMotion.roll * tunnelMix,
+      -this.pointer.x * 0.007 + introMotion.roll + tunnelMotion.roll * tunnelMix,
       2.4,
       dt,
     )
@@ -224,7 +247,8 @@ export class CosmicScene {
     )
     this.world.position.y = damp(
       this.world.position.y,
-      this.pointer.y * 0.38 + tunnelFraming.worldY * tunnelPresentation,
+      this.pointer.y * 0.38 + introMotion.horizonY
+        + tunnelFraming.worldY * tunnelPresentation,
       1.9,
       dt,
     )
@@ -246,6 +270,10 @@ export class CosmicScene {
       tunnelPresentation,
       tunnelDive,
       this.scrollVelocity,
+      introMotion.signedEnergy,
+      tunnelMotion.surfaceDepth,
+      tunnelMotion.openingScale * tunnelIdle.scale,
+      tunnelIdle.orbit,
     )
     this.post.render(streak)
   }

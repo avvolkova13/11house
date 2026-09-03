@@ -18,6 +18,7 @@ export type TunnelMotionState = TunnelPhase & {
   vanishingX: number
   vanishingY: number
   openingScale: number
+  surfaceDepth: number
   starOpacity: number
   travelImpulse: number
   particleStretch: number
@@ -27,6 +28,21 @@ export type TunnelMotionState = TunnelPhase & {
   cameraZ: number
   contourFrequency: number
   haloDensity: number
+}
+
+export type TunnelIdleMotionInput = {
+  elapsed: number
+  presentation: number
+  reducedMotion: boolean
+}
+
+export type TunnelIdleMotionState = {
+  orbit: number
+  flowSpeed: number
+  cameraX: number
+  cameraY: number
+  cameraZ: number
+  scale: number
 }
 
 export type SurfacePointInput = {
@@ -69,8 +85,8 @@ const mixValue = (from: number, to: number, progress: number) => (
 
 export const getTunnelViewportFraming = (width: number): TunnelViewportFraming => (
   width < 700
-    ? { cameraScale: 0.18, worldX: -12, worldY: -8, yaw: -0.06 }
-    : { cameraScale: 1, worldX: 0, worldY: 0, yaw: 0.035 }
+    ? { cameraScale: 0.18, worldX: 0, worldY: 0, yaw: 0 }
+    : { cameraScale: 1, worldX: 0, worldY: 0, yaw: 0 }
 )
 
 export const getTunnelPhase = (mix: number): TunnelPhase => {
@@ -105,7 +121,8 @@ export const getTunnelMotion = ({
     ...phase,
     vanishingX: 36 + pointerX * 3.2 * pointerInfluence,
     vanishingY: 31 + pointerY * 2.1 * pointerInfluence,
-    openingScale: mixValue(1.28, 0.88, phase.dive) * mixValue(1, 0.82, presentation),
+    openingScale: mixValue(1, 1.08, presentation),
+    surfaceDepth: mixValue(-118, -122, presentation),
     starOpacity: mixValue(1, 0.28, phase.dive) * mixValue(1, 0.68, presentation),
     travelImpulse: reducedMotion
       ? 0
@@ -126,13 +143,43 @@ export const getTunnelMotion = ({
       ),
     cameraX: cameraFlight === 0
       ? 0
-      : cameraFlight * -4.2 - Math.sin(cameraFlight * Math.PI) * 0.55,
+      : Math.sin(cameraFlight * Math.PI) * -2.4,
     cameraY: cameraFlight === 0
       ? 0
-      : cameraFlight * -3.8 - Math.sin(cameraFlight * Math.PI * 0.8) * 0.36,
-    cameraZ: cameraFlight === 0 ? 0 : cameraFlight * -18,
+      : Math.sin(cameraFlight * Math.PI) * -1.8,
+    cameraZ: cameraFlight === 0 ? 0 : cameraFlight * -4.5,
     contourFrequency: mixValue(112, 120, presentation),
     haloDensity: mixValue(0.16, 0.72, presentation),
+  }
+}
+
+export const getTunnelIdleMotion = ({
+  elapsed,
+  presentation: presentationInput,
+  reducedMotion,
+}: TunnelIdleMotionInput): TunnelIdleMotionState => {
+  if (reducedMotion) {
+    return {
+      orbit: 0,
+      flowSpeed: 0,
+      cameraX: 0,
+      cameraY: 0,
+      cameraZ: 0,
+      scale: 1,
+    }
+  }
+
+  const presentation = clamp01(presentationInput)
+
+  return {
+    orbit: presentation * (
+      elapsed * 0.045 + Math.sin(elapsed * 0.31) * 0.018
+    ),
+    flowSpeed: presentation * (0.96 + Math.sin(elapsed * 0.27) * 0.08),
+    cameraX: presentation * Math.sin(elapsed * 0.16) * 0.32,
+    cameraY: presentation * Math.cos(elapsed * 0.13) * 0.2,
+    cameraZ: presentation * Math.sin(elapsed * 0.11) * 0.34,
+    scale: 1 + presentation * (0.08 + Math.sin(elapsed * 0.19) * 0.008),
   }
 }
 
@@ -171,23 +218,28 @@ export const sampleSurfacePoint = ({
   const tunnelZ = bendZ + Math.sin(angle) * radius * 0.74
   const finalDepth = depth
   const finalDepthEase = Math.pow(finalDepth, 0.82)
-  const finalTwist = finalDepthEase * 2.34
-    + Math.sin(finalDepth * 8.1 + elapsed * 0.12 + flow + dive * 2.1) * 0.22
-    - finalDepth * 0.23
+  const finalTwist = finalDepthEase * 6.4
+    + Math.sin(finalDepth * 8.1 + elapsed * 0.12 + flow + dive * 2.1) * 0.28
+    - finalDepth * 0.18
   const finalAngle = lane * Math.PI + finalTwist - Math.PI * 0.5
   const finalAngularNoise = Math.sin(finalAngle * 3 + finalDepth * 7.8) * 0.048
     + Math.sin(finalAngle * 7 - finalDepth * 12.7) * 0.022
     + Math.sin(finalAngle * 11 + finalDepth * 4.4) * 0.01
-  const finalRadius = mixValue(88, 4.6, finalDepthEase)
+  const finalShoulder = smoothstep(0, 0.68, finalDepth)
+  const finalTaper = smoothstep(0.68, 1, finalDepth)
+  const finalBodyRadius = mixValue(88, 62, finalShoulder)
+  const finalRadius = mixValue(finalBodyRadius, 6.2, finalTaper)
     * (1 + finalAngularNoise + breathing * 0.7)
-  const finalBendX = -12 + 84 * Math.pow(finalDepth, 1.35)
-    + Math.sin(finalDepth * 4.7 + elapsed * 0.07) * 1.25 * finalDepth
-  const finalBendZ = -10 + 75 * Math.pow(finalDepth, 1.28)
-    + Math.cos(finalDepth * 4.1 - elapsed * 0.06) * 0.9 * finalDepth
-  const referenceScale = mixValue(0.52, 0.46, dive)
+  const finalCenterArc = Math.sin(finalDepth * Math.PI)
+  const finalCenterEnvelope = finalDepth * (1 - finalDepth)
+  const finalBendX = -4 * (1 - finalDepth) + finalCenterArc * 14
+    + Math.sin(finalDepth * 4.7 + elapsed * 0.07) * 1.4 * finalCenterEnvelope
+  const finalBendZ = -4 * (1 - finalDepth) + finalDepth * 26 + finalCenterArc * 8
+    + Math.cos(finalDepth * 4.1 - elapsed * 0.06) * 1.2 * finalCenterEnvelope
+  const referenceScale = 0.52
   const referenceTunnelX = finalBendX + Math.cos(finalAngle) * finalRadius * referenceScale
   const referenceTunnelZ = finalBendZ
-    + Math.sin(finalAngle) * finalRadius * 0.72 * referenceScale
+    + Math.sin(finalAngle) * finalRadius * 1.08 * referenceScale
   const presentedTunnelX = mixValue(tunnelX, referenceTunnelX, presentation)
   const presentedTunnelZ = mixValue(tunnelZ, referenceTunnelZ, presentation)
   const terrainZ = Math.sin(x * 0.08 + y * 0.025) * 2.2

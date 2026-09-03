@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { CosmicScene } from '../cosmic/CosmicScene'
 import type { HeroScrollAdapter } from '../scroll/HeroScrollAdapter'
 import type { HeroHandoffPhase } from '../scroll/heroHandoff'
-import { getStageTravelDirection } from '../cosmic/copyMotion'
+import { getIntroGlyphDepth, getStageTravelDirection } from '../cosmic/copyMotion'
 import {
   HERO_LAST_STAGE_INDEX,
   HERO_LAST_VISUAL_INDEX,
@@ -50,11 +50,14 @@ const getFragmentStyle = (
   const driftY = direction * (10 + randomUnit(stageIndex, glyphIndex, fragmentIndex, 4) * 76)
     + (fragmentIndex - 1) * (24 + randomUnit(stageIndex, glyphIndex, fragmentIndex, 5) * 34)
   const rotation = (randomUnit(stageIndex, glyphIndex, fragmentIndex, 6) - 0.5) * 6
+  const depth = getIntroGlyphDepth(stageOffset, stagger)
+  const blur = Math.max(spread * (0.25 + stagger * 1.15), depth.blur)
+  const scale = (1 - spread * 0.055) * depth.scale
 
   return {
     opacity,
-    filter: `blur(${spread * (0.25 + stagger * 1.15)}px)`,
-    transform: `translate3d(${driftX * spread}px, ${driftY * spread}px, 0) rotate(${rotation * spread}deg) scale(${1 - spread * 0.055})`,
+    filter: `blur(${blur}px)`,
+    transform: `translate3d(${driftX * spread}px, ${driftY * spread}px, ${depth.translateZ}px) rotate(${rotation * spread}deg) scale(${scale})`,
   }
 }
 
