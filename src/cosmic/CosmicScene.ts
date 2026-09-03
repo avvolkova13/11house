@@ -11,6 +11,7 @@ import {
 } from '../hero/heroNarrative'
 import {
   getTunnelIdleMotion,
+  getTunnelBackdrop,
   getTunnelMotion,
   getTunnelViewportFraming,
 } from './tunnelMotion'
@@ -28,8 +29,6 @@ export class CosmicScene {
   private readonly renderer: THREE.WebGLRenderer
   private readonly scene = new THREE.Scene()
   private readonly camera = new THREE.PerspectiveCamera(58, 1, 0.1, 520)
-  private readonly heroClearColor = new THREE.Color(0x010308)
-  private readonly tunnelClearColor = new THREE.Color(0x000102)
   private readonly currentClearColor = new THREE.Color(0x010308)
   private readonly world = new THREE.Group()
   private readonly stars: StarField
@@ -192,10 +191,12 @@ export class CosmicScene {
       + tunnelIdle.flowSpeed
     this.travel += speed * dt
     const tunnelFraming = getTunnelViewportFraming(this.width)
-    this.currentClearColor.lerpColors(
-      this.heroClearColor,
-      this.tunnelClearColor,
-      tunnelMotion.collapse,
+    const backdrop = getTunnelBackdrop(tunnelMotion.collapse)
+    this.currentClearColor.setRGB(
+      backdrop.r / 255,
+      backdrop.g / 255,
+      backdrop.b / 255,
+      THREE.SRGBColorSpace,
     )
     this.renderer.setClearColor(this.currentClearColor, 1)
     if (this.scene.fog instanceof THREE.FogExp2) {

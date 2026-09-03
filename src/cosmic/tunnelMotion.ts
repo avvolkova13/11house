@@ -68,6 +68,12 @@ export type TunnelViewportFraming = {
   yaw: number
 }
 
+export type TunnelBackdrop = {
+  r: number
+  g: number
+  b: number
+}
+
 const clamp = (value: number, min: number, max: number) => (
   Math.min(Math.max(value, min), max)
 )
@@ -82,6 +88,15 @@ const smoothstep = (start: number, end: number, value: number) => {
 const mixValue = (from: number, to: number, progress: number) => (
   from + (to - from) * progress
 )
+
+export const getTunnelBackdrop = (mix: number): TunnelBackdrop => {
+  void mix
+  return {
+    r: 1,
+    g: 3,
+    b: 8,
+  }
+}
 
 export const getTunnelViewportFraming = (width: number): TunnelViewportFraming => (
   width < 700

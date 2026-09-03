@@ -242,11 +242,19 @@ export const terrainFragmentShader = /* glsl */ `
     );
     float haze = (0.008 + grazing * 0.022 + hazeNoise * 0.006)
       * depthEnvelope * presentation;
-    float tunnelAlpha = ((contourLine * 0.31 + longitudinalLine + 0.006)
+    float reliefMemory = (0.006 + diffuse * 0.035 + grazing * 0.045 + contour * diffuse * 0.018)
+      * depthEnvelope * smoothstep(0.28, 0.76, vTunnelMix)
+      * mix(1.0, 0.62, presentation);
+    float tunnelAlpha = ((contourLine * 0.31 + longitudinalLine + 0.008)
       * smoothstep(0.36, 0.74, vTunnelMix)
-      * mix(0.88, 1.34, vTunnelDepth) * presentationMask) + haze;
-    vec3 tunnelColor = mix(uHotColor, vec3(0.29, 0.25, 0.43), presentation * 0.26);
-    color = mix(color, tunnelColor * (0.68 + diffuse * 0.18), vTunnelMix * 0.88);
+      * mix(0.88, 1.34, vTunnelDepth) * presentationMask) + haze + reliefMemory;
+    vec3 tunnelColor = mix(uRidgeColor * 1.24, vec3(0.10, 0.21, 0.46), presentation * 0.64);
+    tunnelColor += uHotColor * contour * diffuse * mix(0.10, 0.035, presentation);
+    color = mix(
+      color,
+      tunnelColor * (0.72 + diffuse * 0.32 + grazing * 0.18),
+      vTunnelMix * 0.84
+    );
     float alpha = mix(terrainAlpha, tunnelAlpha, vTunnelMix);
     gl_FragColor = vec4(color, alpha * uOpacity);
   }
@@ -358,8 +366,9 @@ export const terrainPointFragmentShader = /* glsl */ `
     float glow = smoothstep(0.50, 0.16, distanceToCenter);
     float alpha = (core + glow * 0.32) * vFade;
     if (alpha < 0.01) discard;
-    vec3 tunnelTint = mix(uPointColor, vec3(0.63, 0.52, 0.79), smoothstep(0.62, 1.0, vTunnelDepth) * 0.16);
-    vec3 color = tunnelTint * (0.42 + vEnergy * 0.72) * mix(1.0, 0.74, vTunnelMix);
+    vec3 tunnelTint = mix(uPointColor, vec3(0.30, 0.48, 0.88), vTunnelMix * 0.82);
+    tunnelTint = mix(tunnelTint, vec3(0.38, 0.50, 0.86), smoothstep(0.62, 1.0, vTunnelDepth) * 0.18);
+    vec3 color = tunnelTint * (0.42 + vEnergy * 0.72) * mix(1.0, 0.88, vTunnelMix);
     gl_FragColor = vec4(color, alpha * uOpacity);
   }
 `

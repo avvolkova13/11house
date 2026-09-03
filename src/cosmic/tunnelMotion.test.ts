@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import {
   getTunnelIdleMotion,
+  getTunnelBackdrop,
   getTunnelMotion,
   getTunnelPhase,
   getTunnelViewportFraming,
   sampleSurfacePoint,
 } from './tunnelMotion'
+
+describe('tunnel visual continuity', () => {
+  it('keeps the environment blue while the terrain becomes the tunnel', () => {
+    expect(getTunnelBackdrop(0)).toEqual({ r: 1, g: 3, b: 8 })
+    expect(getTunnelBackdrop(0.5)).toEqual(getTunnelBackdrop(0))
+    expect(getTunnelBackdrop(1)).toEqual(getTunnelBackdrop(0))
+  })
+})
 
 describe('Mesh-reference tunnel phases', () => {
   it('clamps progress and resolves terrain, collapse, and dive phases', () => {
