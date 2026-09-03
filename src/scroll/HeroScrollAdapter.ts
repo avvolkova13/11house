@@ -3,7 +3,7 @@ import {
   type HeroCorridorMetrics,
   type HeroScrollSnapshot,
 } from './PageScrollCoordinator'
-import { HERO_LAST_STAGE_INDEX } from '../hero/heroNarrative'
+import { HERO_LAST_VISUAL_INDEX } from '../hero/heroNarrative'
 
 export type HeroAdapterSnapshot = HeroScrollSnapshot & {
   heroDelta: number
@@ -47,7 +47,7 @@ export class HeroScrollAdapter {
       ? 0
       : ownsTravel
         ? snapshot.travelProgress
-        : HERO_LAST_STAGE_INDEX
+        : HERO_LAST_VISUAL_INDEX
     return {
       ...snapshot,
       heroDelta: ownsTravel ? snapshot.delta : 0,

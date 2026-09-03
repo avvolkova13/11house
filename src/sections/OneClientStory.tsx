@@ -127,7 +127,7 @@ export function OneClientStory() {
       <div className="client-story__sticky">
         <header className="client-story__header">
           <span>03 · Один клиент внутри ElevenHouse</span>
-          <h2 id="client-story-title">Давайте проведём через ElevenHouse одного клиента.</h2>
+          <h2 id="client-story-title" tabIndex={-1}>Давайте проведём через ElevenHouse одного клиента.</h2>
         </header>
 
         <div className="client-story__anchor" aria-label="Клиент Анна">

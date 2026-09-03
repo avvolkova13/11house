@@ -2,10 +2,14 @@ import * as THREE from 'three'
 import { NebulaField } from './NebulaField'
 import { PostProcessing } from './PostProcessing'
 import { StarField } from './StarField'
-import { CosmicTunnel } from './CosmicTunnel'
 import type { HeroScrollAdapter } from '../scroll/HeroScrollAdapter'
 import { clamp, damp, decayVelocity, getTravelSpeed } from './motion'
-import { getTunnelMix } from '../hero/heroNarrative'
+import {
+  getTunnelDive,
+  getTunnelMix,
+  getTunnelPresentation,
+} from '../hero/heroNarrative'
+import { getTunnelMotion, getTunnelViewportFraming } from './tunnelMotion'
 
 type CosmicSceneOptions = {
   reducedMotion: boolean
@@ -19,10 +23,12 @@ export class CosmicScene {
   private readonly renderer: THREE.WebGLRenderer
   private readonly scene = new THREE.Scene()
   private readonly camera = new THREE.PerspectiveCamera(58, 1, 0.1, 520)
+  private readonly heroClearColor = new THREE.Color(0x010308)
+  private readonly tunnelClearColor = new THREE.Color(0x000102)
+  private readonly currentClearColor = new THREE.Color(0x010308)
   private readonly world = new THREE.Group()
   private readonly stars: StarField
   private readonly nebula: NebulaField
-  private readonly tunnel: CosmicTunnel
   private readonly post: PostProcessing
   private readonly clock = new THREE.Clock()
   private raf = 0
@@ -73,8 +79,7 @@ export class CosmicScene {
     this.pixelRatio = this.getPixelRatio()
     this.stars = new StarField(window.innerWidth, window.innerHeight, this.pixelRatio)
     this.nebula = new NebulaField(this.camera, this.pixelRatio, this.reducedMotion)
-    this.tunnel = new CosmicTunnel(this.pixelRatio)
-    this.world.add(this.nebula.group, this.tunnel.group, this.stars.points)
+    this.world.add(this.nebula.group, this.stars.points)
 
     this.post = new PostProcessing(this.renderer, this.scene, this.camera)
     this.resize()
@@ -120,7 +125,6 @@ export class CosmicScene {
     this.post.setPixelRatio(nextPixelRatio)
     this.post.setSize(width, height)
     this.nebula.setPixelRatio(nextPixelRatio)
-    this.tunnel.setPixelRatio(nextPixelRatio)
   }
 
   private addListeners() {
@@ -157,21 +161,80 @@ export class CosmicScene {
       ? 0
       : THREE.MathUtils.smoothstep(Math.abs(this.scrollVelocity), 0.7, 9.5)
     const tunnelMix = getTunnelMix(this.narrativeProgress)
+    const tunnelPresentation = getTunnelPresentation(this.narrativeProgress)
+    const tunnelDive = getTunnelDive(this.narrativeProgress)
+    const tunnelMotion = getTunnelMotion({
+      mix: tunnelMix,
+      presentation: tunnelPresentation,
+      dive: tunnelDive,
+      velocity: this.scrollVelocity,
+      pointerX: this.pointer.x,
+      pointerY: this.pointer.y,
+      reducedMotion: this.reducedMotion,
+    })
+    const tunnelFraming = getTunnelViewportFraming(this.width)
+    this.currentClearColor.lerpColors(
+      this.heroClearColor,
+      this.tunnelClearColor,
+      tunnelMotion.collapse,
+    )
+    this.renderer.setClearColor(this.currentClearColor, 1)
+    if (this.scene.fog instanceof THREE.FogExp2) {
+      this.scene.fog.color.copy(this.currentClearColor)
+    }
 
     const idleX = Math.sin(elapsed * 0.09) * 0.12
     const idleY = Math.cos(elapsed * 0.075) * 0.08
     const targetX = this.pointer.x * 3.25 + idleX
+      + tunnelMotion.cameraX * tunnelPresentation * tunnelFraming.cameraScale
     const targetY = 5.4 + this.pointer.y * 1.72 + idleY
+      + tunnelMotion.cameraY * tunnelPresentation * tunnelFraming.cameraScale
     this.camera.position.x = damp(this.camera.position.x, targetX, 2.6, dt)
     this.camera.position.y = damp(this.camera.position.y, targetY, 2.6, dt)
-    this.camera.position.z = damp(this.camera.position.z, 18 - this.scrollVelocity * 0.085, 3.4, dt)
-    this.camera.rotation.y = damp(this.camera.rotation.y, -this.pointer.x * 0.086, 3.1, dt)
-    this.camera.rotation.x = damp(this.camera.rotation.x, -0.13 + this.pointer.y * 0.056, 3.1, dt)
-    this.camera.rotation.z = damp(this.camera.rotation.z, -this.pointer.x * 0.007, 2.4, dt)
+    this.camera.position.z = damp(
+      this.camera.position.z,
+      18 - this.scrollVelocity * 0.085 + tunnelMotion.cameraZ * tunnelPresentation,
+      3.4,
+      dt,
+    )
+    this.camera.rotation.y = damp(
+      this.camera.rotation.y,
+      -this.pointer.x * 0.086 + tunnelDive * tunnelFraming.yaw,
+      3.1,
+      dt,
+    )
+    this.camera.rotation.x = damp(
+      this.camera.rotation.x,
+      -0.13 + this.pointer.y * 0.056 - tunnelDive * 0.022,
+      3.1,
+      dt,
+    )
+    this.camera.rotation.z = damp(
+      this.camera.rotation.z,
+      -this.pointer.x * 0.007 + tunnelMotion.roll * tunnelMix,
+      2.4,
+      dt,
+    )
 
-    this.world.position.x = damp(this.world.position.x, this.pointer.x * 0.82, 1.9, dt)
-    this.world.position.y = damp(this.world.position.y, this.pointer.y * 0.38, 1.9, dt)
-    this.stars.update(elapsed, this.travel, streak, this.pixelRatio)
+    this.world.position.x = damp(
+      this.world.position.x,
+      this.pointer.x * 0.82 + tunnelFraming.worldX * tunnelPresentation,
+      1.9,
+      dt,
+    )
+    this.world.position.y = damp(
+      this.world.position.y,
+      this.pointer.y * 0.38 + tunnelFraming.worldY * tunnelPresentation,
+      1.9,
+      dt,
+    )
+    this.stars.update(
+      elapsed,
+      this.travel,
+      streak,
+      this.pixelRatio,
+      tunnelMotion.starOpacity,
+    )
     this.nebula.update(
       elapsed,
       this.pointer.x,
@@ -179,9 +242,11 @@ export class CosmicScene {
       this.travel,
       dt,
       this.pointerActive,
+      tunnelMix,
+      tunnelPresentation,
+      tunnelDive,
+      this.scrollVelocity,
     )
-    this.nebula.setOpacity(1 - tunnelMix)
-    this.tunnel.update(elapsed, this.travel, tunnelMix)
     this.post.render(streak)
   }
 
@@ -206,7 +271,6 @@ export class CosmicScene {
     this.removeListeners()
     this.stars.dispose()
     this.nebula.dispose()
-    this.tunnel.dispose()
     this.post.dispose()
     this.renderer.dispose()
   }

@@ -9,6 +9,7 @@ export const starVertexShader = /* glsl */ `
   uniform float uTravel;
   uniform float uStreak;
   uniform float uPixelRatio;
+  uniform float uOpacity;
 
   varying float vAlpha;
   varying float vTemperature;
@@ -38,7 +39,7 @@ export const starVertexShader = /* glsl */ `
     vec2 ndc = projected.xy / max(projected.w, 0.0001);
     vAngle = atan(ndc.y, ndc.x);
     float streakFade = 1.0 - uStreak * ${STAR_PROFILE.streakOpacityLoss.toFixed(2)};
-    vAlpha = twinkle * smoothstep(-236.0, -130.0, transformed.z) * streakFade;
+    vAlpha = twinkle * smoothstep(-236.0, -130.0, transformed.z) * streakFade * uOpacity;
     vTemperature = aTemperature;
     vStreak = uStreak;
   }

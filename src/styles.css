@@ -275,6 +275,76 @@ body::-webkit-scrollbar {
   color: rgba(213, 220, 230, 0.38);
 }
 
+.hero-tunnel-action {
+  position: absolute;
+  z-index: 8;
+  right: 0;
+  bottom: clamp(96px, 14vh, 156px);
+  left: 0;
+  display: flex;
+  justify-content: center;
+  opacity: var(--hero-cta-reveal, 0);
+  pointer-events: none;
+  transform: translate3d(0, calc((1 - var(--hero-cta-reveal, 0)) * 22px), 0);
+  transition: opacity 90ms linear, transform 120ms cubic-bezier(0.22, 0.72, 0.24, 1);
+  will-change: opacity, transform;
+}
+
+.hero-tunnel-action button {
+  min-width: 172px;
+  padding: 15px 26px 14px;
+  border: 1px solid rgba(226, 202, 121, 0.62);
+  border-radius: 999px;
+  background: rgba(5, 7, 14, 0.78);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.035), 0 18px 60px rgba(0, 0, 0, 0.36);
+  color: rgba(242, 241, 235, 0.96);
+  cursor: pointer;
+  font: 600 0.76rem/1 "Avenir Next", "Helvetica Neue", Helvetica, sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.hero-tunnel-action[data-interactive="true"] {
+  pointer-events: auto;
+}
+
+.hero-tunnel-action[data-interactive="true"] button:hover {
+  border-color: rgba(226, 202, 121, 0.94);
+  background: rgba(226, 202, 121, 0.12);
+  color: #fff7d9;
+  transform: translateY(-2px);
+}
+
+.hero-tunnel-action button:focus-visible {
+  outline: 2px solid #e2ca79;
+  outline-offset: 5px;
+}
+
+.hero-handoff-cover {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
+  background: #010308;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero-handoff-cover[data-phase="covering"] {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 200ms cubic-bezier(0.55, 0, 0.8, 0.34);
+}
+
+.hero-handoff-cover[data-phase="story"] {
+  animation: hero-handoff-release 700ms 100ms cubic-bezier(0.2, 0.72, 0.22, 1) both;
+}
+
+@keyframes hero-handoff-release {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .cosmic-hero--fallback {
   background:
     radial-gradient(ellipse 88% 46% at 50% 104%, rgba(114, 72, 34, 0.46), transparent 66%),
@@ -292,6 +362,41 @@ body::-webkit-scrollbar {
   background: #010308;
   color: rgba(239, 242, 247, 0.94);
   font-family: "Avenir Next", "Helvetica Neue", Helvetica, sans-serif;
+}
+
+.landing-sections[hidden] {
+  display: none;
+}
+
+.landing-sections[data-entered="true"] .client-story__header,
+.landing-sections[data-entered="true"] .client-story__anchor {
+  animation: story-enter-primary 620ms 180ms cubic-bezier(0.2, 0.72, 0.22, 1) both;
+}
+
+.landing-sections[data-entered="true"] .client-story__rail,
+.landing-sections[data-entered="true"] .client-story__stage,
+.landing-sections[data-entered="true"] .client-story__footer {
+  animation: story-enter-secondary 720ms 320ms cubic-bezier(0.2, 0.72, 0.22, 1) both;
+}
+
+@keyframes story-enter-primary {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes story-enter-secondary {
+  from { opacity: 0; transform: translate3d(0, 24px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+.hero-handoff-cover[data-motion="reduced"],
+.landing-sections[data-motion="reduced"] .client-story__header,
+.landing-sections[data-motion="reduced"] .client-story__anchor,
+.landing-sections[data-motion="reduced"] .client-story__rail,
+.landing-sections[data-motion="reduced"] .client-story__stage,
+.landing-sections[data-motion="reduced"] .client-story__footer {
+  animation: none;
+  transition: none;
 }
 
 .system-transition {
@@ -731,6 +836,10 @@ body::-webkit-scrollbar {
   letter-spacing: -0.052em;
   line-height: 0.98;
   text-wrap: balance;
+}
+
+.client-story__header h2:focus {
+  outline: none;
 }
 
 .client-story__anchor {

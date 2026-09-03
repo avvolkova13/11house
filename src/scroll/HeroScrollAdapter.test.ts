@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from 'vitest'
 import { HeroScrollAdapter } from './HeroScrollAdapter'
 
 const metrics = {
-  travelEnd: 4560,
-  settleEnd: 4880,
-  corridorEnd: 5480,
+  travelEnd: 6840,
+  settleEnd: 7155,
+  corridorEnd: 7785,
 }
 
 describe('HeroScrollAdapter', () => {
@@ -24,26 +24,26 @@ describe('HeroScrollAdapter', () => {
 
     expect(adapter.ingest(240).heroDelta).toBe(240)
     expect(adapter.ingest(120).heroDelta).toBe(-120)
-    expect(adapter.ingest(4560).heroDelta).toBe(0)
-    expect(adapter.ingest(4640).heroDelta).toBe(0)
+    expect(adapter.ingest(6840).heroDelta).toBe(0)
+    expect(adapter.ingest(6900).heroDelta).toBe(0)
   })
 
   it('freezes the terminal visual progress through exit and re-entry', () => {
-    const adapter = new HeroScrollAdapter(metrics, 5480)
+    const adapter = new HeroScrollAdapter(metrics, 7785)
 
     expect(adapter.snapshot).toMatchObject({
       state: 'BELOW_HERO',
       heroDelta: 0,
-      travelProgress: 6,
+      travelProgress: 9,
     })
-    expect(adapter.ingest(5200)).toMatchObject({
+    expect(adapter.ingest(7500)).toMatchObject({
       state: 'REENTERING',
       heroDelta: 0,
-      travelProgress: 6,
+      travelProgress: 9,
     })
-    expect(adapter.ingest(4550)).toMatchObject({
+    expect(adapter.ingest(6830)).toMatchObject({
       state: 'TRAVEL',
-      heroDelta: -650,
+      heroDelta: -670,
     })
   })
 

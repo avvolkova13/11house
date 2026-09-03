@@ -6,6 +6,7 @@ import {
   terrainVertexShader,
 } from './shaders/nebula'
 import { PointerTrail } from './PointerTrail'
+import { damp } from './motion'
 
 export class NebulaField {
   readonly group = new THREE.Group()
@@ -17,6 +18,13 @@ export class NebulaField {
   private readonly sharedTravel = { value: 0 }
   private readonly sharedPointer = { value: new THREE.Vector2() }
   private readonly sharedOpacity = { value: 1 }
+  private readonly sharedTunnelMix = { value: 0 }
+  private readonly sharedTunnelPresentation = { value: 0 }
+  private readonly sharedTunnelDive = { value: 0 }
+  private readonly sharedVelocity = { value: 0 }
+  private displayTunnelMix = 0
+  private displayTunnelPresentation = 0
+  private displayTunnelDive = 0
   private readonly interactionWidth = 96
   private readonly interactionHeight = 160
   private readonly interactionHeights = new Float32Array(
@@ -83,6 +91,10 @@ export class NebulaField {
       uniforms: {
         uTime: this.sharedTime,
         uTravel: this.sharedTravel,
+        uTunnelMix: this.sharedTunnelMix,
+        uTunnelPresentation: this.sharedTunnelPresentation,
+        uTunnelDive: this.sharedTunnelDive,
+        uVelocity: this.sharedVelocity,
         uPointer: this.sharedPointer,
         uShadowColor: { value: new THREE.Color(0x020712) },
         uRidgeColor: { value: new THREE.Color(0x242d46) },
@@ -100,6 +112,10 @@ export class NebulaField {
       uniforms: {
         uTime: this.sharedTime,
         uTravel: this.sharedTravel,
+        uTunnelMix: this.sharedTunnelMix,
+        uTunnelPresentation: this.sharedTunnelPresentation,
+        uTunnelDive: this.sharedTunnelDive,
+        uVelocity: this.sharedVelocity,
         uPointer: this.sharedPointer,
         uPixelRatio: { value: pixelRatio },
         uPointColor: { value: new THREE.Color(0xb27c3e) },
@@ -125,13 +141,6 @@ export class NebulaField {
 
   setPixelRatio(pixelRatio: number) {
     this.particles.material.uniforms.uPixelRatio.value = pixelRatio
-  }
-
-  setOpacity(opacity: number) {
-    const nextOpacity = THREE.MathUtils.clamp(opacity, 0, 1)
-    this.sharedOpacity.value = nextOpacity
-    this.surface.material.depthWrite = nextOpacity > 0.18
-    this.group.visible = nextOpacity > 0.002
   }
 
   private projectPointer() {
@@ -235,18 +244,54 @@ export class NebulaField {
     travel: number,
     dt: number,
     pointerActive: boolean,
+    tunnelMix: number,
+    tunnelPresentation: number,
+    tunnelDive: number,
+    velocity: number,
   ) {
     this.sharedTime.value = elapsed
     this.sharedTravel.value = travel
     this.sharedPointer.value.set(pointerX, pointerY)
-    const target = !this.reducedMotion && pointerActive
+    this.displayTunnelMix = damp(
+      this.displayTunnelMix,
+      tunnelMix,
+      this.reducedMotion ? 12 : 5.6,
+      dt,
+    )
+    this.sharedTunnelMix.value = this.displayTunnelMix
+    this.displayTunnelPresentation = damp(
+      this.displayTunnelPresentation,
+      tunnelPresentation,
+      this.reducedMotion ? 12 : 5.2,
+      dt,
+    )
+    this.displayTunnelDive = damp(
+      this.displayTunnelDive,
+      tunnelDive,
+      this.reducedMotion ? 12 : 4.6,
+      dt,
+    )
+    this.sharedTunnelPresentation.value = this.displayTunnelPresentation
+    this.sharedTunnelDive.value = this.displayTunnelDive
+    this.sharedVelocity.value = this.reducedMotion ? 0 : velocity
+    const target = !this.reducedMotion && pointerActive && this.displayTunnelMix < 0.12
       ? this.projectPointer()
       : null
     this.trail.tick(dt, elapsed, target)
     this.updateInteractionMap()
-    this.group.rotation.z = Math.sin(elapsed * 0.035) * 0.0025
-    this.group.position.x = pointerX * 0.52
-    this.group.position.y = pointerY * 0.18
+    const tunnelInfluence = THREE.MathUtils.smoothstep(this.displayTunnelMix, 0.18, 0.72)
+    const formedSurfaceZ = THREE.MathUtils.lerp(-109, -118, tunnelInfluence)
+    const surfaceZ = THREE.MathUtils.lerp(
+      formedSurfaceZ,
+      -173,
+      this.displayTunnelPresentation,
+    )
+    this.surface.position.z = surfaceZ
+    this.particles.position.z = surfaceZ
+    this.surface.material.depthWrite = this.displayTunnelMix < 0.34
+    this.group.rotation.z = Math.sin(elapsed * 0.035) * THREE.MathUtils.lerp(0.0025, 0.012, tunnelInfluence)
+    this.group.position.x = pointerX * THREE.MathUtils.lerp(0.52, 0.26, tunnelInfluence)
+    this.group.position.y = pointerY * THREE.MathUtils.lerp(0.18, 0.12, tunnelInfluence)
   }
 
   dispose() {

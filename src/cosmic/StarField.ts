@@ -73,6 +73,7 @@ export class StarField {
         uTravel: { value: 0 },
         uStreak: { value: 0 },
         uPixelRatio: { value: pixelRatio },
+        uOpacity: { value: 1 },
       },
       transparent: true,
       depthWrite: false,
@@ -85,11 +86,18 @@ export class StarField {
     this.points.renderOrder = 5
   }
 
-  update(elapsed: number, travel: number, streak: number, pixelRatio: number) {
+  update(
+    elapsed: number,
+    travel: number,
+    streak: number,
+    pixelRatio: number,
+    opacity = 1,
+  ) {
     this.material.uniforms.uTime.value = elapsed
     this.material.uniforms.uTravel.value = travel
     this.material.uniforms.uStreak.value = streak
     this.material.uniforms.uPixelRatio.value = pixelRatio
+    this.material.uniforms.uOpacity.value = opacity
   }
 
   dispose() {

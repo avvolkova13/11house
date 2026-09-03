@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { CosmicScene } from '../cosmic/CosmicScene'
 import type { HeroScrollAdapter } from '../scroll/HeroScrollAdapter'
+import type { HeroHandoffPhase } from '../scroll/heroHandoff'
 import { getStageTravelDirection } from '../cosmic/copyMotion'
 import {
   HERO_LAST_STAGE_INDEX,
+  HERO_LAST_VISUAL_INDEX,
   HERO_NARRATIVE_STAGES,
   clampHeroProgress,
   getLinearStageOffset,
   getProductStageMotion,
+  getTunnelCtaReveal,
   getTunnelMix,
 } from '../hero/heroNarrative'
 
@@ -56,32 +59,46 @@ const getFragmentStyle = (
 }
 
 type CosmicHeroProps = {
+  handoffPhase: HeroHandoffPhase
+  onEnterStory: () => void
   scrollAdapter: HeroScrollAdapter
   runwayStyle: CSSProperties
 }
 
-export function CosmicHero({ scrollAdapter, runwayStyle }: CosmicHeroProps) {
+export function CosmicHero({
+  handoffPhase,
+  onEnterStory,
+  scrollAdapter,
+  runwayStyle,
+}: CosmicHeroProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [fallback, setFallback] = useState(false)
-  const [copyProgress, setCopyProgress] = useState(0)
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     || (import.meta.env.DEV && new URLSearchParams(window.location.search).has('reduced-motion'))
+  const [copyProgress, setCopyProgress] = useState(() => (
+    reducedMotion ? 0 : clampHeroProgress(scrollAdapter.snapshot.travelProgress)
+  ))
+  const [visualProgress, setVisualProgress] = useState(() => (
+    reducedMotion ? HERO_LAST_VISUAL_INDEX : scrollAdapter.snapshot.travelProgress
+  ))
 
   useEffect(() => {
     if (reducedMotion) return
 
-    let progress = clampHeroProgress(scrollAdapter.snapshot.travelProgress)
+    let progress = scrollAdapter.snapshot.travelProgress
     let renderFrame = 0
     const renderProgress = () => {
       window.cancelAnimationFrame(renderFrame)
       renderFrame = window.requestAnimationFrame(() => {
         setCopyProgress(clampHeroProgress(progress))
+        setVisualProgress(progress)
       })
     }
     setCopyProgress(clampHeroProgress(progress))
+    setVisualProgress(progress)
 
     const unsubscribe = scrollAdapter.subscribe((snapshot) => {
-      progress = clampHeroProgress(snapshot.travelProgress)
+      progress = snapshot.travelProgress
       renderProgress()
     })
 
@@ -92,6 +109,11 @@ export function CosmicHero({ scrollAdapter, runwayStyle }: CosmicHeroProps) {
   }, [reducedMotion, scrollAdapter])
 
   const tunnelMix = getTunnelMix(copyProgress)
+  const ctaReveal = getTunnelCtaReveal(
+    reducedMotion ? HERO_LAST_VISUAL_INDEX : visualProgress,
+    handoffPhase === 'tunnel',
+  )
+  const ctaInteractive = ctaReveal >= 0.999 && handoffPhase === 'tunnel'
   const copyStyle = {
     '--hero-progress': copyProgress,
     '--hero-tunnel-mix': tunnelMix,
@@ -233,6 +255,20 @@ export function CosmicHero({ scrollAdapter, runwayStyle }: CosmicHeroProps) {
             {String(Math.min(Math.round(copyProgress) + 1, HERO_LAST_STAGE_INDEX + 1)).padStart(2, '0')}
             <span> / {String(HERO_LAST_STAGE_INDEX + 1).padStart(2, '0')}</span>
           </p>
+        </div>
+        <div
+          aria-hidden={!ctaInteractive}
+          className="hero-tunnel-action"
+          data-interactive={ctaInteractive}
+          style={{ '--hero-cta-reveal': ctaReveal } as CSSProperties}
+        >
+          <button
+            type="button"
+            tabIndex={ctaInteractive ? 0 : -1}
+            onClick={ctaInteractive ? onEnterStory : undefined}
+          >
+            Продолжить
+          </button>
         </div>
       </section>
     </section>

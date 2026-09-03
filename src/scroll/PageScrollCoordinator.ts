@@ -34,7 +34,7 @@ export const getHeroCorridorMetrics = (
     }
   }
 
-  const travelEnd = HERO_STAGE_DISTANCE * HERO_LAST_STAGE_INDEX
+  const travelEnd = HERO_STAGE_DISTANCE * HERO_LAST_VISUAL_INDEX
   const settleEnd = travelEnd + Math.round(viewportHeight * 0.35)
   const handoffDistance = Math.round(viewportHeight * (viewportWidth <= 700 ? 0.5 : 0.7))
 
@@ -124,10 +124,10 @@ export class PageScrollCoordinator {
       delta,
       scrollPosition: this.scrollPosition,
       travelProgress: Math.min(
-        HERO_LAST_STAGE_INDEX,
+        HERO_LAST_VISUAL_INDEX,
         Math.max(0, this.scrollPosition / HERO_STAGE_DISTANCE),
       ),
     }
   }
 }
-import { HERO_LAST_STAGE_INDEX, HERO_STAGE_DISTANCE } from '../hero/heroNarrative'
+import { HERO_LAST_VISUAL_INDEX, HERO_STAGE_DISTANCE } from '../hero/heroNarrative'

@@ -39,6 +39,7 @@ export const HERO_NARRATIVE_STAGES: readonly HeroNarrativeStage[] = [
 
 export const HERO_STAGE_DISTANCE = 760
 export const HERO_LAST_STAGE_INDEX = HERO_NARRATIVE_STAGES.length - 1
+export const HERO_LAST_VISUAL_INDEX = HERO_LAST_STAGE_INDEX + 3
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
 
@@ -78,3 +79,8 @@ export const getProductStageMotion = (stageOffset: number): ProductStageMotion =
 }
 
 export const getTunnelMix = (progress: number) => smoothstep(4.72, 6, progress)
+export const getTunnelPresentation = (progress: number) => smoothstep(5.92, 6.32, progress)
+export const getTunnelDive = (progress: number) => smoothstep(6, HERO_LAST_VISUAL_INDEX, progress)
+export const getTunnelCtaReveal = (progress: number, enabled = true) => (
+  enabled ? smoothstep(8.45, 8.9, progress) : 0
+)
