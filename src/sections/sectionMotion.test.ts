@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { getFragmentPosition, getSectionProgress, getStoryPosition } from './sectionMotion'
+import {
+  getFragmentPosition,
+  getScenePosition,
+  getSectionProgress,
+  getStoryPosition,
+} from './sectionMotion'
 
 describe('getSectionProgress', () => {
   it('starts at zero when the sticky story enters the viewport', () => {
@@ -44,5 +49,19 @@ describe('getStoryPosition', () => {
   it('clamps overscroll in both directions', () => {
     expect(getStoryPosition(-0.2, 6)).toEqual({ index: 0, local: 0 })
     expect(getStoryPosition(1.3, 6)).toEqual({ index: 5, local: 1 })
+  })
+})
+
+describe('getScenePosition', () => {
+  it('maps progress across an arbitrary number of product scenes', () => {
+    expect(getScenePosition(0, 3)).toEqual({ index: 0, local: 0 })
+    expect(getScenePosition(0.5, 3)).toEqual({ index: 1, local: 0.5 })
+    expect(getScenePosition(1, 3)).toEqual({ index: 2, local: 1 })
+  })
+
+  it('clamps progress and safely handles an empty scene collection', () => {
+    expect(getScenePosition(-1, 3)).toEqual({ index: 0, local: 0 })
+    expect(getScenePosition(2, 3)).toEqual({ index: 2, local: 1 })
+    expect(getScenePosition(0.5, 0)).toEqual({ index: 0, local: 0 })
   })
 })

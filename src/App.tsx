@@ -9,6 +9,12 @@ import {
 } from 'react'
 import { CosmicHero } from './components/CosmicHero'
 import { OneClientStory } from './sections/OneClientStory'
+import { ProductProof } from './sections/ProductProof'
+import { AiRoutine } from './sections/AiRoutine'
+import { UnifiedWorkspace } from './sections/UnifiedWorkspace'
+import { PricingSection } from './sections/PricingSection'
+import { FaqSection } from './sections/FaqSection'
+import { FinalCta } from './sections/FinalCta'
 import { HeroScrollAdapter } from './scroll/HeroScrollAdapter'
 import { getHeroCorridorMetrics } from './scroll/PageScrollCoordinator'
 import {
@@ -116,6 +122,12 @@ export default function App() {
         ref={storyRef}
       >
         <OneClientStory />
+        <ProductProof />
+        <AiRoutine />
+        <UnifiedWorkspace />
+        <PricingSection />
+        <FaqSection />
+        <FinalCta />
       </main>
     </>
   )

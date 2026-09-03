@@ -21,3 +21,8 @@ export const getStoryPosition = (progress: number, sceneCount: number) => {
     local: scaled - Math.floor(scaled),
   }
 }
+
+export const getScenePosition = (progress: number, sceneCount: number) => {
+  if (sceneCount <= 0) return { index: 0, local: 0 }
+  return getStoryPosition(progress, sceneCount)
+}
