@@ -6,7 +6,14 @@ import type { HeroScrollAdapter } from '../scroll/HeroScrollAdapter'
 import type { HeroHandoffPhase } from '../scroll/heroHandoff'
 import { getIntroGlyphDepth, getStageTravelDirection } from '../cosmic/copyMotion'
 import {
-  HERO_LAST_STAGE_INDEX,
+  HERO_ENTRY_DURATION_MS,
+  getHeroEntryPhaseAfterMount,
+  getHeroEntryPhaseAfterPageShow,
+  getInitialHeroEntryPhase,
+  shouldSettleHeroEntry,
+  type HeroEntryPhase,
+} from '../cosmic/heroEntryMotion'
+import {
   HERO_LAST_VISUAL_INDEX,
   HERO_NARRATIVE_STAGES,
   clampHeroProgress,
@@ -81,12 +88,57 @@ export function CosmicHero({
   const [fallback, setFallback] = useState(false)
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     || (import.meta.env.DEV && new URLSearchParams(window.location.search).has('reduced-motion'))
+  const [entryPhase, setEntryPhase] = useState<HeroEntryPhase>(() => (
+    getInitialHeroEntryPhase(reducedMotion, window.scrollY)
+  ))
   const [copyProgress, setCopyProgress] = useState(() => (
     reducedMotion ? 0 : clampHeroProgress(scrollAdapter.snapshot.travelProgress)
   ))
   const [visualProgress, setVisualProgress] = useState(() => (
     reducedMotion ? HERO_LAST_VISUAL_INDEX : scrollAdapter.snapshot.travelProgress
   ))
+
+  useEffect(() => {
+    if (entryPhase !== 'preparing') return
+
+    let firstFrame = 0
+    let secondFrame = 0
+
+    firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        setEntryPhase(getHeroEntryPhaseAfterMount(reducedMotion, window.scrollY))
+      })
+    })
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame)
+      window.cancelAnimationFrame(secondFrame)
+    }
+  }, [entryPhase, reducedMotion])
+
+  useEffect(() => {
+    if (entryPhase === 'settled') return
+
+    const startScrollY = window.scrollY
+    const settle = () => setEntryPhase('settled')
+    const onScroll = () => {
+      if (shouldSettleHeroEntry(entryPhase, startScrollY, window.scrollY)) settle()
+    }
+    const onPageShow = (event: PageTransitionEvent) => {
+      setEntryPhase((phase) => getHeroEntryPhaseAfterPageShow(phase, event.persisted))
+    }
+    const settleTimer = entryPhase === 'entering'
+      ? window.setTimeout(settle, HERO_ENTRY_DURATION_MS)
+      : 0
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('pageshow', onPageShow)
+    return () => {
+      window.clearTimeout(settleTimer)
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('pageshow', onPageShow)
+    }
+  }, [entryPhase])
 
   useEffect(() => {
     if (reducedMotion) return
@@ -158,6 +210,7 @@ export function CosmicHero({
   return (
     <section
       className="cosmic-runway"
+      data-intro={entryPhase}
       data-motion={reducedMotion ? 'reduced' : 'full'}
       style={runwayStyle}
     >
@@ -214,7 +267,12 @@ export function CosmicHero({
                     key={stage.title}
                     style={{ opacity: reducedMotion ? 1 : finaleOpacity }}
                   >
-                    {stage.title}
+                    <span className="hero-finale__part hero-finale__part--start">
+                      Меньше времени на рутину
+                    </span>
+                    <span className="hero-finale__part hero-finale__part--end">
+                      больше на консультацию
+                    </span>
                   </p>
                 )
               }
@@ -255,10 +313,6 @@ export function CosmicHero({
               )
             })}
           </div>
-          <p className="hero-copy__progress" aria-hidden="true">
-            {String(Math.min(Math.round(copyProgress) + 1, HERO_LAST_STAGE_INDEX + 1)).padStart(2, '0')}
-            <span> / {String(HERO_LAST_STAGE_INDEX + 1).padStart(2, '0')}</span>
-          </p>
         </div>
         <div
           aria-hidden={!ctaInteractive}

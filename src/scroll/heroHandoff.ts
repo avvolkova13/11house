@@ -13,4 +13,4 @@ export const completeHeroHandoff = (phase: HeroHandoffPhase): HeroHandoffPhase =
 export const getHeroRunwayEnd = (
   metrics: HeroCorridorMetrics,
   phase: HeroHandoffPhase,
-) => phase === 'tunnel' ? metrics.travelEnd : metrics.corridorEnd
+) => phase === 'tunnel' ? metrics.settleEnd : metrics.corridorEnd

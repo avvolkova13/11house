@@ -58,6 +58,18 @@ describe('marketing brief copy contract', () => {
     headings.forEach((heading) => expect(sectionSource).toContain(heading))
   })
 
+  it('splits the time-saving heading on the Hero finale, not in the client story', () => {
+    const clientStorySource = readRaw(
+      import.meta.glob('./OneClientStory.tsx', { eager: true, query: '?raw', import: 'default' }),
+    )
+
+    expect(heroComponentSource).toContain('hero-finale__part--start')
+    expect(heroComponentSource).toContain('hero-finale__part--end')
+    expect(heroComponentSource).toContain('больше на консультацию')
+    expect(heroComponentSource).not.toContain('Больше времени на консультации')
+    expect(clientStorySource).not.toContain('client-story__title-part')
+  })
+
   it('contains all eight risk-closing FAQ questions', () => {
     const faqQuestions = [
       'Я не дружу с техникой — справлюсь?',

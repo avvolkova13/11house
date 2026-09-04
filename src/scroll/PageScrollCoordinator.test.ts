@@ -44,17 +44,22 @@ describe('PageScrollCoordinator', () => {
     expect(coordinator.snapshot.state).toBe('PRE_HERO')
     expect(coordinator.update(1).state).toBe('TRAVEL')
     expect(coordinator.update(6839).state).toBe('TRAVEL')
-    expect(coordinator.update(6840).state).toBe('EXIT_ARMED')
+    expect(coordinator.update(6840).state).toBe('EXITING')
     expect(coordinator.update(6841).state).toBe('EXITING')
     expect(coordinator.update(7785).state).toBe('BELOW_HERO')
   })
 
-  it('keeps the terminal state armed until a meaningful downward delta', () => {
+  it('exits as soon as a meaningful scroll reaches the terminal frame', () => {
     const coordinator = new PageScrollCoordinator(metrics, 6839)
 
-    expect(coordinator.update(6840).state).toBe('EXIT_ARMED')
-    expect(coordinator.update(6840.5).state).toBe('EXIT_ARMED')
-    expect(coordinator.update(6843).state).toBe('EXITING')
+    expect(coordinator.update(6839.5).state).toBe('TRAVEL')
+    expect(coordinator.update(6840).state).toBe('EXITING')
+  })
+
+  it('exits when one meaningful scroll crosses from travel into the settle buffer', () => {
+    const coordinator = new PageScrollCoordinator(metrics, 6839)
+
+    expect(coordinator.update(6900).state).toBe('EXITING')
   })
 
   it('re-enters at the terminal visual state before restoring signed reverse travel', () => {

@@ -25,8 +25,8 @@ describe('hero handoff', () => {
     expect(completeHeroHandoff('story')).toBe('story')
   })
 
-  it('ends the document at the tunnel until the story is opened', () => {
-    expect(getHeroRunwayEnd(metrics, 'tunnel')).toBe(metrics.travelEnd)
+  it('keeps a settle buffer scrollable before the story is opened', () => {
+    expect(getHeroRunwayEnd(metrics, 'tunnel')).toBe(metrics.settleEnd)
     expect(getHeroRunwayEnd(metrics, 'covering')).toBe(metrics.corridorEnd)
     expect(getHeroRunwayEnd(metrics, 'story')).toBe(metrics.corridorEnd)
   })

@@ -95,7 +95,11 @@ export class PageScrollCoordinator {
         this.state = nextScrollPosition >= this.metrics.travelEnd ? 'EXIT_ARMED' : 'TRAVEL'
         break
       case 'TRAVEL':
-        if (nextScrollPosition >= this.metrics.travelEnd) this.state = 'EXIT_ARMED'
+        if (nextScrollPosition >= this.metrics.travelEnd && delta > 0) {
+          this.state = 'EXITING'
+        } else if (nextScrollPosition >= this.metrics.travelEnd) {
+          this.state = 'EXIT_ARMED'
+        }
         break
       case 'EXIT_ARMED':
         if (nextScrollPosition < this.metrics.travelEnd && delta < 0) {

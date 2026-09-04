@@ -32,7 +32,7 @@ export const HERO_NARRATIVE_STAGES: readonly HeroNarrativeStage[] = [
     productDetail: 'Расчёты и портрет клиента',
   },
   {
-    title: 'Меньше времени на рутину и больше на консультации.',
+    title: 'Меньше времени на рутину — больше на консультацию.',
     mode: 'finale',
   },
 ] as const
