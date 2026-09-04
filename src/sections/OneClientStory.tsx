@@ -52,7 +52,7 @@ export function OneClientStory() {
     <section className="workflow-compare" aria-labelledby="workflow-compare-title">
       <div className="workflow-compare__inner">
         <header className="workflow-compare__intro">
-          <h2 id="workflow-compare-title">Ручной режим — ElevenHouse.</h2>
+          <h2 id="workflow-compare-title">Больше времени на клиентов. Меньше — на рутину.</h2>
           <p>
             Пять знакомых этапов работы. Слева — где обычно уходит время,
             справа — как тот же путь собирается в одном кабинете.
@@ -86,7 +86,6 @@ export function OneClientStory() {
 
         <section className="workflow-evidence" aria-labelledby="workflow-evidence-title">
           <header>
-            <span>Ориентиры экономии</span>
             <h3 id="workflow-evidence-title">Что дают автоматизированные операции.</h3>
           </header>
 

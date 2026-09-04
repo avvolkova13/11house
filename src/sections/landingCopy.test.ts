@@ -21,6 +21,12 @@ const faqSource = readRaw(import.meta.glob('./FaqSection.tsx', { eager: true, qu
 const clientStorySource = readRaw(
   import.meta.glob('./OneClientStory.tsx', { eager: true, query: '?raw', import: 'default' }),
 )
+const pricingSectionSource = readRaw(
+  import.meta.glob('./PricingSection.tsx', { eager: true, query: '?raw', import: 'default' }),
+)
+const pricingOrbitSource = readRaw(
+  import.meta.glob('./PricingOrbit.tsx', { eager: true, query: '?raw', import: 'default' }),
+)
 
 describe('marketing brief copy contract', () => {
   it('uses the category-first Hero message and registration CTA', () => {
@@ -60,14 +66,14 @@ describe('marketing brief copy contract', () => {
     headings.forEach((heading) => expect(sectionSource).toContain(heading))
   })
 
-  it('splits the time-saving heading on the Hero finale, not in the client story', () => {
+  it('keeps the Hero finale split and uses the approved client-story heading', () => {
     expect(heroComponentSource).toContain('hero-finale__part--start')
     expect(heroComponentSource).toContain('hero-finale__part--end')
     expect(heroComponentSource).toMatch(/больше\s*<br \/>\s*на консультацию/)
     expect(heroComponentSource).not.toContain('Больше времени на консультации')
     expect(clientStorySource).not.toContain('client-story__title-part')
     expect(clientStorySource).not.toContain('client-story__header')
-    expect(clientStorySource).not.toContain('Больше времени на клиентов. Меньше — на рутину.')
+    expect(clientStorySource).toContain('Больше времени на клиентов. Меньше — на рутину.')
   })
 
   it('compares the five workflow stages and labels researched benchmarks honestly', () => {
@@ -90,6 +96,7 @@ describe('marketing brief copy contract', () => {
     expect(clientStorySource).toContain(
       'Ориентиры основаны на исследованиях цифрового ввода данных, онлайн-записи и AI-подготовки текста. Фактическая экономия зависит от процесса специалиста.',
     )
+    expect(clientStorySource).not.toContain('Ориентиры экономии')
     expect(clientStorySource).not.toContain('data-client-scene')
     expect(clientStorySource).not.toContain('client-story__rail')
     expect(clientStorySource).not.toContain('Клиент Анна')
@@ -109,5 +116,13 @@ describe('marketing brief copy contract', () => {
 
     faqQuestions.forEach((question) => expect(sectionSource).toContain(question))
     expect(faqSource.match(/question:/g) ?? []).toHaveLength(8)
+  })
+
+  it('uses the cinematic pricing orbit with stable plan details', () => {
+    expect(pricingSectionSource).toContain('<PricingOrbit')
+    expect(pricingSectionSource).toContain('pricing-details')
+    expect(pricingSectionSource).not.toContain('pricing-section__plans')
+    expect(pricingOrbitSource).toContain('pricing-orbit__reflection--top')
+    expect(pricingOrbitSource).toContain('pricing-orbit__reflection--bottom')
   })
 })
