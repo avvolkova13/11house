@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
 import { CosmicScene } from '../cosmic/CosmicScene'
+import { ProductTilePanel } from './ProductTilePanel'
+import { LandingHeader } from './LandingHeader'
 import type { HeroScrollAdapter } from '../scroll/HeroScrollAdapter'
 import type { HeroHandoffPhase } from '../scroll/heroHandoff'
 import { getIntroGlyphDepth, getStageTravelDirection } from '../cosmic/copyMotion'
@@ -8,6 +10,7 @@ import {
   HERO_LAST_VISUAL_INDEX,
   HERO_NARRATIVE_STAGES,
   clampHeroProgress,
+  getFinaleStageOpacity,
   getLinearStageOffset,
   getProductStageMotion,
   getTunnelCtaReveal,
@@ -122,6 +125,14 @@ export function CosmicHero({
     '--hero-tunnel-mix': tunnelMix,
   } as CSSProperties
 
+  const handleHeaderNavigation = (event: MouseEvent<HTMLAnchorElement>, target: string) => {
+    event.preventDefault()
+    onEnterStory()
+    window.setTimeout(() => {
+      document.querySelector<HTMLElement>(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 280)
+  }
+
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -150,7 +161,8 @@ export function CosmicHero({
       data-motion={reducedMotion ? 'reduced' : 'full'}
       style={runwayStyle}
     >
-      <section className={`cosmic-hero${fallback ? ' cosmic-hero--fallback' : ''}`}>
+      <section id="top" className={`cosmic-hero${fallback ? ' cosmic-hero--fallback' : ''}`}>
+        <LandingHeader onNavigate={handleHeaderNavigation} />
         <canvas ref={canvasRef} className="cosmic-canvas" />
         <div className="hero-copy" aria-live="polite" style={copyStyle}>
           <div className="hero-copy__stages" aria-label="ElevenHouse">
@@ -160,7 +172,7 @@ export function CosmicHero({
                 : getLinearStageOffset(copyProgress, index)
               const stageIsCurrent = reducedMotion || Math.abs(stageOffset) < 0.55
               if (stage.mode === 'product') {
-                const motion = getProductStageMotion(stageOffset)
+                const motion = getProductStageMotion(stageOffset, index > 3)
                 const sceneStyle = {
                   '--product-opacity': motion.opacity,
                   '--product-scale': motion.scale,
@@ -180,15 +192,12 @@ export function CosmicHero({
                     <p aria-hidden="true" className="hero-product-scene__title hero-product-scene__title--back">
                       {stage.title}
                     </p>
-                    <figure className="hero-product-plane">
-                      <div className="hero-product-plane__viewport">
-                        <img alt="" src={stage.screenshot} />
-                      </div>
-                      <figcaption>
-                        <span>{stage.productLabel}</span>
-                        <small>{stage.productDetail}</small>
-                      </figcaption>
-                    </figure>
+                    <ProductTilePanel
+                      active={reducedMotion || Math.abs(stageOffset) < 0.95}
+                      reducedMotion={reducedMotion}
+                      screenshot={stage.screenshot!}
+                      stageOffset={stageOffset}
+                    />
                     <p aria-hidden="true" className="hero-product-scene__title hero-product-scene__title--front">
                       {stage.title}
                     </p>
@@ -197,7 +206,7 @@ export function CosmicHero({
               }
 
               if (stage.mode === 'finale') {
-                const finaleOpacity = 1 - smoothstep(0.08, 0.72, Math.abs(stageOffset))
+                const finaleOpacity = getFinaleStageOpacity(stageOffset)
                 return (
                   <p
                     aria-hidden={!stageIsCurrent}
@@ -246,14 +255,6 @@ export function CosmicHero({
               )
             })}
           </div>
-          <p
-            aria-hidden={!reducedMotion && copyProgress > 0.62}
-            className="hero-copy__description"
-            style={{ opacity: reducedMotion ? 1 : 1 - smoothstep(0.05, 0.62, copyProgress) }}
-          >
-            Клиенты, записи, продукты, оплаты, воронки и профессиональные инструменты — от натальной карты до Матрицы судьбы.<br />
-            ElevenHouse собирает всё, на чём держится работа астролога, в единую систему.
-          </p>
           <p className="hero-copy__progress" aria-hidden="true">
             {String(Math.min(Math.round(copyProgress) + 1, HERO_LAST_STAGE_INDEX + 1)).padStart(2, '0')}
             <span> / {String(HERO_LAST_STAGE_INDEX + 1).padStart(2, '0')}</span>
@@ -266,12 +267,13 @@ export function CosmicHero({
           style={{ '--hero-cta-reveal': ctaReveal } as CSSProperties}
         >
           <button
+            disabled
             type="button"
-            tabIndex={ctaInteractive ? 0 : -1}
-            onClick={ctaInteractive ? onEnterStory : undefined}
+            tabIndex={-1}
           >
-            Продолжить
+            Создать кабинет бесплатно
           </button>
+          <span>Без банковской карты.</span>
         </div>
       </section>
     </section>

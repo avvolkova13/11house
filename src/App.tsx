@@ -93,6 +93,18 @@ export default function App() {
     setHandoffPhase(beginHeroHandoff)
   }, [])
 
+  useEffect(() => {
+    if (handoffPhase !== 'tunnel') return
+
+    const unsubscribe = scrollAdapter.subscribe((snapshot) => {
+      if (snapshot.state === 'EXITING') enterStory()
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [enterStory, handoffPhase, scrollAdapter])
+
   const runwayEnd = getHeroRunwayEnd(metrics, handoffPhase)
   const runwayStyle = {
     '--hero-corridor-height': `${Math.ceil(window.innerHeight + runwayEnd)}px`,

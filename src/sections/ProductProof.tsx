@@ -4,18 +4,18 @@ import { getScenePosition, getSectionProgress } from './sectionMotion'
 const productScenes = [
   {
     index: '01',
-    eyebrow: 'Конструктор продуктов',
-    title: 'Соберите формат, который клиент понимает сразу.',
-    copy: 'Консультации, курсы и сопровождение живут в одном каталоге — с ценой, составом и статусом публикации.',
+    eyebrow: 'Услуги и личная страница',
+    title: 'Клиент видит понятный формат и сразу переходит к записи.',
+    copy: 'Консультации, курсы и сопровождение собраны в одном каталоге — с ценой, составом и статусом публикации.',
     src: '/assets/product-screenshots/eh-p05-products.png',
     alt: 'Каталог реальных продуктов ElevenHouse',
     crop: 'products',
   },
   {
     index: '02',
-    eyebrow: 'Движок расчётов',
-    title: 'Числа уже собраны в рабочую картину.',
-    copy: 'Результат расчёта остаётся рядом с данными клиента и становится основой для вашей интерпретации.',
+    eyebrow: 'Расчёты и профессиональный контекст',
+    title: 'Данные клиента превращаются в основу для разбора.',
+    copy: 'Результат расчёта остаётся рядом с клиентом и становится отправной точкой для вашей интерпретации.',
     src: '/assets/product-screenshots/eh-p07-numerology.png',
     alt: 'Рассчитанная нумерология в ElevenHouse',
     crop: 'numerology',
@@ -23,8 +23,8 @@ const productScenes = [
   {
     index: '03',
     eyebrow: 'Запись и консультация',
-    title: 'Следующая встреча не теряется в переписке.',
-    copy: 'Клиент, время, формат и ссылка на сессию собраны в одной подтверждённой записи.',
+    title: 'От выбора времени — сразу к встрече.',
+    copy: 'Клиент, время, формат и ссылка на консультацию собраны в одной подтверждённой записи.',
     src: '/assets/product-screenshots/eh-p01-calendar.png',
     alt: 'Подтверждённая видеоконсультация в календаре ElevenHouse',
     crop: 'calendar',
@@ -81,8 +81,8 @@ export function ProductProof() {
     <section className="product-proof" ref={sectionRef} aria-labelledby="product-proof-title">
       <div className="product-proof__sticky">
         <header className="product-proof__heading">
-          <span>04 · Продукт в деле</span>
-          <h2 id="product-proof-title">Не обещания.<br />Рабочие экраны.</h2>
+          <span>04 · Возможности</span>
+          <h2 id="product-proof-title">От построения карты до оплаты —<br />один рабочий процесс.</h2>
         </header>
 
         <div className="product-proof__steps" aria-hidden="true">

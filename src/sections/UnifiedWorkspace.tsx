@@ -1,12 +1,12 @@
 import { useState } from 'react'
 
 const workspaceSurfaces = [
-  { key: 'calendar', label: 'Календарь', detail: 'Запись и встреча', src: '/assets/product-screenshots/eh-p01-calendar.png', alt: 'Календарь ElevenHouse' },
-  { key: 'clients', label: 'Клиенты', detail: 'База и статусы', src: '/assets/product-screenshots/eh-p02-clients.png', alt: 'Раздел клиентов ElevenHouse' },
-  { key: 'finance', label: 'Финансы', detail: 'Баланс и операции', src: '/assets/product-screenshots/eh-p03-finance.png', alt: 'Раздел финансов ElevenHouse в нулевом состоянии' },
-  { key: 'funnels', label: 'Воронки', detail: 'Сценарии работы', src: '/assets/product-screenshots/eh-p04-funnel.png', alt: 'Редактор воронок ElevenHouse' },
-  { key: 'products', label: 'Продукты', detail: 'Услуги и пакеты', src: '/assets/product-screenshots/eh-p05-products.png', alt: 'Каталог продуктов ElevenHouse' },
-  { key: 'journal', label: 'Астродневник', detail: 'Контекст между встречами', src: '/assets/product-screenshots/eh-p09-journal.png', alt: 'Астродневник ElevenHouse' },
+  { key: 'calendar', label: 'Календарь', detail: 'Клиент сам выбирает время', src: '/assets/product-screenshots/eh-p01-calendar.png', alt: 'Календарь ElevenHouse' },
+  { key: 'clients', label: 'Клиенты', detail: 'История работы не теряется', src: '/assets/product-screenshots/eh-p02-clients.png', alt: 'Раздел клиентов ElevenHouse' },
+  { key: 'finance', label: 'Финансы', detail: 'Оплаты и выплаты в одном месте', src: '/assets/product-screenshots/eh-p03-finance.png', alt: 'Раздел финансов ElevenHouse в нулевом состоянии' },
+  { key: 'funnels', label: 'Воронки', detail: 'Повторные шаги без ручной рутины', src: '/assets/product-screenshots/eh-p04-funnel.png', alt: 'Редактор воронок ElevenHouse' },
+  { key: 'products', label: 'Продукты', detail: 'Услуги готовы к продаже', src: '/assets/product-screenshots/eh-p05-products.png', alt: 'Каталог продуктов ElevenHouse' },
+  { key: 'journal', label: 'Астродневник', detail: 'Сопровождение между встречами', src: '/assets/product-screenshots/eh-p09-journal.png', alt: 'Астродневник ElevenHouse' },
 ]
 
 export function UnifiedWorkspace() {
@@ -18,8 +18,8 @@ export function UnifiedWorkspace() {
     <section className="unified-workspace" aria-labelledby="workspace-title">
       <header className="unified-workspace__heading">
         <span>06 · Один кабинет</span>
-        <h2 id="workspace-title">Вместо шести вкладок —<br />одна практика.</h2>
-        <p>Клиент не распадается на запись, платёж, расчёт и переписку. Рабочий контекст остаётся внутри ElevenHouse.</p>
+        <h2 id="workspace-title">Один кабинет вместо<br />нескольких сервисов.</h2>
+        <p>Программа расчётов, таблица или CRM, сайт, бот, онлайн-запись и платёжный сервис объединяются в ElevenHouse.</p>
       </header>
 
       <div className="unified-workspace__layout">

@@ -4,6 +4,7 @@ import {
   HERO_LAST_VISUAL_INDEX,
   HERO_NARRATIVE_STAGES,
   getLinearStageOffset,
+  getFinaleStageOpacity,
   getProductStageMotion,
   getTunnelMix,
   getTunnelCtaReveal,
@@ -14,19 +15,22 @@ import {
 describe('HERO_NARRATIVE_STAGES', () => {
   it('keeps the approved opening title order exactly once', () => {
     expect(HERO_NARRATIVE_STAGES.slice(0, 3).map((stage) => stage.title)).toEqual([
-      'Вся ваша практика',
-      'В одном пространстве',
+      'Вся практика астролога',
+      'в одном кабинете',
       'ElevenHouse',
     ])
+    expect(HERO_NARRATIVE_STAGES.slice(0, 3).map((stage) => stage.title).join(' ')).toBe(
+      'Вся практика астролога в одном кабинете ElevenHouse',
+    )
     expect(new Set(HERO_NARRATIVE_STAGES.map((stage) => stage.title)).size)
       .toBe(HERO_NARRATIVE_STAGES.length)
   })
 
   it('maps every product scene to an existing ElevenHouse screenshot', () => {
     expect(HERO_NARRATIVE_STAGES.slice(3, 6)).toMatchObject([
-      { title: 'Хотя подождите.', screenshot: '/assets/product-screenshots/eh-p05-products.png' },
-      { title: 'У вас ведь уже есть система.', screenshot: '/assets/product-screenshots/eh-p01-calendar.png' },
-      { title: 'Вот она.', screenshot: '/assets/product-screenshots/eh-p04-funnel.png' },
+      { title: 'Карты и клиенты.', screenshot: '/assets/product-screenshots/eh-products-tiles.png' },
+      { title: 'Запись и оплаты.', screenshot: '/assets/product-screenshots/eh-calendar-tiles.png' },
+      { title: 'AI-помощник.', screenshot: '/assets/product-screenshots/eh-numerology-tiles.png' },
     ])
   })
 
@@ -76,7 +80,43 @@ describe('linear Hero travel', () => {
     expect(getProductStageMotion(1.2).opacity).toBe(0)
   })
 
-  it('forms the tunnel only as the Вот она scene arrives', () => {
+  it('holds the next product scene in depth until the outgoing tile tail clears', () => {
+    expect(getProductStageMotion(0.32, true).opacity).toBeLessThan(0.15)
+    expect(getProductStageMotion(0.12, true).opacity).toBeGreaterThan(0.65)
+    expect(getProductStageMotion(0.32).opacity).toBeGreaterThan(0.75)
+  })
+
+  it('keeps adjacent product scenes from visibly overlapping during handoff', () => {
+    const visibilitySamples = Array.from({ length: 101 }, (_, index) => {
+      const travel = index / 100
+      const outgoing = getProductStageMotion(-travel).opacity
+      const incoming = getProductStageMotion(1 - travel, true).opacity
+      return { incoming, outgoing }
+    })
+
+    expect(Math.max(...visibilitySamples.map(({ incoming, outgoing }) => incoming * outgoing)))
+      .toBeLessThan(0.03)
+    expect(Math.max(...visibilitySamples.map(({ incoming, outgoing }) => Math.min(incoming, outgoing))))
+      .toBeLessThan(0.05)
+  })
+
+  it('holds the finale until the final product panel has cleared the camera', () => {
+    const visibilitySamples = Array.from({ length: 101 }, (_, index) => {
+      const travel = index / 100
+      return {
+        outgoing: getProductStageMotion(-travel).opacity,
+        incoming: getFinaleStageOpacity(1 - travel),
+      }
+    })
+
+    expect(getFinaleStageOpacity(0)).toBe(1)
+    expect(getFinaleStageOpacity(0.2)).toBe(0)
+    expect(getFinaleStageOpacity(0.12)).toBeGreaterThan(0.65)
+    expect(Math.max(...visibilitySamples.map(({ incoming, outgoing }) => Math.min(incoming, outgoing))))
+      .toBeLessThan(0.05)
+  })
+
+  it('forms the tunnel only as the AI-помощник scene arrives', () => {
     expect(getTunnelMix(4)).toBe(0)
     expect(getTunnelMix(5)).toBeGreaterThan(0)
     expect(getTunnelMix(HERO_LAST_STAGE_INDEX)).toBe(1)

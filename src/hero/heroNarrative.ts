@@ -7,32 +7,32 @@ export type HeroNarrativeStage = {
 }
 
 export const HERO_NARRATIVE_STAGES: readonly HeroNarrativeStage[] = [
-  { title: 'Вся ваша практика', mode: 'fragment' },
-  { title: 'В одном пространстве', mode: 'fragment' },
+  { title: 'Вся практика астролога', mode: 'fragment' },
+  { title: 'в одном кабинете', mode: 'fragment' },
   { title: 'ElevenHouse', mode: 'fragment' },
   {
-    title: 'Хотя подождите.',
+    title: 'Карты и клиенты.',
     mode: 'product',
-    screenshot: '/assets/product-screenshots/eh-p05-products.png',
+    screenshot: '/assets/product-screenshots/eh-products-tiles.png',
     productLabel: 'Продукты',
     productDetail: 'Форматы, услуги и продажи',
   },
   {
-    title: 'У вас ведь уже есть система.',
+    title: 'Запись и оплаты.',
     mode: 'product',
-    screenshot: '/assets/product-screenshots/eh-p01-calendar.png',
+    screenshot: '/assets/product-screenshots/eh-calendar-tiles.png',
     productLabel: 'Календарь',
     productDetail: 'Записи и работа с клиентами',
   },
   {
-    title: 'Вот она.',
+    title: 'AI-помощник.',
     mode: 'product',
-    screenshot: '/assets/product-screenshots/eh-p04-funnel.png',
-    productLabel: 'Воронки',
-    productDetail: 'Связанный сценарий практики',
+    screenshot: '/assets/product-screenshots/eh-numerology-tiles.png',
+    productLabel: 'Нумерология',
+    productDetail: 'Расчёты и портрет клиента',
   },
   {
-    title: 'Мы просто собрали вашу работу обратно.',
+    title: 'Меньше времени на рутину и больше на консультации.',
     mode: 'finale',
   },
 ] as const
@@ -64,10 +64,19 @@ export type ProductStageMotion = {
   rotateY: number
 }
 
-export const getProductStageMotion = (stageOffset: number): ProductStageMotion => {
+const getDeferredArrival = (distance: number) => (
+  1 - smoothstep(0.07, 0.2, distance)
+)
+
+export const getProductStageMotion = (
+  stageOffset: number,
+  deferIncoming = false,
+): ProductStageMotion => {
   const distance = Math.abs(stageOffset)
-  const arrival = 1 - smoothstep(0.12, 0.92, distance)
   const incoming = stageOffset > 0
+  const arrival = incoming && deferIncoming
+    ? getDeferredArrival(distance)
+    : 1 - smoothstep(0.12, 0.92, distance)
 
   return {
     opacity: distance < 0.001 ? 1 : arrival,
@@ -76,6 +85,14 @@ export const getProductStageMotion = (stageOffset: number): ProductStageMotion =
     rotateX: (incoming ? 1 : -1) * (1 - arrival) * 9,
     rotateY: (incoming ? -1 : 1) * (1 - arrival) * 5,
   }
+}
+
+export const getFinaleStageOpacity = (stageOffset: number) => {
+  const distance = Math.abs(stageOffset)
+  if (distance < 0.001) return 1
+  return stageOffset > 0
+    ? getDeferredArrival(distance)
+    : 1 - smoothstep(0.08, 0.72, distance)
 }
 
 export const getTunnelMix = (progress: number) => smoothstep(4.72, 6, progress)

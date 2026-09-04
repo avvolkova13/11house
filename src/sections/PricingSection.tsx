@@ -4,9 +4,9 @@ export function PricingSection() {
   return (
     <section className="pricing-section" id="pricing" aria-labelledby="pricing-title">
       <header className="pricing-section__heading">
-        <span>07 · Тарифы</span>
-        <h2 id="pricing-title">Начать бесплатно.<br />Расти без потолка.</h2>
-        <p>Один и тот же кабинет на каждом этапе практики. Меняются лимиты, инструменты и комиссия с продаж.</p>
+        <span>08 · Тарифы</span>
+        <h2 id="pricing-title">Начните бесплатно.<br />Расширяйте возможности по мере роста.</h2>
+        <p>Выберите объём инструментов под текущую практику. Pro остаётся основным тарифом для регулярной работы.</p>
       </header>
 
       <div className="pricing-section__plans">
@@ -27,7 +27,7 @@ export function PricingSection() {
               <h4>Возможности</h4>
               <ul>{plan.features.map((item) => <li key={item}>{item}</li>)}</ul>
             </section>
-            <a href="https://app.elevenhouse.ai">Начать бесплатно <span aria-hidden="true">↗</span></a>
+            <a href="https://app.elevenhouse.ai">Выбрать тариф <span aria-hidden="true">↗</span></a>
           </article>
         ))}
       </div>
