@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getIntroScrollMotion } from './introMotion'
+import { getIntroScrollMotion, getIntroVelocityAfterDelta } from './introMotion'
 
 const input = {
   progress: 1.4,
@@ -9,6 +9,26 @@ const input = {
 }
 
 describe('intro scroll motion', () => {
+  it('accumulates a bounded intro-only velocity from scroll delta', () => {
+    expect(getIntroVelocityAfterDelta(0, 720, 1.4)).toBe(18)
+    expect(getIntroVelocityAfterDelta(0, -720, 1.4)).toBe(-18)
+    expect(getIntroVelocityAfterDelta(7, 720, 3.15)).toBe(7)
+  })
+
+  it('maps a full desktop impulse to a deep camera flight and long particle streak', () => {
+    const forward = getIntroScrollMotion({
+      progress: 1.4,
+      velocity: 18,
+      viewportWidth: 1440,
+      reducedMotion: false,
+    })
+
+    expect(forward.cameraZ).toBeCloseTo(-14.5)
+    expect(forward.travelBoost).toBeCloseTo(28)
+    expect(forward.pointStretch).toBeCloseTo(5.2)
+    expect(forward.streak).toBe(1)
+  })
+
   it('creates a clear signed forward and reverse camera impulse', () => {
     const forward = getIntroScrollMotion(input)
     const reverse = getIntroScrollMotion({ ...input, velocity: -8 })
@@ -36,8 +56,8 @@ describe('intro scroll motion', () => {
     const tablet = getIntroScrollMotion({ ...input, viewportWidth: 900 })
     const mobile = getIntroScrollMotion({ ...input, viewportWidth: 390 })
 
-    expect(Math.abs(tablet.cameraZ / desktop.cameraZ)).toBeCloseTo(0.8)
-    expect(Math.abs(mobile.cameraZ / desktop.cameraZ)).toBeCloseTo(0.6)
+    expect(Math.abs(tablet.cameraZ / desktop.cameraZ)).toBeCloseTo(0.85)
+    expect(Math.abs(mobile.cameraZ / desktop.cameraZ)).toBeCloseTo(0.7)
   })
 
   it('removes the new response for reduced motion', () => {

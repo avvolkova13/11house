@@ -21,7 +21,9 @@ describe('hero entry integration', () => {
     expect(stylesSource).toContain('.cosmic-runway[data-intro="entering"]')
     expect(stylesSource).toContain('@keyframes hero-entry-field')
     expect(stylesSource).toContain('1180ms 120ms')
-    expect(stylesSource).toContain('1080ms 480ms')
+    expect(stylesSource).toContain('.hero-title-letter__inner')
+    expect(stylesSource).toContain('700ms cubic-bezier(0.22, 1, 0.36, 1)')
+    expect(stylesSource).not.toContain('@keyframes hero-entry-copy')
     expect(stylesSource).not.toContain('body[data-intro')
   })
 

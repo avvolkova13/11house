@@ -21,7 +21,7 @@ export const starVertexShader = /* glsl */ `
     const float depthRange = 244.0;
 
     vec3 transformed = position;
-    transformed.z = nearDepth - mod(nearDepth - position.z - uTravel, depthRange);
+    transformed.z = nearDepth - mod(nearDepth - position.z - uTravel * 1.35, depthRange);
 
     float drift = sin(uTime * 0.16 + aPhase * 6.2831) * 0.16;
     transformed.x += drift * (0.45 + abs(transformed.z) * 0.004);

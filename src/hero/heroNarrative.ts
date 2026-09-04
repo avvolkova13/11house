@@ -11,21 +11,21 @@ export const HERO_NARRATIVE_STAGES: readonly HeroNarrativeStage[] = [
   { title: 'в одном кабинете', mode: 'fragment' },
   { title: 'ElevenHouse', mode: 'fragment' },
   {
-    title: 'Карты и клиенты.',
+    title: 'Карты и клиенты',
     mode: 'product',
     screenshot: '/assets/product-screenshots/eh-products-tiles.png',
     productLabel: 'Продукты',
     productDetail: 'Форматы, услуги и продажи',
   },
   {
-    title: 'Запись и оплаты.',
+    title: 'Запись и оплаты',
     mode: 'product',
     screenshot: '/assets/product-screenshots/eh-calendar-tiles.png',
     productLabel: 'Календарь',
     productDetail: 'Записи и работа с клиентами',
   },
   {
-    title: 'AI-помощник.',
+    title: 'AI-помощник',
     mode: 'product',
     screenshot: '/assets/product-screenshots/eh-numerology-tiles.png',
     productLabel: 'Нумерология',
@@ -98,6 +98,3 @@ export const getFinaleStageOpacity = (stageOffset: number) => {
 export const getTunnelMix = (progress: number) => smoothstep(4.72, 6, progress)
 export const getTunnelPresentation = (progress: number) => smoothstep(5.92, 6.32, progress)
 export const getTunnelDive = (progress: number) => smoothstep(6, HERO_LAST_VISUAL_INDEX, progress)
-export const getTunnelCtaReveal = (progress: number, enabled = true) => (
-  enabled ? smoothstep(8.45, 8.9, progress) : 0
-)

@@ -7,6 +7,7 @@ import {
   getTunnelViewportFraming,
   sampleSurfacePoint,
 } from './tunnelMotion'
+import { terrainVertexShader } from './shaders/nebula'
 
 describe('tunnel visual continuity', () => {
   it('keeps the environment blue while the terrain becomes the tunnel', () => {
@@ -331,17 +332,20 @@ describe('single-surface morph sampling', () => {
     expect(unchanged).toEqual(approved)
   })
 
-  it('keeps the final tunnel radius stable and aligns its throat to the camera center', () => {
+  it('keeps the final tunnel radius stable and places its throat on the camera axis', () => {
     const startRadius = sampleCrossSection(-80, 0).radius
     const endRadius = sampleCrossSection(-80, 1).radius
 
     expect(endRadius).toBeGreaterThanOrEqual(startRadius * 0.98)
-    const throat = sampleCrossSection(120).center
+    const throat = sampleCrossSection(132.5).center
     const middle = sampleCrossSection(50).center
     expect(Math.abs(middle.x)).toBeLessThan(18)
     expect(Math.abs(throat.x)).toBeLessThan(4)
-    expect(throat.z).toBeGreaterThan(18)
-    expect(throat.z).toBeLessThan(32)
+    expect(throat.z).toBeCloseTo(-25, 0)
+  })
+
+  it('keeps the GPU tunnel throat aligned with the sampled geometry', () => {
+    expect(terrainVertexShader).toContain('- finalTaper * 51.0')
   })
 
   it('holds a long tubular body before tapering at the far throat', () => {

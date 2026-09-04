@@ -18,14 +18,17 @@ const sectionSource = [
 ].join('\n')
 
 const faqSource = readRaw(import.meta.glob('./FaqSection.tsx', { eager: true, query: '?raw', import: 'default' }))
+const clientStorySource = readRaw(
+  import.meta.glob('./OneClientStory.tsx', { eager: true, query: '?raw', import: 'default' }),
+)
 
 describe('marketing brief copy contract', () => {
   it('uses the category-first Hero message and registration CTA', () => {
     expect(heroNarrativeSource).toContain("title: 'Вся практика астролога'")
     expect(heroNarrativeSource).toContain("title: 'в одном кабинете'")
     expect(heroNarrativeSource).toContain("title: 'ElevenHouse'")
-    expect(heroComponentSource).toContain('Создать кабинет бесплатно')
-    expect(heroComponentSource).toContain('Без банковской карты.')
+    expect(heroComponentSource).toContain('Создать кабинет')
+    expect(heroComponentSource).toContain('Бесплатно без банковской карты')
   })
 
   it('includes the approved desktop and mobile header navigation', () => {
@@ -46,7 +49,6 @@ describe('marketing brief copy contract', () => {
 
   it('uses the approved benefit-first section headings', () => {
     const headings = [
-      'Больше времени на клиентов. Меньше — на рутину.',
       'От построения карты до оплаты —<br />один рабочий процесс.',
       'AI берёт рутину на себя.<br />Последнее слово — за вами.',
       'Один кабинет вместо<br />нескольких сервисов.',
@@ -59,15 +61,38 @@ describe('marketing brief copy contract', () => {
   })
 
   it('splits the time-saving heading on the Hero finale, not in the client story', () => {
-    const clientStorySource = readRaw(
-      import.meta.glob('./OneClientStory.tsx', { eager: true, query: '?raw', import: 'default' }),
-    )
-
     expect(heroComponentSource).toContain('hero-finale__part--start')
     expect(heroComponentSource).toContain('hero-finale__part--end')
-    expect(heroComponentSource).toContain('больше на консультацию')
+    expect(heroComponentSource).toMatch(/больше\s*<br \/>\s*на консультацию/)
     expect(heroComponentSource).not.toContain('Больше времени на консультации')
     expect(clientStorySource).not.toContain('client-story__title-part')
+    expect(clientStorySource).not.toContain('client-story__header')
+    expect(clientStorySource).not.toContain('Больше времени на клиентов. Меньше — на рутину.')
+  })
+
+  it('compares the five workflow stages and labels researched benchmarks honestly', () => {
+    const stages = [
+      'Сбор данных',
+      'Построение карты',
+      'Подготовка разбора',
+      'Запись и оплата',
+      'Повторный контакт',
+    ]
+
+    expect(clientStorySource).toContain('Ручной режим')
+    expect(clientStorySource).toContain('ElevenHouse')
+    stages.forEach((stage) => expect(clientStorySource).toContain(stage))
+    expect(clientStorySource.match(/≈5 минут/g) ?? []).toHaveLength(2)
+    expect(clientStorySource).toContain('−40%')
+    expect(clientStorySource).toContain('https://pmc.ncbi.nlm.nih.gov/articles/PMC5709849/')
+    expect(clientStorySource).toContain('https://journals.sagepub.com/doi/10.3233/SHTI260505')
+    expect(clientStorySource).toContain('https://economics.mit.edu/sites/default/files/inline-files/Noy_Zhang_1.pdf')
+    expect(clientStorySource).toContain(
+      'Ориентиры основаны на исследованиях цифрового ввода данных, онлайн-записи и AI-подготовки текста. Фактическая экономия зависит от процесса специалиста.',
+    )
+    expect(clientStorySource).not.toContain('data-client-scene')
+    expect(clientStorySource).not.toContain('client-story__rail')
+    expect(clientStorySource).not.toContain('Клиент Анна')
   })
 
   it('contains all eight risk-closing FAQ questions', () => {

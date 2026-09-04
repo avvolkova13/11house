@@ -7,7 +7,6 @@ import {
   getFinaleStageOpacity,
   getProductStageMotion,
   getTunnelMix,
-  getTunnelCtaReveal,
   getTunnelDive,
   getTunnelPresentation,
 } from './heroNarrative'
@@ -28,9 +27,9 @@ describe('HERO_NARRATIVE_STAGES', () => {
 
   it('maps every product scene to an existing ElevenHouse screenshot', () => {
     expect(HERO_NARRATIVE_STAGES.slice(3, 6)).toMatchObject([
-      { title: 'Карты и клиенты.', screenshot: '/assets/product-screenshots/eh-products-tiles.png' },
-      { title: 'Запись и оплаты.', screenshot: '/assets/product-screenshots/eh-calendar-tiles.png' },
-      { title: 'AI-помощник.', screenshot: '/assets/product-screenshots/eh-numerology-tiles.png' },
+      { title: 'Карты и клиенты', screenshot: '/assets/product-screenshots/eh-products-tiles.png' },
+      { title: 'Запись и оплаты', screenshot: '/assets/product-screenshots/eh-calendar-tiles.png' },
+      { title: 'AI-помощник', screenshot: '/assets/product-screenshots/eh-numerology-tiles.png' },
     ])
   })
 
@@ -56,14 +55,6 @@ describe('tunnel visual progress', () => {
     expect(getTunnelDive(9)).toBe(1)
   })
 
-  it('reveals the tunnel CTA only at the end of the extended flight', () => {
-    expect(getTunnelCtaReveal(8.44)).toBe(0)
-    expect(getTunnelCtaReveal(8.45)).toBe(0)
-    expect(getTunnelCtaReveal(8.675)).toBeCloseTo(0.5)
-    expect(getTunnelCtaReveal(8.9)).toBe(1)
-    expect(getTunnelCtaReveal(9)).toBe(1)
-    expect(getTunnelCtaReveal(9, false)).toBe(0)
-  })
 })
 
 describe('linear Hero travel', () => {

@@ -250,6 +250,7 @@ export const sampleSurfacePoint = ({
   const finalBendX = -4 * (1 - finalDepth) + finalCenterArc * 14
     + Math.sin(finalDepth * 4.7 + elapsed * 0.07) * 1.4 * finalCenterEnvelope
   const finalBendZ = -4 * (1 - finalDepth) + finalDepth * 26 + finalCenterArc * 8
+    - finalTaper * 51
     + Math.cos(finalDepth * 4.1 - elapsed * 0.06) * 1.2 * finalCenterEnvelope
   const referenceScale = 0.52
   const referenceTunnelX = finalBendX + Math.cos(finalAngle) * finalRadius * referenceScale

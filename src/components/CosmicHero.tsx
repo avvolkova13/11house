@@ -4,7 +4,6 @@ import { ProductTilePanel } from './ProductTilePanel'
 import { LandingHeader } from './LandingHeader'
 import type { HeroScrollAdapter } from '../scroll/HeroScrollAdapter'
 import type { HeroHandoffPhase } from '../scroll/heroHandoff'
-import { getIntroGlyphDepth, getStageTravelDirection } from '../cosmic/copyMotion'
 import {
   HERO_ENTRY_DURATION_MS,
   getHeroEntryPhaseAfterMount,
@@ -14,61 +13,54 @@ import {
   type HeroEntryPhase,
 } from '../cosmic/heroEntryMotion'
 import {
-  HERO_LAST_VISUAL_INDEX,
   HERO_NARRATIVE_STAGES,
   clampHeroProgress,
   getFinaleStageOpacity,
   getLinearStageOffset,
   getProductStageMotion,
-  getTunnelCtaReveal,
   getTunnelMix,
 } from '../hero/heroNarrative'
+import {
+  getHeroTitleLetterDelay,
+  shouldRevealHeroTitle,
+} from '../hero/heroTitleMotion'
 
-const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
-
-const smoothstep = (edge0: number, edge1: number, value: number) => {
-  const progress = clamp01((value - edge0) / (edge1 - edge0))
-  return progress * progress * (3 - 2 * progress)
+type HeroTitleGlyphsProps = {
+  copy: string
 }
 
-const randomUnit = (stageIndex: number, glyphIndex: number, fragmentIndex: number, salt: number) => {
-  const value = Math.sin(
-    stageIndex * 91.73 + glyphIndex * 37.17 + fragmentIndex * 17.41 + salt * 53.29,
-  ) * 43758.5453
-  return value - Math.floor(value)
-}
+function HeroTitleGlyphs({ copy }: HeroTitleGlyphsProps) {
+  let wordGlyphIndex = -1
 
-const getFragmentStyle = (
-  stageOffset: number,
-  stageIndex: number,
-  glyphIndex: number,
-  glyphCount: number,
-  fragmentIndex: number,
-): CSSProperties => {
-  const distance = Math.abs(stageOffset)
-  const travelDirection = getStageTravelDirection(stageIndex)
-  const direction = stageOffset < 0 ? travelDirection : -travelDirection
-  const stagger = randomUnit(stageIndex, glyphIndex, fragmentIndex, 1)
-  const spread = smoothstep(0.03 + stagger * 0.06, 0.74, distance)
-  const isIncoming = stageOffset > 0
-  const fadeStart = (isIncoming ? 0.08 : 0.1) + stagger * 0.05
-  const fadeEnd = (isIncoming ? 0.41 : 0.48) + stagger * 0.07
-  const opacity = 1 - smoothstep(fadeStart, fadeEnd, distance)
-  const glyphPosition = glyphCount > 1 ? glyphIndex / (glyphCount - 1) - 0.5 : 0
-  const driftX = direction * (90 + randomUnit(stageIndex, glyphIndex, fragmentIndex, 2) * 220)
-    + glyphPosition * (45 + randomUnit(stageIndex, glyphIndex, fragmentIndex, 3) * 55)
-  const driftY = direction * (10 + randomUnit(stageIndex, glyphIndex, fragmentIndex, 4) * 76)
-    + (fragmentIndex - 1) * (24 + randomUnit(stageIndex, glyphIndex, fragmentIndex, 5) * 34)
-  const rotation = (randomUnit(stageIndex, glyphIndex, fragmentIndex, 6) - 0.5) * 6
-  const depth = getIntroGlyphDepth(stageOffset, stagger)
-  const blur = Math.max(spread * (0.25 + stagger * 1.15), depth.blur)
-  const scale = (1 - spread * 0.055) * depth.scale
+  return Array.from(copy).map((glyph, glyphIndex) => {
+    if (glyph === ' ') {
+      wordGlyphIndex = -1
+      return (
+        <span
+          aria-hidden="true"
+          className="hero-title-space"
+          key={`${copy}-${glyphIndex}`}
+        />
+      )
+    }
 
-  return {
-    opacity,
-    filter: `blur(${blur}px)`,
-    transform: `translate3d(${driftX * spread}px, ${driftY * spread}px, ${depth.translateZ}px) rotate(${rotation * spread}deg) scale(${scale})`,
-  }
+    wordGlyphIndex += 1
+    const delay = getHeroTitleLetterDelay(wordGlyphIndex)
+    return (
+      <span
+        aria-hidden="true"
+        className="hero-title-letter"
+        key={`${copy}-${glyphIndex}`}
+      >
+        <span
+          className="hero-title-letter__inner"
+          style={{ '--hero-letter-delay': `${delay}ms` } as CSSProperties}
+        >
+          {glyph}
+        </span>
+      </span>
+    )
+  })
 }
 
 type CosmicHeroProps = {
@@ -93,9 +85,6 @@ export function CosmicHero({
   ))
   const [copyProgress, setCopyProgress] = useState(() => (
     reducedMotion ? 0 : clampHeroProgress(scrollAdapter.snapshot.travelProgress)
-  ))
-  const [visualProgress, setVisualProgress] = useState(() => (
-    reducedMotion ? HERO_LAST_VISUAL_INDEX : scrollAdapter.snapshot.travelProgress
   ))
 
   useEffect(() => {
@@ -143,35 +132,16 @@ export function CosmicHero({
   useEffect(() => {
     if (reducedMotion) return
 
-    let progress = scrollAdapter.snapshot.travelProgress
-    let renderFrame = 0
-    const renderProgress = () => {
-      window.cancelAnimationFrame(renderFrame)
-      renderFrame = window.requestAnimationFrame(() => {
-        setCopyProgress(clampHeroProgress(progress))
-        setVisualProgress(progress)
-      })
-    }
-    setCopyProgress(clampHeroProgress(progress))
-    setVisualProgress(progress)
+    setCopyProgress(clampHeroProgress(scrollAdapter.snapshot.travelProgress))
 
     const unsubscribe = scrollAdapter.subscribe((snapshot) => {
-      progress = snapshot.travelProgress
-      renderProgress()
+      setCopyProgress(clampHeroProgress(snapshot.travelProgress))
     })
 
-    return () => {
-      unsubscribe()
-      window.cancelAnimationFrame(renderFrame)
-    }
+    return unsubscribe
   }, [reducedMotion, scrollAdapter])
 
   const tunnelMix = getTunnelMix(copyProgress)
-  const ctaReveal = getTunnelCtaReveal(
-    reducedMotion ? HERO_LAST_VISUAL_INDEX : visualProgress,
-    handoffPhase === 'tunnel',
-  )
-  const ctaInteractive = ctaReveal >= 0.999 && handoffPhase === 'tunnel'
   const copyStyle = {
     '--hero-progress': copyProgress,
     '--hero-tunnel-mix': tunnelMix,
@@ -224,6 +194,8 @@ export function CosmicHero({
                 ? 0
                 : getLinearStageOffset(copyProgress, index)
               const stageIsCurrent = reducedMotion || Math.abs(stageOffset) < 0.55
+              const titleVisible = shouldRevealHeroTitle(stageOffset, reducedMotion)
+                && (index !== 0 || entryPhase !== 'preparing')
               if (stage.mode === 'product') {
                 const motion = getProductStageMotion(stageOffset, index > 3)
                 const sceneStyle = {
@@ -242,17 +214,19 @@ export function CosmicHero({
                     key={stage.title}
                     style={sceneStyle}
                   >
-                    <p aria-hidden="true" className="hero-product-scene__title hero-product-scene__title--back">
-                      {stage.title}
-                    </p>
                     <ProductTilePanel
                       active={reducedMotion || Math.abs(stageOffset) < 0.95}
                       reducedMotion={reducedMotion}
                       screenshot={stage.screenshot!}
                       stageOffset={stageOffset}
                     />
-                    <p aria-hidden="true" className="hero-product-scene__title hero-product-scene__title--front">
-                      {stage.title}
+                    <p
+                      aria-hidden="true"
+                      className="hero-product-scene__title"
+                      data-visible={titleVisible}
+                      style={{ mixBlendMode: 'difference' }}
+                    >
+                      <HeroTitleGlyphs copy={stage.title} />
                     </p>
                   </article>
                 )
@@ -260,20 +234,47 @@ export function CosmicHero({
 
               if (stage.mode === 'finale') {
                 const finaleOpacity = getFinaleStageOpacity(stageOffset)
+                const finaleInteractive = titleVisible
+                  && Math.abs(stageOffset) < 0.12
+                  && handoffPhase === 'tunnel'
                 return (
-                  <p
+                  <article
                     aria-hidden={!stageIsCurrent}
                     className="hero-finale"
                     key={stage.title}
                     style={{ opacity: reducedMotion ? 1 : finaleOpacity }}
                   >
-                    <span className="hero-finale__part hero-finale__part--start">
-                      Меньше времени на рутину
+                    <span
+                      className="hero-finale__part hero-finale__part--start"
+                      data-visible={titleVisible}
+                    >
+                      <span className="hero-finale__part-inner">
+                        Меньше времени на рутину
+                      </span>
                     </span>
-                    <span className="hero-finale__part hero-finale__part--end">
-                      больше на консультацию
+                    <span
+                      className="hero-finale__part hero-finale__part--end"
+                      data-visible={titleVisible}
+                    >
+                      <span className="hero-finale__part-inner">
+                        больше<br />
+                        на консультацию
+                      </span>
                     </span>
-                  </p>
+                    <div
+                      className="hero-finale__action"
+                      data-interactive={finaleInteractive}
+                      data-visible={titleVisible}
+                    >
+                      <a
+                        href="https://app.elevenhouse.ai"
+                        tabIndex={finaleInteractive ? 0 : -1}
+                      >
+                        Создать кабинет
+                      </a>
+                      <span>Бесплатно без банковской карты</span>
+                    </div>
+                  </article>
                 )
               }
 
@@ -283,51 +284,14 @@ export function CosmicHero({
                   aria-label={copy}
                   aria-hidden={!stageIsCurrent}
                   className="hero-copy__stage"
+                  data-visible={titleVisible}
                   key={copy}
                 >
-                  {Array.from(copy).map((glyph, glyphIndex) => (
-                    glyph === ' '
-                      ? <span aria-hidden="true" className="hero-copy__space" key={`${copy}-${glyphIndex}`} />
-                      : (
-                        <span aria-hidden="true" className="hero-copy__glyph" key={`${copy}-${glyphIndex}`}>
-                          <span className="hero-copy__glyph-measure">{glyph}</span>
-                          {[0, 1, 2].map((fragmentIndex) => (
-                            <span
-                              className={`hero-copy__fragment hero-copy__fragment--${fragmentIndex + 1}`}
-                              key={fragmentIndex}
-                              style={getFragmentStyle(
-                                stageOffset,
-                                index,
-                                glyphIndex,
-                                copy.length,
-                                fragmentIndex,
-                              )}
-                            >
-                              {glyph}
-                            </span>
-                          ))}
-                        </span>
-                      )
-                  ))}
+                  <HeroTitleGlyphs copy={copy} />
                 </p>
               )
             })}
           </div>
-        </div>
-        <div
-          aria-hidden={!ctaInteractive}
-          className="hero-tunnel-action"
-          data-interactive={ctaInteractive}
-          style={{ '--hero-cta-reveal': ctaReveal } as CSSProperties}
-        >
-          <button
-            disabled
-            type="button"
-            tabIndex={-1}
-          >
-            Создать кабинет бесплатно
-          </button>
-          <span>Без банковской карты.</span>
         </div>
       </section>
     </section>

@@ -15,7 +15,7 @@ import {
   getTunnelMotion,
   getTunnelViewportFraming,
 } from './tunnelMotion'
-import { getIntroScrollMotion } from './introMotion'
+import { getIntroScrollMotion, getIntroVelocityAfterDelta } from './introMotion'
 
 type CosmicSceneOptions = {
   reducedMotion: boolean
@@ -45,6 +45,7 @@ export class CosmicScene {
   private pointer = new THREE.Vector2()
   private pointerActive = false
   private scrollVelocity = 0
+  private introVelocity = 0
   private travel = 0
   private narrativeProgress = 0
   private readonly removeScrollListener: () => void
@@ -56,6 +57,11 @@ export class CosmicScene {
       this.narrativeProgress = this.reducedMotion ? 0 : snapshot.travelProgress
       if (this.reducedMotion || snapshot.heroDelta === 0) return
       this.scrollVelocity = clamp(this.scrollVelocity + snapshot.heroDelta * 0.018, -11, 14)
+      this.introVelocity = getIntroVelocityAfterDelta(
+        this.introVelocity,
+        snapshot.heroDelta,
+        snapshot.travelProgress,
+      )
     })
 
     try {
@@ -155,8 +161,10 @@ export class CosmicScene {
 
     if (this.reducedMotion) {
       this.scrollVelocity = 0
+      this.introVelocity = 0
     } else {
       this.scrollVelocity = decayVelocity(this.scrollVelocity, 3.3, dt)
+      this.introVelocity = decayVelocity(this.introVelocity, 2.15, dt)
     }
 
     const baseStreak = this.reducedMotion
@@ -164,11 +172,13 @@ export class CosmicScene {
       : THREE.MathUtils.smoothstep(Math.abs(this.scrollVelocity), 0.7, 9.5)
     const introMotion = getIntroScrollMotion({
       progress: this.narrativeProgress,
-      velocity: this.scrollVelocity,
+      velocity: this.introVelocity,
       viewportWidth: this.width,
       reducedMotion: this.reducedMotion,
     })
-    const streak = Math.max(baseStreak, introMotion.streak)
+    const streak = introMotion.influence > 0
+      ? Math.max(baseStreak * 0.45, introMotion.streak)
+      : baseStreak * 0.32
     const tunnelMix = getTunnelMix(this.narrativeProgress)
     const tunnelPresentation = getTunnelPresentation(this.narrativeProgress)
     const tunnelDive = getTunnelDive(this.narrativeProgress)

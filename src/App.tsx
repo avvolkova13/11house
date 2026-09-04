@@ -21,6 +21,7 @@ import {
   beginHeroHandoff,
   completeHeroHandoff,
   getHeroRunwayEnd,
+  shouldBeginHeroHandoff,
   type HeroHandoffPhase,
 } from './scroll/heroHandoff'
 
@@ -57,6 +58,19 @@ export default function App() {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onResize)
     }
+  }, [reducedMotion, scrollAdapter])
+
+  useEffect(() => {
+    if (reducedMotion) return
+
+    let motionFrame = 0
+    const advanceMotion = (frameTime: number) => {
+      scrollAdapter.advance(frameTime)
+      motionFrame = window.requestAnimationFrame(advanceMotion)
+    }
+
+    motionFrame = window.requestAnimationFrame(advanceMotion)
+    return () => window.cancelAnimationFrame(motionFrame)
   }, [reducedMotion, scrollAdapter])
 
   useEffect(() => {
@@ -97,13 +111,13 @@ export default function App() {
     if (handoffPhase !== 'tunnel') return
 
     const unsubscribe = scrollAdapter.subscribe((snapshot) => {
-      if (snapshot.state === 'EXITING') enterStory()
+      if (shouldBeginHeroHandoff(snapshot, metrics)) enterStory()
     })
 
     return () => {
       unsubscribe()
     }
-  }, [enterStory, handoffPhase, scrollAdapter])
+  }, [enterStory, handoffPhase, metrics, scrollAdapter])
 
   const runwayEnd = getHeroRunwayEnd(metrics, handoffPhase)
   const runwayStyle = {

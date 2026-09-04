@@ -27,7 +27,7 @@ const terrainNoise = /* glsl */ `
 
   float baseTerrainHeight(vec2 rawPosition) {
     vec2 p = rawPosition;
-    p.y += uTravel * 0.82;
+    p.y += uTravel * 1.08;
     vec2 domain = vec2(p.x * 0.036, p.y * 0.024);
     float warpA = fbm21(domain * 1.32 + vec2(uTime * 0.006, -uTime * 0.004));
     float warpB = fbm21(domain * 2.16 + vec2(warpA * 1.7, -warpA * 1.1));
@@ -104,6 +104,7 @@ const terrainNoise = /* glsl */ `
     float finalBendX = -4.0 * (1.0 - finalDepth) + finalCenterArc * 14.0
       + sin(finalDepth * 4.7 + uTime * 0.07) * 1.4 * finalCenterEnvelope;
     float finalBendZ = -4.0 * (1.0 - finalDepth) + finalDepth * 26.0 + finalCenterArc * 8.0
+      - finalTaper * 51.0
       + cos(finalDepth * 4.1 - uTime * 0.06) * 1.2 * finalCenterEnvelope;
     float referenceScale = 0.52;
     vec3 referenceTunnel = vec3(
@@ -331,7 +332,7 @@ export const terrainPointVertexShader = /* glsl */ `
       * mix(1.0, (0.34 + halo * 0.98) * sweep, uTunnelPresentation);
     vec2 ndc = projected.xy / max(projected.w, 0.0001);
     vPointAngle = atan(ndc.y - 0.18, ndc.x - 0.12);
-    float introStretch = 1.0 + abs(uIntroEnergy) * 2.15;
+    float introStretch = 1.0 + abs(uIntroEnergy) * 4.2;
     float tunnelStretch = 1.0 + min(abs(uVelocity), 14.0) * 0.11
       + uTunnelDive * 0.34;
     vPointStretch = mix(introStretch, tunnelStretch, uTunnelPresentation);
@@ -364,7 +365,8 @@ export const terrainPointFragmentShader = /* glsl */ `
     float distanceToCenter = length(center);
     float core = smoothstep(0.48, 0.05, distanceToCenter);
     float glow = smoothstep(0.50, 0.16, distanceToCenter);
-    float alpha = (core + glow * 0.32) * vFade;
+    float streakEnergy = smoothstep(1.0, 5.2, vPointStretch);
+    float alpha = (core + glow * 0.32) * vFade * mix(1.0, 0.52, streakEnergy);
     if (alpha < 0.01) discard;
     vec3 tunnelTint = mix(uPointColor, vec3(0.30, 0.48, 0.88), vTunnelMix * 0.82);
     tunnelTint = mix(tunnelTint, vec3(0.38, 0.50, 0.86), smoothstep(0.62, 1.0, vTunnelDepth) * 0.18);

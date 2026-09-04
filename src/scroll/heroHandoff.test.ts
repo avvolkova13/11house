@@ -4,6 +4,7 @@ import {
   beginHeroHandoff,
   completeHeroHandoff,
   getHeroRunwayEnd,
+  shouldBeginHeroHandoff,
 } from './heroHandoff'
 
 const metrics: HeroCorridorMetrics = {
@@ -29,5 +30,38 @@ describe('hero handoff', () => {
     expect(getHeroRunwayEnd(metrics, 'tunnel')).toBe(metrics.settleEnd)
     expect(getHeroRunwayEnd(metrics, 'covering')).toBe(metrics.corridorEnd)
     expect(getHeroRunwayEnd(metrics, 'story')).toBe(metrics.corridorEnd)
+  })
+
+  it('waits for the smoothed terminal frame before opening the story', () => {
+    expect(shouldBeginHeroHandoff({
+      state: 'EXITING',
+      scrollPosition: 6840,
+      travelProgress: 6,
+    }, metrics)).toBe(false)
+    expect(shouldBeginHeroHandoff({
+      state: 'EXITING',
+      scrollPosition: 6840,
+      travelProgress: 9,
+    }, metrics)).toBe(true)
+    expect(shouldBeginHeroHandoff({
+      state: 'EXIT_ARMED',
+      scrollPosition: 7155,
+      travelProgress: 8.8,
+    }, metrics)).toBe(false)
+    expect(shouldBeginHeroHandoff({
+      state: 'EXIT_ARMED',
+      scrollPosition: 7155,
+      travelProgress: 9,
+    }, metrics)).toBe(true)
+  })
+
+  it('does not delay the reduced-motion handoff', () => {
+    const reducedMetrics = { travelEnd: 1, settleEnd: 1, corridorEnd: 451 }
+
+    expect(shouldBeginHeroHandoff({
+      state: 'EXITING',
+      scrollPosition: 1,
+      travelProgress: 0,
+    }, reducedMetrics)).toBe(true)
   })
 })
