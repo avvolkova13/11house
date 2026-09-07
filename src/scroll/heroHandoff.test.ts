@@ -64,4 +64,23 @@ describe('hero handoff', () => {
       travelProgress: 0,
     }, reducedMetrics)).toBe(true)
   })
+
+  it('opens the story when inertial scrolling jumps straight below the Hero', () => {
+    expect(shouldBeginHeroHandoff({
+      state: 'BELOW_HERO',
+      scrollPosition: metrics.corridorEnd + 240,
+      travelProgress: 9,
+    }, metrics)).toBe(true)
+  })
+
+  it('opens when the terminal scroll target is reached before smoothing settles', () => {
+    const snapshot = {
+      state: 'EXIT_ARMED' as const,
+      scrollPosition: metrics.settleEnd,
+      travelProgress: 6,
+      targetProgress: 9,
+    }
+
+    expect(shouldBeginHeroHandoff(snapshot, metrics)).toBe(true)
+  })
 })

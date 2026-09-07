@@ -12,6 +12,7 @@ import { OneClientStory } from './sections/OneClientStory'
 import { ProductProof } from './sections/ProductProof'
 import { AiRoutine } from './sections/AiRoutine'
 import { UnifiedWorkspace } from './sections/UnifiedWorkspace'
+import { PractitionerResults } from './sections/PractitionerResults'
 import { PricingSection } from './sections/PricingSection'
 import { FaqSection } from './sections/FaqSection'
 import { FinalCta } from './sections/FinalCta'
@@ -26,6 +27,12 @@ import {
 } from './scroll/heroHandoff'
 
 export default function App() {
+  // Temporary presentation lock: keep the tunnel as the last visible scene
+  // until the next review. Add ?unlock-after-hero=1 to preview the handoff.
+  const holdHeroHandoff = !(
+    import.meta.env.DEV
+    && new URLSearchParams(window.location.search).has('unlock-after-hero')
+  )
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     || (import.meta.env.DEV && new URLSearchParams(window.location.search).has('reduced-motion'))
   const [metrics, setMetrics] = useState(() => (
@@ -108,7 +115,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (handoffPhase !== 'tunnel') return
+    if (handoffPhase !== 'tunnel' || holdHeroHandoff) return
 
     const unsubscribe = scrollAdapter.subscribe((snapshot) => {
       if (shouldBeginHeroHandoff(snapshot, metrics)) enterStory()
@@ -117,7 +124,7 @@ export default function App() {
     return () => {
       unsubscribe()
     }
-  }, [enterStory, handoffPhase, metrics, scrollAdapter])
+  }, [enterStory, handoffPhase, holdHeroHandoff, metrics, scrollAdapter])
 
   const runwayEnd = getHeroRunwayEnd(metrics, handoffPhase)
   const runwayStyle = {
@@ -151,6 +158,7 @@ export default function App() {
         <ProductProof />
         <AiRoutine />
         <UnifiedWorkspace />
+        <PractitionerResults />
         <PricingSection />
         <FaqSection />
         <FinalCta />

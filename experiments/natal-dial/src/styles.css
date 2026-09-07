@@ -1,0 +1,109 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100%;
+  background: #030404;
+}
+
+body {
+  min-height: 100svh;
+  overflow: hidden;
+}
+
+#natal-dial-stage {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  background: #030404;
+  color: #f4f1e8;
+}
+
+#natal-dial-canvas,
+#natal-dial-fallback {
+  display: block;
+  width: min(100vw, 100svh);
+  height: min(100vw, 100svh);
+}
+
+#natal-dial-canvas[hidden],
+#natal-dial-fallback[hidden] {
+  display: none;
+}
+
+#natal-dial-stage .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+#natal-dial-fallback {
+  position: relative;
+  background-color: #030404;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 5% 5%;
+}
+
+#natal-dial-fallback .fallback-ring {
+  position: absolute;
+  inset: 9%;
+  border: 2px solid rgba(244, 241, 232, 0.88);
+  border-radius: 50%;
+  box-shadow:
+    -1px 0 #2bd9ff,
+    1px 0 #ff5b36,
+    inset 0 0 0 9vmin transparent;
+}
+
+#natal-dial-fallback .fallback-ring::before,
+#natal-dial-fallback .fallback-ring::after {
+  content: '';
+  position: absolute;
+  border: 1px solid rgba(244, 241, 232, 0.72);
+  border-radius: 50%;
+}
+
+#natal-dial-fallback .fallback-ring::before {
+  inset: 7%;
+}
+
+#natal-dial-fallback .fallback-ring::after {
+  inset: 15%;
+}
+
+#natal-dial-fallback span {
+  --angle: calc(var(--index) * 30deg);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font: 500 clamp(14px, 2.2vmin, 28px) / 1 Georgia, serif;
+  transform: translate(-50%, -50%) rotate(var(--angle)) translateY(-34vmin)
+    rotate(calc(-1 * var(--angle)));
+}
+
+#natal-dial-fallback i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 27%;
+  aspect-ratio: 1;
+  border: clamp(10px, 2vmin, 28px) solid rgba(219, 237, 236, 0.62);
+  border-radius: 16%;
+  background: rgba(0, 0, 0, 0.72);
+  box-shadow:
+    inset 0 0 22px rgba(255, 255, 255, 0.3),
+    0 0 2px #fff;
+  transform: translate(-50%, -50%) rotate(24deg);
+}

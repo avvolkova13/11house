@@ -1,14 +1,39 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { PricingOrbit } from './PricingOrbit'
-import { DEFAULT_PRICING_PLAN_KEY } from './pricingMotion'
+import { parsePricingFrameOverride } from './PricingWebGLStage'
+import {
+  PRICING_HOLD_MS,
+  PRICING_TRANSITION_MS,
+  beginPricingTransition,
+  completePricingTransition,
+  createPricingMotionState,
+} from './pricingMotion'
 import { pricingPlans } from './pricingData'
+import type { PricingPlan } from './pricingData'
+
+export type PricingInputModality = 'keyboard' | 'pointer'
+
+const pricingPlanKeys = pricingPlans.map((plan) => plan.key)
 
 export function PricingSection() {
   const sectionRef = useRef<HTMLElement>(null)
-  const [selectedPlanKey, setSelectedPlanKey] = useState(DEFAULT_PRICING_PLAN_KEY)
+  const [motionState, setMotionState] = useState(createPricingMotionState)
   const [isInView, setIsInView] = useState(false)
-  const selectedPlan = pricingPlans.find((plan) => plan.key === selectedPlanKey) ?? pricingPlans[1]
+  const [isFocusInside, setIsFocusInside] = useState(false)
+  const [inputModality, setInputModality] = useState<PricingInputModality>('pointer')
+  const [isDocumentVisible, setIsDocumentVisible] = useState(true)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const selectedPlan = pricingPlans.find((plan) => plan.key === motionState.activeKey) ?? pricingPlans[1]
+  const isKeyboardFocusPaused = isFocusInside && inputModality === 'keyboard'
+  const hasDevelopmentFrameOverride = import.meta.env.DEV
+    && typeof window !== 'undefined'
+    && parsePricingFrameOverride(window.location.search) !== null
+  const isAutoPaused = !isInView
+    || isKeyboardFocusPaused
+    || !isDocumentVisible
+    || prefersReducedMotion
+    || hasDevelopmentFrameOverride
 
   useEffect(() => {
     const section = sectionRef.current
@@ -28,6 +53,78 @@ export function PricingSection() {
     return () => observer.disconnect()
   }, [])
 
+  useEffect(() => {
+    const updateVisibility = () => setIsDocumentVisible(document.visibilityState !== 'hidden')
+    updateVisibility()
+    document.addEventListener('visibilitychange', updateVisibility)
+    return () => document.removeEventListener('visibilitychange', updateVisibility)
+  }, [])
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches)
+    updatePreference()
+    mediaQuery.addEventListener('change', updatePreference)
+    return () => mediaQuery.removeEventListener('change', updatePreference)
+  }, [])
+
+  useEffect(() => {
+    const handleGlobalPointerDown = () => setInputModality('pointer')
+    const handleGlobalKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Tab' || event.key.startsWith('Arrow')) {
+        setInputModality('keyboard')
+      }
+    }
+
+    window.addEventListener('pointerdown', handleGlobalPointerDown)
+    window.addEventListener('keydown', handleGlobalKeyDown)
+    return () => {
+      window.removeEventListener('pointerdown', handleGlobalPointerDown)
+      window.removeEventListener('keydown', handleGlobalKeyDown)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (motionState.phase !== 'holding' || isAutoPaused) return
+
+    const timeoutId = window.setTimeout(() => {
+      setMotionState((current) => beginPricingTransition(current, pricingPlanKeys))
+    }, PRICING_HOLD_MS)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [isAutoPaused, motionState.phase, motionState.sequence])
+
+  useEffect(() => {
+    if (motionState.phase !== 'transitioning') return
+
+    if (prefersReducedMotion) {
+      setMotionState((current) => completePricingTransition(current))
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setMotionState((current) => completePricingTransition(current))
+    }, PRICING_TRANSITION_MS)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [motionState.phase, motionState.sequence, prefersReducedMotion])
+
+  const selectPlan = useCallback((key: PricingPlan['key']) => {
+    setMotionState((current) => {
+      if (prefersReducedMotion && current.phase === 'holding' && current.activeKey !== key) {
+        return createPricingMotionState(key)
+      }
+
+      return beginPricingTransition(current, pricingPlanKeys, key)
+    })
+  }, [prefersReducedMotion])
+
+  const settleAfterPricingFallback = useCallback(() => {
+    setMotionState((current) => current.phase === 'transitioning'
+      ? completePricingTransition(current)
+      : current)
+  }, [])
+
   return (
     <section className="pricing-section" id="pricing" aria-labelledby="pricing-title" ref={sectionRef}>
       <header className="pricing-section__heading">
@@ -36,27 +133,40 @@ export function PricingSection() {
         <p>Выберите объём инструментов под текущую практику. Pro остаётся основным тарифом для регулярной работы.</p>
       </header>
 
-      <PricingOrbit
-        plans={pricingPlans}
-        selectedKey={selectedPlanKey}
-        inView={isInView}
-        onSelect={setSelectedPlanKey}
-      />
+      <div
+        className="pricing-motion-stage"
+        data-auto-paused={isAutoPaused ? 'true' : 'false'}
+        onFocusCapture={() => setIsFocusInside(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) setIsFocusInside(false)
+        }}
+      >
+        <PricingOrbit
+          plans={pricingPlans}
+          motionState={motionState}
+          inView={isInView}
+          prefersReducedMotion={prefersReducedMotion}
+          onSelect={selectPlan}
+          onFallback={settleAfterPricingFallback}
+        />
 
-      <div className="pricing-plan-switcher" aria-label="Выбор тарифа">
-        {pricingPlans.map((plan) => (
-          <button
-            type="button"
-            aria-pressed={selectedPlanKey === plan.key}
-            onClick={() => setSelectedPlanKey(plan.key)}
-            key={plan.key}
-          >
-            {plan.name}
-          </button>
-        ))}
+        <div className="pricing-plan-switcher" aria-label="Выбор тарифа">
+          {pricingPlans.map((plan) => (
+            <button
+              type="button"
+              aria-pressed={motionState.activeKey === plan.key}
+              onClick={() => selectPlan(plan.key)}
+              key={plan.key}
+            >
+              {plan.name}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <article className="pricing-details" id="pricing-details" data-selected="true">
+      <p className="pricing-section__status" aria-live="polite">Выбран тариф {selectedPlan.name}</p>
+
+      <article className="pricing-details" id="pricing-details" data-selected="true" key={selectedPlan.key}>
         <header className="pricing-details__summary">
           <span>{selectedPlan.name}</span>
           <h3>{selectedPlan.price}</h3>

@@ -1,51 +1,68 @@
-import { useState } from 'react'
+const externalTools = [
+  'Программа расчётов',
+  'Таблица или CRM',
+  'Taplink или сайт',
+  'Бот и рассылки',
+  'Онлайн-запись',
+  'Платёжный сервис',
+] as const
 
-const workspaceSurfaces = [
-  { key: 'calendar', label: 'Календарь', detail: 'Клиент сам выбирает время', src: '/assets/product-screenshots/eh-p01-calendar.png', alt: 'Календарь ElevenHouse' },
-  { key: 'clients', label: 'Клиенты', detail: 'История работы не теряется', src: '/assets/product-screenshots/eh-p02-clients.png', alt: 'Раздел клиентов ElevenHouse' },
-  { key: 'finance', label: 'Финансы', detail: 'Оплаты и выплаты в одном месте', src: '/assets/product-screenshots/eh-p03-finance.png', alt: 'Раздел финансов ElevenHouse в нулевом состоянии' },
-  { key: 'funnels', label: 'Воронки', detail: 'Повторные шаги без ручной рутины', src: '/assets/product-screenshots/eh-p04-funnel.png', alt: 'Редактор воронок ElevenHouse' },
-  { key: 'products', label: 'Продукты', detail: 'Услуги готовы к продаже', src: '/assets/product-screenshots/eh-p05-products.png', alt: 'Каталог продуктов ElevenHouse' },
-  { key: 'journal', label: 'Астродневник', detail: 'Сопровождение между встречами', src: '/assets/product-screenshots/eh-p09-journal.png', alt: 'Астродневник ElevenHouse' },
-]
+const workspaceCapabilities = [
+  'Расчёты',
+  'Клиенты',
+  'Личная страница',
+  'Автоматизация',
+  'Запись',
+  'Оплаты',
+] as const
 
 export function UnifiedWorkspace() {
-  const [activeKey, setActiveKey] = useState(workspaceSurfaces[0].key)
-  const activeIndex = workspaceSurfaces.findIndex((surface) => surface.key === activeKey)
-  const active = workspaceSurfaces[activeIndex]
-
   return (
     <section className="unified-workspace" aria-labelledby="workspace-title">
       <header className="unified-workspace__heading">
         <span>06 · Один кабинет</span>
         <h2 id="workspace-title">Один кабинет вместо<br />нескольких сервисов.</h2>
-        <p>Программа расчётов, таблица или CRM, сайт, бот, онлайн-запись и платёжный сервис объединяются в ElevenHouse.</p>
+        <p>Все инструменты практики связаны между собой: данные не приходится переносить, а клиент проходит один цельный путь.</p>
       </header>
 
-      <div className="unified-workspace__layout">
-        <nav className="unified-workspace__index" aria-label="Разделы ElevenHouse">
-          {workspaceSurfaces.map((surface, index) => (
-            <button
-              aria-pressed={surface.key === active.key}
-              data-active={surface.key === active.key ? 'true' : 'false'}
-              key={surface.key}
-              onClick={() => setActiveKey(surface.key)}
-              type="button"
-            >
-              <span>{String(index + 1).padStart(2, '0')}</span>
-              <strong>{surface.label}</strong>
-              <small>{surface.detail}</small>
-            </button>
-          ))}
-        </nav>
+      <div className="unified-workspace__comparison">
+        <article className="workspace-stack" aria-labelledby="workspace-stack-title">
+          <header>
+            <span>Обычная связка</span>
+            <strong id="workspace-stack-title">6 отдельных сервисов</strong>
+          </header>
 
-        <div className="unified-workspace__viewer">
-          <div className="unified-workspace__counter"><span>{String(activeIndex + 1).padStart(2, '0')}</span> / 06</div>
-          <figure key={active.key}>
-            <figcaption><span>ELEVENHOUSE / {active.label}</span><span>{active.detail}</span></figcaption>
-            <div><img src={active.src} alt={active.alt} /></div>
-          </figure>
+          <ul>
+            {externalTools.map((tool, index) => (
+              <li key={tool}><span>{String(index + 1).padStart(2, '0')}</span>{tool}</li>
+            ))}
+          </ul>
+
+          <footer>
+            <span>Ориентировочная стоимость</span>
+            <strong>≈5 280 ₽ / месяц</strong>
+          </footer>
+        </article>
+
+        <div className="unified-workspace__merge" aria-hidden="true">
+          <i /><span>вместе</span><i />
         </div>
+
+        <article className="workspace-one" aria-labelledby="workspace-one-title">
+          <header>
+            <span>Единая система</span>
+            <strong id="workspace-one-title">ElevenHouse</strong>
+          </header>
+
+          <figure>
+            <figcaption><span>Рабочий кабинет</span><span>всё связано</span></figcaption>
+            <div><img src="/assets/product-screenshots/eh-p04-funnel.png" alt="Единый рабочий процесс в ElevenHouse" loading="lazy" /></div>
+          </figure>
+
+          <ul aria-label="Возможности единого кабинета">
+            {workspaceCapabilities.map((capability) => <li key={capability}>{capability}</li>)}
+          </ul>
+        </article>
       </div>
     </section>
   )

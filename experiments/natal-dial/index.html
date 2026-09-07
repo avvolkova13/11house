@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#030404" />
+    <title>ElevenHouse — Natal Dial Shader Lab</title>
+  </head>
+  <body>
+    <main id="natal-dial-stage" aria-labelledby="natal-dial-title">
+      <h1 id="natal-dial-title" class="visually-hidden">Демонстрационная натальная карта</h1>
+      <canvas
+        id="natal-dial-canvas"
+        aria-label="Вращающаяся натальная карта со стеклянной призмой"
+      ></canvas>
+      <div id="natal-dial-fallback" hidden aria-hidden="true">
+        <div class="fallback-ring">
+          <span style="--index: 0">△</span><span style="--index: 1">○</span>
+          <span style="--index: 2">+</span><span style="--index: 3">◇</span>
+          <span style="--index: 4">△</span><span style="--index: 5">○</span>
+          <span style="--index: 6">+</span><span style="--index: 7">◇</span>
+          <span style="--index: 8">△</span><span style="--index: 9">○</span>
+          <span style="--index: 10">+</span><span style="--index: 11">◇</span>
+          <i></i>
+        </div>
+      </div>
+      <p id="natal-dial-summary" class="visually-hidden"></p>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

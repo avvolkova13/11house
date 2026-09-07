@@ -12,11 +12,19 @@ export const completeHeroHandoff = (phase: HeroHandoffPhase): HeroHandoffPhase =
 )
 
 export const shouldBeginHeroHandoff = (
-  snapshot: Pick<HeroScrollSnapshot, 'state' | 'scrollPosition' | 'travelProgress'>,
+  snapshot: Pick<HeroScrollSnapshot, 'state' | 'scrollPosition' | 'travelProgress'> & {
+    targetProgress?: number
+  },
   metrics: HeroCorridorMetrics,
-) => (metrics.travelEnd <= 1 || snapshot.travelProgress >= HERO_LAST_VISUAL_INDEX - 0.001)
+) => (
+  metrics.travelEnd <= 1
+  || snapshot.travelProgress >= HERO_LAST_VISUAL_INDEX - 0.001
+  || snapshot.targetProgress !== undefined
+    && snapshot.targetProgress >= HERO_LAST_VISUAL_INDEX - 0.001
+)
   && (
     snapshot.state === 'EXITING'
+    || snapshot.state === 'BELOW_HERO'
     || (snapshot.state === 'EXIT_ARMED' && snapshot.scrollPosition >= metrics.settleEnd)
   )
 
