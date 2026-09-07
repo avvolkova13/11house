@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { publicAsset } from '../assets'
 import { getFragmentPosition, getSectionProgress } from './sectionMotion'
 
 type FragmentConfig = {
@@ -16,7 +17,7 @@ type FragmentConfig = {
 const fragments: FragmentConfig[] = [
   {
     className: 'system-fragment--calendar',
-    src: '/assets/product-screenshots/eh-p01-calendar.png',
+    src: publicAsset('assets/product-screenshots/eh-p01-calendar.png'),
     alt: 'Календарь ElevenHouse с подтверждённой записью',
     label: 'Запись',
     note: 'Ольга — 17:00',
@@ -27,7 +28,7 @@ const fragments: FragmentConfig[] = [
   },
   {
     className: 'system-fragment--client',
-    src: '/assets/product-screenshots/eh-p02-clients.png',
+    src: publicAsset('assets/product-screenshots/eh-p02-clients.png'),
     alt: 'Список клиентов ElevenHouse',
     label: 'Клиент',
     note: 'Где её время рождения?',
@@ -38,7 +39,7 @@ const fragments: FragmentConfig[] = [
   },
   {
     className: 'system-fragment--payment',
-    src: '/assets/product-screenshots/eh-p03-finance.png',
+    src: publicAsset('assets/product-screenshots/eh-p03-finance.png'),
     alt: 'Финансовый раздел ElevenHouse',
     label: 'Оплата',
     note: 'Оплатила?',
@@ -49,7 +50,7 @@ const fragments: FragmentConfig[] = [
   },
   {
     className: 'system-fragment--meeting',
-    src: '/assets/product-screenshots/eh-p01-calendar.png',
+    src: publicAsset('assets/product-screenshots/eh-p01-calendar.png'),
     alt: 'Панель входа в видеосессию ElevenHouse',
     label: 'Видеовстреча',
     note: 'Скинуть ссылку на созвон',
@@ -60,7 +61,7 @@ const fragments: FragmentConfig[] = [
   },
   {
     className: 'system-fragment--calculation',
-    src: '/assets/product-screenshots/eh-p07-numerology.png',
+    src: publicAsset('assets/product-screenshots/eh-p07-numerology.png'),
     alt: 'Нумерологический расчёт в ElevenHouse',
     label: 'Расчёт',
     note: 'Подготовка к сессии',
@@ -71,7 +72,7 @@ const fragments: FragmentConfig[] = [
   },
   {
     className: 'system-fragment--journal',
-    src: '/assets/product-screenshots/eh-p09-journal.png',
+    src: publicAsset('assets/product-screenshots/eh-p09-journal.png'),
     alt: 'Запись клиента и ответ астролога в Астродневнике ElevenHouse',
     label: 'Заметка',
     note: 'Написать Кате через месяц',
@@ -82,7 +83,7 @@ const fragments: FragmentConfig[] = [
   },
   {
     className: 'system-fragment--document',
-    src: '/assets/product-screenshots/eh-p04-funnel.png',
+    src: publicAsset('assets/product-screenshots/eh-p04-funnel.png'),
     alt: 'Сценарий работы в редакторе воронок ElevenHouse',
     label: 'Сценарий',
     note: 'Что будет дальше',
@@ -190,7 +191,7 @@ export function ChaosToSystemSection() {
           </div>
           <div className="system-transition__workspace-crop">
             <img
-              src="/assets/product-screenshots/eh-p05-products.png"
+              src={publicAsset('assets/product-screenshots/eh-p05-products.png')}
               alt="Реальный каталог продуктов ElevenHouse"
               loading="lazy"
             />

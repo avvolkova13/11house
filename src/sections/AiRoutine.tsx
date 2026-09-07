@@ -1,3 +1,5 @@
+import { publicAsset } from '../assets'
+
 const routineSteps = [
   'Клиент оставил данные',
   'Система построила карту',
@@ -24,12 +26,12 @@ export function AiRoutine() {
       <div className="ai-routine__evidence">
         <figure className="ai-routine__screen ai-routine__screen--source">
           <figcaption>Данные и сценарий работы</figcaption>
-          <div><img src="/assets/product-screenshots/eh-p04-funnel.png" alt="Редактор воронки ElevenHouse" loading="lazy" /></div>
+          <div><img src={publicAsset('assets/product-screenshots/eh-p04-funnel.png')} alt="Редактор воронки ElevenHouse" loading="lazy" /></div>
         </figure>
         <div className="ai-routine__handoff" aria-hidden="true"><i /><span>черновик</span><i /></div>
         <figure className="ai-routine__screen ai-routine__screen--result">
           <figcaption>Расчёт · основа для проверки</figcaption>
-          <div><img src="/assets/product-screenshots/eh-p07-numerology.png" alt="Результат расчёта нумерологии ElevenHouse" loading="lazy" /></div>
+          <div><img src={publicAsset('assets/product-screenshots/eh-p07-numerology.png')} alt="Результат расчёта нумерологии ElevenHouse" loading="lazy" /></div>
         </figure>
       </div>
 

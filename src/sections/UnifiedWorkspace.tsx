@@ -1,3 +1,5 @@
+import { publicAsset } from '../assets'
+
 const externalTools = [
   'Программа расчётов',
   'Таблица или CRM',
@@ -56,7 +58,7 @@ export function UnifiedWorkspace() {
 
           <figure>
             <figcaption><span>Рабочий кабинет</span><span>всё связано</span></figcaption>
-            <div><img src="/assets/product-screenshots/eh-p04-funnel.png" alt="Единый рабочий процесс в ElevenHouse" loading="lazy" /></div>
+            <div><img src={publicAsset('assets/product-screenshots/eh-p04-funnel.png')} alt="Единый рабочий процесс в ElevenHouse" loading="lazy" /></div>
           </figure>
 
           <ul aria-label="Возможности единого кабинета">
