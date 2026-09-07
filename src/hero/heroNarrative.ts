@@ -1,3 +1,5 @@
+import { publicAsset } from '../assets'
+
 export type HeroNarrativeStage = {
   title: string
   mode: 'fragment' | 'product' | 'finale'
@@ -13,21 +15,21 @@ export const HERO_NARRATIVE_STAGES: readonly HeroNarrativeStage[] = [
   {
     title: 'Карты и клиенты',
     mode: 'product',
-    screenshot: '/assets/product-screenshots/eh-products-tiles.png',
+    screenshot: publicAsset('assets/product-screenshots/eh-products-tiles.png'),
     productLabel: 'Продукты',
     productDetail: 'Форматы, услуги и продажи',
   },
   {
     title: 'Запись и оплаты',
     mode: 'product',
-    screenshot: '/assets/product-screenshots/eh-calendar-tiles.png',
+    screenshot: publicAsset('assets/product-screenshots/eh-calendar-tiles.png'),
     productLabel: 'Календарь',
     productDetail: 'Записи и работа с клиентами',
   },
   {
     title: 'AI-помощник',
     mode: 'product',
-    screenshot: '/assets/product-screenshots/eh-numerology-tiles.png',
+    screenshot: publicAsset('assets/product-screenshots/eh-numerology-tiles.png'),
     productLabel: 'Нумерология',
     productDetail: 'Расчёты и портрет клиента',
   },

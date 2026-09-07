@@ -10,6 +10,7 @@ import {
   getTunnelDive,
   getTunnelPresentation,
 } from './heroNarrative'
+import { publicAsset } from '../assets'
 
 describe('HERO_NARRATIVE_STAGES', () => {
   it('keeps the approved opening title order exactly once', () => {
@@ -27,9 +28,9 @@ describe('HERO_NARRATIVE_STAGES', () => {
 
   it('maps every product scene to an existing ElevenHouse screenshot', () => {
     expect(HERO_NARRATIVE_STAGES.slice(3, 6)).toMatchObject([
-      { title: 'Карты и клиенты', screenshot: '/assets/product-screenshots/eh-products-tiles.png' },
-      { title: 'Запись и оплаты', screenshot: '/assets/product-screenshots/eh-calendar-tiles.png' },
-      { title: 'AI-помощник', screenshot: '/assets/product-screenshots/eh-numerology-tiles.png' },
+      { title: 'Карты и клиенты', screenshot: publicAsset('assets/product-screenshots/eh-products-tiles.png') },
+      { title: 'Запись и оплаты', screenshot: publicAsset('assets/product-screenshots/eh-calendar-tiles.png') },
+      { title: 'AI-помощник', screenshot: publicAsset('assets/product-screenshots/eh-numerology-tiles.png') },
     ])
   })
 
