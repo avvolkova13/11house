@@ -17,6 +17,7 @@ import {
   PRICING_TEXTURE_HEIGHT,
   PRICING_TEXTURE_WIDTH,
   createPricingCardCanvas,
+  createPricingReflectionCanvas,
 } from './pricingCardTexture'
 import type { PricingPlan } from './pricingData'
 import type { PricingMotionDirection } from './pricingMotion'
@@ -129,6 +130,7 @@ export class PricingWebGLScene {
   private renderer: WebGLRenderer | null = null
   private planes: readonly PricingPlaneResources[] = []
   private textures: readonly PricingTextureResource[] = []
+  private reflectionTextures: readonly PricingTextureResource[] = []
   private initializationPromise: Promise<void> | null = null
   private initialized = false
   private disposed = false
@@ -183,6 +185,13 @@ export class PricingWebGLScene {
     this.camera.aspect = safeWidth / safeHeight
     this.camera.position.set(0, 0, ACTIVE_CARD_Z + holdFrame.cameraDistance)
     this.camera.updateProjectionMatrix()
+    this.planes.forEach(({ topReflection, bottomReflection }) => {
+      for (const reflection of [topReflection, bottomReflection]) {
+        reflection.material.uniforms.uReflectionFlare.value = safeWidth <= MOBILE_BREAKPOINT ? 0.4 : 1
+        // Let the white frame crop the tail, including on tall, narrow screens.
+        reflection.material.uniforms.uReflectionReach.value = (safeHeight / holdFrame.height - 1) * 0.5 + 0.07
+      }
+    })
   }
 
   render(state: PricingWebGLRenderState, timeSeconds = 0): void {
@@ -199,10 +208,11 @@ export class PricingWebGLScene {
         this.plans,
       )
       const texture = this.textures[planIndex].texture
+      const reflectionTexture = this.reflectionTextures[planIndex].texture
 
       updateMainMesh(plane.mesh, texture, sample, turn, timeSeconds)
-      updateReflectionMesh(plane.topReflection, texture, sample, turn, timeSeconds, 'top')
-      updateReflectionMesh(plane.bottomReflection, texture, sample, turn, timeSeconds, 'bottom')
+      updateReflectionMesh(plane.topReflection, reflectionTexture, sample, turn, timeSeconds, 'top')
+      updateReflectionMesh(plane.bottomReflection, reflectionTexture, sample, turn, timeSeconds, 'bottom')
     })
 
     this.renderer.render(this.scene, this.camera)
@@ -231,6 +241,8 @@ export class PricingWebGLScene {
 
     this.textures.forEach((resource) => resource.texture.dispose())
     this.textures = []
+    this.reflectionTextures.forEach((resource) => resource.texture.dispose())
+    this.reflectionTextures = []
 
     this.scene.clear()
     if (this.renderer) {
@@ -261,6 +273,16 @@ export class PricingWebGLScene {
 
     this.textures = canvases.map((canvas) => {
       const texture = new CanvasTexture(canvas)
+      texture.colorSpace = SRGBColorSpace
+      texture.minFilter = LinearFilter
+      texture.magFilter = LinearFilter
+      texture.generateMipmaps = false
+      texture.needsUpdate = true
+      return { texture }
+    })
+
+    this.reflectionTextures = canvases.map((canvas) => {
+      const texture = new CanvasTexture(createPricingReflectionCanvas(canvas))
       texture.colorSpace = SRGBColorSpace
       texture.minFilter = LinearFilter
       texture.magFilter = LinearFilter
@@ -301,11 +323,11 @@ function createPlaneResources(
     createPricingMaterial(texture, false),
   )
   const topReflection = new Mesh(
-    new PlaneGeometry(CARD_WIDTH, CARD_HEIGHT, 48, 8),
+    new PlaneGeometry(CARD_WIDTH, CARD_HEIGHT, 48, 24),
     createPricingMaterial(texture, true),
   )
   const bottomReflection = new Mesh(
-    new PlaneGeometry(CARD_WIDTH, CARD_HEIGHT, 48, 8),
+    new PlaneGeometry(CARD_WIDTH, CARD_HEIGHT, 48, 24),
     createPricingMaterial(texture, true),
   )
 
@@ -330,6 +352,9 @@ function createPricingMaterial(texture: CanvasTexture, reflection: boolean): Sha
       uPhase: { value: 0 },
       uTime: { value: 0 },
       uReflectionSide: { value: 0 },
+      uCardYaw: { value: 0 },
+      uReflectionFlare: { value: 1 },
+      uReflectionReach: { value: 0.22 },
       uOpacity: { value: 1 },
       uCardSize: { value: new Vector2(CARD_WIDTH, CARD_HEIGHT) },
     },
@@ -365,24 +390,22 @@ function updateReflectionMesh(
   timeSeconds: number,
   position: 'top' | 'bottom',
 ): void {
-  const density = position === 'top' ? 1.12 : 0.92
-  const portalStrength = 0.66 + sample.reflectionIntensity * 0.46
-  const verticalScale = sample.scale * (0.072 + sample.reflectionIntensity * 0.035)
-  const reflectionHalfHeight = CARD_HEIGHT * verticalScale * 0.48
-  const surfaceHalfHeight = CARD_HEIGHT * sample.scale * 0.5
-  const reflectionGap = 0.1 * sample.scale
-  const y = (surfaceHalfHeight + reflectionHalfHeight + reflectionGap)
-    * (position === 'top' ? 1 : -1)
-  const horizontalScale = sample.scale * (1.25 + sample.reflectionIntensity * 0.18)
+  // Reference: only the card approaching the foreground produces the optical echo.
+  // Fade continuously on the orbit so there is no flash when physical slots wrap.
+  const proximity = Math.max(0, 1 - Math.abs(sample.orbitPosition))
+  const foreground = Math.max(0, (proximity - 0.45) / 0.55)
+  const presence = foreground * foreground * (3 - 2 * foreground)
+  const side = position === 'top' ? 1 : -1
+  const edgeY = CARD_HEIGHT * sample.scale * 0.5 * side
 
-  mesh.position.set(sample.x, y, sample.z - 0.22)
-  mesh.rotation.y = sample.restingYaw
-  mesh.rotation.z = turn.directionSign
-    * (position === 'top' ? -1 : 1)
-    * sample.reflectionIntensity
-    * 0.025
-  mesh.scale.set(horizontalScale, verticalScale, sample.scale)
-  mesh.material.opacity = sample.opacity * density * portalStrength
+  mesh.position.set(sample.x, edgeY, sample.z)
+  mesh.rotation.y = 0
+  mesh.rotation.z = 0
+  mesh.scale.setScalar(sample.scale)
+  mesh.material.opacity = sample.opacity * presence * 0.94
+  // Skip the diffusion shader entirely for side cards with no visible reflection.
+  mesh.visible = presence > 0
+  mesh.material.uniforms.uCardYaw.value = sample.rotationY
   updateMaterialUniforms(
     mesh.material,
     texture,

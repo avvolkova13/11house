@@ -22,7 +22,6 @@ export function UnifiedWorkspace() {
   return (
     <section className="unified-workspace" aria-labelledby="workspace-title">
       <header className="unified-workspace__heading">
-        <span>06 · Один кабинет</span>
         <h2 id="workspace-title">Один кабинет вместо<br />нескольких сервисов.</h2>
         <p>Все инструменты практики связаны между собой: данные не приходится переносить, а клиент проходит один цельный путь.</p>
       </header>

@@ -30,7 +30,7 @@ const threeHarness = vi.hoisted(() => {
 
   class FakeObject3D {
     position = new FakeVector3()
-    rotation = { y: 0 }
+    rotation = { y: 0, z: 0 }
     scale = new FakeVector3(1, 1, 1)
     renderOrder = 0
   }
@@ -85,11 +85,13 @@ const threeHarness = vi.hoisted(() => {
   }
 
   class FakeMesh extends FakeObject3D {
+    visible = true
     constructor(
       public readonly geometry: FakePlaneGeometry,
       public readonly material: FakeShaderMaterial,
     ) {
       super()
+      meshInstances.push(this)
     }
   }
 
@@ -171,6 +173,7 @@ const threeHarness = vi.hoisted(() => {
     }
   }
 
+  const meshInstances: FakeMesh[] = []
   const rendererInstances: FakeWebGLRenderer[] = []
   const cameraInstances: FakePerspectiveCamera[] = []
   const geometryInstances: FakePlaneGeometry[] = []
@@ -190,6 +193,7 @@ const threeHarness = vi.hoisted(() => {
     geometryInstances,
     materialInstances,
     rendererInstances,
+    meshInstances,
     textureInstances,
   }
 })
@@ -217,6 +221,7 @@ vi.mock('./pricingCardTexture', () => ({
   PRICING_TEXTURE_HEIGHT: 1356,
   PRICING_TEXTURE_WIDTH: 1024,
   createPricingCardCanvas: textureHarness.createPricingCardCanvas,
+  createPricingReflectionCanvas: (source: HTMLCanvasElement) => source,
 }))
 
 import { pricingPlans } from './pricingData'
@@ -259,12 +264,12 @@ class EventCanvas {
 describe('PricingWebGLScene source contract', () => {
   it('uses exactly three rigid planes and isolated pricing resources', () => {
     expect(source).toContain('new PlaneGeometry(CARD_WIDTH, CARD_HEIGHT, 1, 1)')
-    expect(source).toContain('new PlaneGeometry(CARD_WIDTH, CARD_HEIGHT, 48, 8)')
+    expect(source).toContain('new PlaneGeometry(CARD_WIDTH, CARD_HEIGHT, 48, 24)')
     expect(source).toContain('const PLANE_SLOTS = [-1, 0, 1] as const')
     expect(source).not.toContain('uFold')
     expect(source).not.toContain('uWave')
     expect(source).not.toContain('uPinch')
-    expect(source).toContain('mesh.rotation.y = sample.restingYaw')
+    expect(source).toContain('uCardYaw')
     expect(source).toContain('mesh.rotation.z =')
     expect(source).toContain('uReflectionSide')
     expect(source).toContain('uPhase')
@@ -272,16 +277,6 @@ describe('PricingWebGLScene source contract', () => {
     expect(source).toContain('new WebGLRenderer')
     expect(source).not.toContain('CosmicScene')
     expect(source).not.toContain('requestAnimationFrame')
-  })
-
-  it('keeps the reflections as compact luminous strips close to each card edge', () => {
-    expect(source).toContain(
-      'const verticalScale = sample.scale * (0.072 + sample.reflectionIntensity * 0.035)',
-    )
-    expect(source).toContain(
-      'const horizontalScale = sample.scale * (1.25 + sample.reflectionIntensity * 0.18)',
-    )
-    expect(source).toContain('const reflectionGap = 0.1 * sample.scale')
   })
 
   it('projects one shared hold frame across every mobile fit-axis boundary', () => {
@@ -355,6 +350,7 @@ describe('pricing ribbon texture mapping', () => {
 
 describe('PricingWebGLScene lifecycle', () => {
   beforeEach(() => {
+    threeHarness.meshInstances.length = 0
     threeHarness.rendererInstances.length = 0
     threeHarness.cameraInstances.length = 0
     threeHarness.geometryInstances.length = 0
@@ -376,7 +372,7 @@ describe('PricingWebGLScene lifecycle', () => {
     expect(secondInitialization).toBe(firstInitialization)
     await firstInitialization
     expect(textureHarness.createPricingCardCanvas).toHaveBeenCalledTimes(3)
-    expect(threeHarness.textureInstances).toHaveLength(3)
+    expect(threeHarness.textureInstances).toHaveLength(6)
     expect(threeHarness.materialInstances).toHaveLength(9)
     expect(new Set(threeHarness.materialInstances).size).toBe(9)
     expect(new Set(threeHarness.materialInstances.map(({ uniforms }) => uniforms)).size).toBe(9)
@@ -409,9 +405,14 @@ describe('PricingWebGLScene lifecycle', () => {
     expect(renderer.size).toEqual({ width: 390, height: 844, updateStyle: false })
     expect(projectedCardWidth).toBeLessThanOrEqual(390 - 32 + 0.001)
     expect(projectedCardHeight).toBeLessThanOrEqual(844 - 32 + 0.001)
+    const mobileFlare = threeHarness.materialInstances[4].uniforms.uReflectionFlare.value
+    expect(mobileFlare).toBeGreaterThan(0)
+    expect(mobileFlare).toBeLessThan(1)
+    expect(threeHarness.materialInstances[5].uniforms.uReflectionFlare.value).toBe(mobileFlare)
 
     scene.resize(1024, 768, 3)
     expect(renderer.pixelRatio).toBe(1.5)
+    expect(threeHarness.materialInstances[4].uniforms.uReflectionFlare.value).toBe(1)
   })
 
   it('uses options.maxDpr as an additional renderer cap', async () => {
@@ -425,6 +426,24 @@ describe('PricingWebGLScene lifecycle', () => {
     scene.resize(1024, 768, 3)
 
     expect(threeHarness.rendererInstances[0].pixelRatio).toBe(1.1)
+  })
+
+  it('extends both optical tails past the frame instead of leaving floating strips', async () => {
+    const scene = new PricingWebGLScene(new EventCanvas() as unknown as HTMLCanvasElement, pricingPlans, {
+      maxDpr: 1.5,
+      onContextLost: vi.fn(),
+    })
+    await scene.initialize()
+    for (const [width, height] of [[1280, 720], [1920, 900], [390, 570], [560, 570]]) {
+      scene.resize(width, height, 1)
+      const frame = pricingSceneModule.getPricingHoldFrame(width, height)
+      for (const index of [4, 5]) {
+        const reach = threeHarness.materialInstances[index].uniforms.uReflectionReach?.value as number
+        expect(reach * frame.height).toBeGreaterThan((height - frame.height) / 2)
+        expect(reach * frame.height).toBeLessThan((height - frame.height) / 2 + frame.height * 0.12)
+      }
+    }
+    scene.dispose()
   })
 
   it('routes sampled material opacity into every custom shader pass', async () => {
@@ -449,24 +468,58 @@ describe('PricingWebGLScene lifecycle', () => {
     ))).toBe(true)
   })
 
-  it('keeps the active reflection visible at rest and blooms it during the turn', async () => {
-    const canvas = new EventCanvas()
-    const scene = new PricingWebGLScene(canvas as unknown as HTMLCanvasElement, pricingPlans, {
+  it('attaches each reflection to its own card edge and turn without a second clock', async () => {
+    const scene = new PricingWebGLScene(new EventCanvas() as unknown as HTMLCanvasElement, pricingPlans, {
       maxDpr: 1.5,
       onContextLost: vi.fn(),
     })
     await scene.initialize()
 
-    scene.render({ activeIndex: 1, targetIndex: null, direction: 'forward', progress: 0 }, 2.5)
-    const activeTopReflection = threeHarness.materialInstances[4]
-    expect(activeTopReflection.opacity).toBeGreaterThan(0.35)
-    expect(activeTopReflection.uniforms.uTime.value).toBe(2.5)
+    for (const direction of ['forward', 'backward'] as const) {
+      for (const progress of [0, 0.2, 0.35, 0.5, 0.7, 0.9, 1]) {
+        scene.render({ activeIndex: 1, targetIndex: 2, direction, progress })
+        for (let index = 0; index < 9; index += 3) {
+          const [card, top, bottom] = threeHarness.meshInstances.slice(index, index + 3)
+          for (const [reflection, side] of [[top, 1], [bottom, -1]] as const) {
+            expect(reflection.position.x).toBe(card.position.x)
+            expect(reflection.position.z).toBe(card.position.z)
+            expect(reflection.position.y).toBeCloseTo(side * CARD_HEIGHT * card.scale.y / 2)
+            expect(reflection.scale.x).toBe(card.scale.x)
+            expect(reflection.material.uniforms.uCardYaw.value).toBe(card.rotation.y)
+            expect(reflection.material.uniforms.uReflectionSide.value).toBe(side)
+            const originalIndex = threeHarness.textureInstances.indexOf(card.material.uniforms.uTexture.value as InstanceType<typeof threeHarness.FakeCanvasTexture>)
+            expect(reflection.material.uniforms.uTexture.value).toBe(threeHarness.textureInstances[originalIndex + 3])
+          }
+        }
+      }
+    }
+    scene.dispose()
+  })
 
-    scene.render({ activeIndex: 1, targetIndex: 2, direction: 'forward', progress: 1 / 3 })
-    expect(activeTopReflection.opacity).toBeGreaterThan(0.6)
-    expect(activeTopReflection.uniforms.uPhase.value).toBeGreaterThan(0)
-    expect(activeTopReflection.uniforms.uReflectionSide.value).toBe(1)
-    expect(threeHarness.materialInstances[5].uniforms.uReflectionSide.value).toBe(-1)
+  it('shows the foreground reflection and removes the six-strip row at rest', async () => {
+    const scene = new PricingWebGLScene(new EventCanvas() as unknown as HTMLCanvasElement, pricingPlans, {
+      maxDpr: 1.5,
+      onContextLost: vi.fn(),
+    })
+    await scene.initialize()
+    scene.render({ activeIndex: 1, targetIndex: null, direction: 'forward', progress: 0 })
+    const materials = threeHarness.materialInstances
+    expect(materials[4].opacity).toBeGreaterThan(0.85)
+    expect(materials[5].opacity).toBeGreaterThan(0.85)
+    for (const index of [1, 2, 7, 8]) {
+      expect(materials[index].opacity).toBe(0)
+      expect(threeHarness.meshInstances[index].visible).toBe(false)
+    }
+
+    // After relabelling the slots at the end of a turn, brightness is identical.
+    scene.render({ activeIndex: 1, targetIndex: 2, direction: 'forward', progress: 1 })
+    expect(materials[7].opacity).toBeCloseTo(0.94)
+    expect(materials[8].opacity).toBeCloseTo(0.94)
+    expect(threeHarness.meshInstances[7].visible).toBe(true)
+    expect(threeHarness.meshInstances[8].visible).toBe(true)
+    expect(materials[4].opacity).toBe(0)
+    expect(materials[5].opacity).toBe(0)
+    scene.dispose()
   })
 
   it('keeps all three card textures attached while their planes exchange positions', async () => {
@@ -498,6 +551,23 @@ describe('PricingWebGLScene lifecycle', () => {
         uniforms.uTexture.value as InstanceType<typeof threeHarness.FakeCanvasTexture>,
       )
     ))).toEqual([2, 1, 0])
+  })
+
+  it('does not draw a second optical sheet above the distant incoming card', async () => {
+    const scene = new PricingWebGLScene(new EventCanvas() as unknown as HTMLCanvasElement, pricingPlans, {
+      maxDpr: 1.5,
+      onContextLost: vi.fn(),
+    })
+    await scene.initialize()
+    scene.render({ activeIndex: 0, targetIndex: 2, direction: 'forward', progress: 0.35 })
+    expect(threeHarness.meshInstances[4].visible).toBe(true)
+    expect(threeHarness.meshInstances[7].visible).toBe(false)
+    scene.render({ activeIndex: 0, targetIndex: 2, direction: 'forward', progress: 0.7 })
+    expect(threeHarness.meshInstances[4].visible).toBe(false)
+    expect(threeHarness.meshInstances[7].visible).toBe(true)
+    scene.dispose()
+    expect(threeHarness.textureInstances).toHaveLength(6)
+    expect(threeHarness.textureInstances.every(({ disposed }) => disposed)).toBe(true)
   })
 
   it('prevents context loss, reports it once, stops rendering, and disposes idempotently', async () => {

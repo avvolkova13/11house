@@ -128,7 +128,6 @@ export function PricingSection() {
   return (
     <section className="pricing-section" id="pricing" aria-labelledby="pricing-title" ref={sectionRef}>
       <header className="pricing-section__heading">
-        <span>08 · Тарифы</span>
         <h2 id="pricing-title">Начните бесплатно.<br />Расширяйте возможности по мере роста.</h2>
         <p>Выберите объём инструментов под текущую практику. Pro остаётся основным тарифом для регулярной работы.</p>
       </header>
@@ -189,7 +188,6 @@ export function PricingSection() {
           </section>
         </div>
 
-        <a href="https://app.elevenhouse.ai">Выбрать тариф <span aria-hidden="true">↗</span></a>
       </article>
 
       <p className="pricing-section__note">На «Старте» недоступны расширенные системы расчётов, конструктор продуктов, контент и подписки, видео-консультации, аналитика и отчёты.</p>

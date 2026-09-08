@@ -3,6 +3,7 @@ import { publicAsset } from '../assets'
 import { OnboardingPuzzle, type OnboardingPuzzleHandle } from './OnboardingPuzzle'
 import { getSectionProgress } from './sectionMotion'
 import { getProductCardState } from './productCardStackMotion'
+import { getProductChapterOpacity } from './productChapterTransition'
 
 export const onboardingSteps = [
   {
@@ -102,6 +103,15 @@ export function ProductProof() {
       || (import.meta.env.DEV && new URLSearchParams(window.location.search).has('reduced-motion'))
     section.dataset.motion = reducedMotion ? 'reduced' : 'full'
 
+    const processChapter = section.querySelector<HTMLElement>('.product-proof__process-chapter')
+    const mobileObserver = processChapter && !reducedMotion && 'IntersectionObserver' in window
+      ? new IntersectionObserver(([entry]) => {
+        section.dataset.mobileVisible = entry.isIntersecting ? 'true' : 'false'
+      }, { rootMargin: '0px 0px -18% 0px', threshold: 0.12 })
+      : null
+    if (processChapter && mobileObserver) mobileObserver.observe(processChapter)
+    if (reducedMotion || !mobileObserver) section.dataset.mobileVisible = 'true'
+
     const render = () => {
       frameRef.current = 0
       const rect = section.getBoundingClientRect()
@@ -109,10 +119,11 @@ export function ProductProof() {
       const onboardingProgress = clamp01(progress / 0.42)
       const processProgress = clamp01((progress - 0.4) / 0.6)
       const compact = window.innerWidth <= 900
+      const chapterOpacity = getProductChapterOpacity(progress)
 
       section.style.setProperty('--proof-progress', processProgress.toFixed(4))
-      section.style.setProperty('--onboarding-opacity', (1 - clamp01((progress - 0.4) / 0.035)).toFixed(4))
-      section.style.setProperty('--process-opacity', clamp01((progress - 0.4) / 0.035).toFixed(4))
+      section.style.setProperty('--onboarding-opacity', chapterOpacity.onboarding.toFixed(4))
+      section.style.setProperty('--process-opacity', chapterOpacity.process.toFixed(4))
       section.style.setProperty('--process-heading-opacity', (1 - clamp01((processProgress - 0.035) / 0.13)).toFixed(4))
 
       onboardingPuzzleRef.current?.render(onboardingProgress)
@@ -139,6 +150,7 @@ export function ProductProof() {
       window.removeEventListener('scroll', queueRender)
       window.removeEventListener('resize', queueRender)
       window.cancelAnimationFrame(frameRef.current)
+      mobileObserver?.disconnect()
     }
   }, [])
 
@@ -155,7 +167,6 @@ export function ProductProof() {
 
         <div className="product-proof__process-chapter">
           <header className="product-proof__process-heading">
-            <span>Один связный процесс</span>
             <h2>От построения карты до оплаты —<br />один рабочий процесс.</h2>
           </header>
 

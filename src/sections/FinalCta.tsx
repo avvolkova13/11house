@@ -2,7 +2,6 @@ export function FinalCta() {
   return (
     <section className="final-cta" aria-labelledby="final-cta-title">
       <div className="final-cta__orbit" aria-hidden="true"><i /><i /><i /></div>
-      <span>10 · Начните бесплатно</span>
       <h2 id="final-cta-title">Соберите практику<br />в одном кабинете.</h2>
       <a className="final-cta__action" href="https://app.elevenhouse.ai/auth?mode=register">
         Создать кабинет бесплатно <span aria-hidden="true">↗</span>

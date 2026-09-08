@@ -50,12 +50,15 @@ export const getProductCardState = (
   let y = entryProgress === 1 ? targetY : mix(entryY, targetY, entryProgress)
   let rotation = entryProgress === 1 ? targetRotation : mix(entryRotation, targetRotation, entryProgress)
   let scale = entryProgress === 1 ? targetScale : mix(1.1, targetScale, entryProgress)
-  const opacity = clamp01((clampedProgress - entryStart) / (ENTRY_DURATION * 0.58))
+  // Keep the card surface opaque so text from the stack cannot show through.
+  const opacity = entryProgress > 0 ? 1 : 0
   const blur = entryProgress >= 0.94 ? 0 : mix(5, 0, entryProgress)
 
-  const reverseIndex = safeCount - 1 - safeIndex
-  const exitStart = EXIT_START + (reverseIndex * EXIT_STAGGER)
-  const exitProgress = easeInCubic((clampedProgress - exitStart) / EXIT_DURATION)
+  const exitStart = EXIT_START + (safeIndex * EXIT_STAGGER)
+  // The final card leaves with the sticky section, avoiding an empty scroll tail.
+  const exitProgress = safeIndex === safeCount - 1
+    ? 0
+    : easeInCubic((clampedProgress - exitStart) / EXIT_DURATION)
   if (exitProgress > 0) {
     const exitY = compact ? -600 : -730
     x = mix(x, 0, exitProgress)
@@ -71,6 +74,6 @@ export const getProductCardState = (
     scale,
     opacity,
     blur,
-    zIndex: safeIndex + 1,
+    zIndex: safeCount - safeIndex,
   }
 }

@@ -1,3 +1,4 @@
+import { loadLandingFonts } from '../fonts'
 import type { PricingPlan } from './pricingData'
 
 export const PRICING_TEXTURE_WIDTH = 1024
@@ -27,7 +28,7 @@ export type PricingCardTextureOptions = {
 }
 
 const CARD_RADIUS = 32
-const FONT_STACK = '"Avenir Next", "Helvetica Neue", Helvetica, sans-serif'
+const FONT_STACK = '"Manrope", "Helvetica Neue", Helvetica, sans-serif'
 const TEXTURE_SAFE = { left: 72, right: 952, top: 70, bottom: 1288 }
 
 type PlanArtPalette = {
@@ -83,7 +84,7 @@ export async function createPricingCardCanvas(
   plan: PricingPlan,
   options: PricingCardTextureOptions = {},
 ): Promise<HTMLCanvasElement> {
-  await waitForDocumentFonts()
+  await loadLandingFonts()
 
   const canvas = options.canvas ?? createCanvasElement()
   canvas.width = PRICING_TEXTURE_WIDTH
@@ -109,19 +110,24 @@ export async function createPricingCardCanvas(
   return canvas
 }
 
-async function waitForDocumentFonts(): Promise<void> {
-  if (typeof document === 'undefined') return
-
-  const fonts = document.fonts
-  if (fonts?.ready) await fonts.ready
-}
-
 function createCanvasElement(): HTMLCanvasElement {
   if (typeof document === 'undefined') {
     throw new Error('Canvas creation requires a document or a provided canvas element')
   }
 
   return document.createElement('canvas')
+}
+
+/** Diffuse the source once, so tiny copy never turns into repeated sharp echoes. */
+export function createPricingReflectionCanvas(source: HTMLCanvasElement): HTMLCanvasElement {
+  const canvas = createCanvasElement()
+  canvas.width = PRICING_TEXTURE_WIDTH / 2
+  canvas.height = PRICING_TEXTURE_HEIGHT / 2
+  const context = canvas.getContext('2d')
+  if (!context) throw new Error('2D canvas is unavailable')
+  context.filter = 'blur(4px)'
+  context.drawImage(source, 0, 0, canvas.width, canvas.height)
+  return canvas
 }
 
 function drawPricingBackground(context: CanvasRenderingContext2D, plan: PricingPlan): void {

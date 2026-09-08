@@ -37,7 +37,6 @@ export function FaqSection() {
   return (
     <section className="faq-section" aria-labelledby="faq-title">
       <header>
-        <span>09 · Частые вопросы</span>
         <h2 id="faq-title">Частые вопросы.</h2>
       </header>
       <div className="faq-section__list">

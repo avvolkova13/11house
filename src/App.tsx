@@ -27,12 +27,9 @@ import {
 } from './scroll/heroHandoff'
 
 export default function App() {
-  // Temporary presentation lock: keep the tunnel as the last visible scene
-  // until the next review. Add ?unlock-after-hero=1 to preview the handoff.
-  const holdHeroHandoff = !(
-    import.meta.env.DEV
-    && new URLSearchParams(window.location.search).has('unlock-after-hero')
-  )
+  // Keep the presentation lock only in production builds for now. Local
+  // development should always be able to continue through the full page.
+  const holdHeroHandoff = !import.meta.env.DEV
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     || (import.meta.env.DEV && new URLSearchParams(window.location.search).has('reduced-motion'))
   const [metrics, setMetrics] = useState(() => (

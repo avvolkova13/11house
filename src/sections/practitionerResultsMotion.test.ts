@@ -1,83 +1,69 @@
 import { describe, expect, it } from 'vitest'
-
 import {
-  REVIEW_WAVE_TICK_COUNT,
-  getPractitionerEntranceState,
+  getPractitionerLayout,
   getPractitionerRailState,
   getPractitionerResultsProgress,
   getPractitionerWaveTickState,
+  samplePractitionerScrub,
 } from './practitionerResultsMotion'
 
-describe('practitionerResultsMotion', () => {
-  it('starts after the oversized sticky stage reaches its measured pin offset', () => {
-    const viewportHeight = 720
-    const stageHeight = viewportHeight * 1.23
-    const sectionHeight = viewportHeight * 3.2
-    const pinOffset = stageHeight - viewportHeight
-
-    expect(getPractitionerResultsProgress(0, sectionHeight, stageHeight, viewportHeight)).toBe(0)
-    expect(getPractitionerResultsProgress(-pinOffset, sectionHeight, stageHeight, viewportHeight)).toBe(0)
-    expect(getPractitionerResultsProgress(
-      -(pinOffset + sectionHeight - stageHeight),
-      sectionHeight,
-      stageHeight,
-      viewportHeight,
-    )).toBe(1)
+describe('Produx review motion', () => {
+  it('uses the reference scroll boundaries independently of the measured sticky height', () => {
+    expect(getPractitionerResultsProgress(-252, 2304, 886, 720)).toBeCloseTo(0, 10)
+    expect(getPractitionerResultsProgress(-936, 2304, 886, 720)).toBe(0.5)
+    expect(getPractitionerResultsProgress(-1620, 2304, 886, 720)).toBe(1)
+    expect(getPractitionerResultsProgress(100, 2304, 500, 720)).toBeCloseTo(0, 10)
+    expect(getPractitionerResultsProgress(-4000, 2304, 500, 720)).toBe(1)
   })
 
-  it('clamps progress outside the sticky runway', () => {
-    expect(getPractitionerResultsProgress(500, 2304, 886, 720)).toBe(0)
-    expect(getPractitionerResultsProgress(-4000, 2304, 886, 720)).toBe(1)
-  })
-
-  it('starts at the measured horizontal offset and aligns the last card at the end', () => {
+  it('moves and flattens with the same quadratic ease instead of two smoothersteps', () => {
     const start = getPractitionerRailState(0, 1280, 720, 1151.2, 70.4)
+    const quarter = getPractitionerRailState(0.25, 1280, 720, 1151.2, 70.4)
     const end = getPractitionerRailState(1, 1280, 720, 1151.2, 70.4)
-
-    expect(start.x).toBe(298.24)
-    expect(end.x).toBe(-12)
-    expect(start.cardStepY).toBe(72)
-    expect(end.cardStepY).toBe(0)
+    expect(start).toEqual({ x: 298.24, cardStepY: 72 })
+    expect(end).toEqual({ x: -12, cardStepY: 0 })
+    expect(quarter.cardStepY).toBe(40.5)
+    expect((start.x - quarter.x) / (start.x - end.x)).toBeCloseTo(0.4375)
   })
 
-  it('softly flattens the card cascade while the rail moves left', () => {
-    const start = getPractitionerRailState(0, 1280, 720, 1151.2, 70.4)
-    const middle = getPractitionerRailState(0.5, 1280, 720, 1151.2, 70.4)
-    const end = getPractitionerRailState(1, 1280, 720, 1151.2, 70.4)
-
-    expect(middle.x).toBeLessThan(start.x)
-    expect(middle.x).toBeGreaterThan(end.x)
-    expect(middle.cardStepY).toBeLessThan(start.cardStepY)
-    expect(middle.cardStepY).toBeGreaterThan(0)
+  it('keeps the mobile scroll choreography and uses measured responsive tick density', () => {
+    expect(getPractitionerLayout(1280).tickCount).toBe(250)
+    expect(getPractitionerLayout(1024).tickCount).toBe(133)
+    expect(getPractitionerLayout(390).tickCount).toBe(67)
+    const layout = getPractitionerLayout(390)
+    expect(layout.cardWidth).toBeCloseTo(284.31)
+    expect(layout.padding).toBeCloseTo(23.283)
+    const start = getPractitionerRailState(0, 390, 844, 870.246, layout.padding)
+    const end = getPractitionerRailState(1, 390, 844, 870.246, layout.padding)
+    expect(start.x).toBe(42.9)
+    expect(start.cardStepY).toBe(59.08)
+    expect(end.x + 870.246 + layout.padding).toBeCloseTo(390 - layout.padding)
   })
 
-  it('settles the header link from the Produx blur and rotation', () => {
-    expect(getPractitionerEntranceState(720, 720)).toEqual({
-      opacity: 0,
-      y: 16.848,
-      blur: 8,
-      rotate: -2,
-    })
-
-    expect(getPractitionerEntranceState(0, 720)).toEqual({
-      opacity: 1,
-      y: 0,
-      blur: 0,
-      rotate: 0,
-    })
+  it('lets scroll motion settle in 1.5 seconds without depending on frame rate', () => {
+    expect(samplePractitionerScrub(0, 1, 0)).toBeCloseTo(0, 10)
+    expect(samplePractitionerScrub(0, 1, 750)).toBeCloseTo(0.96875)
+    expect(samplePractitionerScrub(0, 1, 1500)).toBe(1)
+    expect(samplePractitionerScrub(0.8, 0.1, 1500)).toBe(0.1)
+    expect(samplePractitionerScrub(0.5, 0.5, 100)).toBe(0.5)
   })
 
-  it('moves a narrow bright wave peak across 250 quiet ticks', () => {
-    expect(REVIEW_WAVE_TICK_COUNT).toBe(250)
-
-    const quiet = getPractitionerWaveTickState(0.5, 0)
-    const peak = getPractitionerWaveTickState(0.5, 125)
-    const endPeak = getPractitionerWaveTickState(1, REVIEW_WAVE_TICK_COUNT - 1)
-
-    expect(quiet).toEqual({ height: 7, opacity: 0.05 })
-    expect(peak.height).toBeGreaterThan(19)
-    expect(peak.opacity).toBeGreaterThan(0.97)
-    expect(endPeak.height).toBe(19.4)
-    expect(endPeak.opacity).toBe(0.984)
+  it('keeps the wave peak inside the ruler at both ends and uses a seven-tick crest', () => {
+    expect(getPractitionerWaveTickState(0, 3, 250, 1280).opacity).toBe(1)
+    expect(getPractitionerWaveTickState(1, 246, 250, 1280).opacity).toBe(1)
+    expect(getPractitionerWaveTickState(0, 7, 250, 1280)).toEqual({ height: 7.04, opacity: 0.05 })
+    expect(getPractitionerWaveTickState(0, 3, 67, 390).height).toBe(14.82)
+    expect(getPractitionerWaveTickState(0, 3, 132, 1024).height).toBe(20)
   })
+})
+
+it('reveals heading words at the reference cadence and finishes without residual motion', async () => {
+  const motion = await import('./practitionerResultsMotion')
+  const sample = motion.samplePractitionerHeadingMotion
+  expect(sample).toBeTypeOf('function')
+  expect(sample(35, 1)).toEqual({ reveal: 0, settle: 0 })
+  expect(sample(875, 0).reveal).toBeCloseTo(Math.SQRT1_2)
+  expect(sample(700, 0).settle).toBeGreaterThan(0.9)
+  expect(sample(700, 0).settle).toBeLessThan(0.93)
+  expect(sample(1890, 2)).toEqual({ reveal: 1, settle: 1 })
 })

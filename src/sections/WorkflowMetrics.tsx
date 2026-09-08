@@ -41,11 +41,15 @@ export function WorkflowMetrics({ stats, note }: WorkflowMetricsProps) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setEntered(entry.isIntersecting)
+        if (!entry.isIntersecting) return
+        setEntered(true)
+        observer.unobserve(root)
       },
       {
-        rootMargin: '0px 0px -45% 0px',
-        threshold: 0.15,
+        // Start the reel just before the metrics reach the viewport so the
+        // numbers are already animating while the user arrives at the block.
+        rootMargin: '0px 0px 18% 0px',
+        threshold: 0.05,
       },
     )
 

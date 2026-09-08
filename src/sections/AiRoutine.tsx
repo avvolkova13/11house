@@ -12,7 +12,6 @@ export function AiRoutine() {
   return (
     <section className="ai-routine" aria-labelledby="ai-routine-title">
       <header className="ai-routine__heading">
-        <span>05 · AI берёт рутину</span>
         <h2 id="ai-routine-title">AI берёт рутину на себя.<br />Последнее слово — за вами.</h2>
         <p>AI считает и готовит черновик по вашим трактовкам и в вашем тоне. Последнее слово всегда за вами.</p>
       </header>

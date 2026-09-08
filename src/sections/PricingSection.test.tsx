@@ -249,7 +249,7 @@ describe('PricingSection', () => {
     expect(normalizedCss).toContain(
       '.pricing-orbit-hit-area:focus-visible { outline: 2px solid #9f7711; outline-offset: 6px; }',
     )
-    expect(normalizedCss).toContain('.pricing-orbit::after { content: ""; position: absolute; z-index: 0;')
+    expect(normalizedCss).toContain('.pricing-orbit::after { content: none; position: absolute; z-index: 0;')
     expect(normalizedCss).toContain('top: var(--pricing-contact-shadow-top, 88%);')
     expect(normalizedCss).not.toContain('.pricing-orbit::after { top: 82%;')
     expect(normalizedCss).toContain('.pricing-orbit__controls { position: absolute; z-index: 3;')
@@ -497,7 +497,7 @@ describe('PricingWebGLStage lifecycle', () => {
     }
 
     expect(shouldRunPricingFrame(active)).toBe(true)
-    expect(shouldRunPricingFrame({ ...active, phase: 'holding' })).toBe(true)
+    expect(shouldRunPricingFrame({ ...active, phase: 'holding' })).toBe(false)
     expect(shouldRunPricingFrame({ ...active, inView: false })).toBe(false)
     expect(shouldRunPricingFrame({ ...active, documentVisible: false })).toBe(false)
     expect(shouldRunPricingFrame({ ...active, reducedMotion: true })).toBe(false)
@@ -667,7 +667,7 @@ describe('PricingWebGLStage React lifecycle integration', () => {
     }
   }
 
-  it('keeps rendering the subtle reflection shimmer while the cards are holding', async () => {
+  it('renders the settled reflection once without scheduling idle animation frames', async () => {
     const initialization = createDeferred<void>()
     pricingSceneHarness.setInitialization(initialization.promise)
     const mounted = await mountStage()
@@ -685,14 +685,13 @@ describe('PricingWebGLStage React lifecycle integration', () => {
       direction: 'forward',
       progress: 0,
     }])
-    expect(testDom.animationFrames).toHaveLength(1)
+    expect(testDom.animationFrames).toHaveLength(0)
     await act(async () => {
-      testDom.runAnimationFrame(120)
+      testDom.setNow(120)
       await flushMicrotasks()
     })
-    expect(scene.renderedStates).toHaveLength(2)
-    expect((scene.renderedStates[1] as { progress: number }).progress).toBe(0)
-    expect(testDom.animationFrames).toHaveLength(1)
+    expect(scene.renderedStates).toHaveLength(1)
+    expect(testDom.animationFrames).toHaveLength(0)
     await mounted.unmount()
     expect(testDom.animationFrames).toHaveLength(0)
     expect(scene.dispose).toHaveBeenCalledOnce()

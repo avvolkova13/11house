@@ -6,7 +6,7 @@ import {
 } from './pricingWebglLifecycle'
 
 describe('pricing WebGL lifecycle', () => {
-  it('keeps a subtle visible water shimmer running during both hold and transition', () => {
+  it('renders transitions but rests the GPU while the card and its reflection are still', () => {
     expect(shouldRunPricingFrame({
       phase: 'transitioning',
       inView: true,
@@ -20,7 +20,7 @@ describe('pricing WebGL lifecycle', () => {
       documentVisible: true,
       reducedMotion: false,
       fallback: false,
-    })).toBe(true)
+    })).toBe(false)
     expect(shouldRunPricingFrame({
       phase: 'transitioning',
       inView: false,

@@ -26,12 +26,6 @@ export type OnboardingCopyState = {
   y: number
 }
 
-export type OnboardingHandoffState = {
-  opacity: number
-  scale: number
-  blur: number
-}
-
 const PUZZLE_SEEDS: readonly PuzzleSeed[] = [
   { x: -520, y: 440, z: -1200, order: 18 },
   { x: 430, y: 70, z: -800, order: 10 },
@@ -104,108 +98,60 @@ export function getPuzzleBackgroundPosition(fragmentIndex: number) {
   }
 }
 
+/** Six depth anchors arrive first; the remaining pieces resolve in their wake. */
 export function getOnboardingFragmentState(
   localProgress: number,
   fragmentIndex: number,
-  stepIndex = 0,
+  _stepIndex = 0,
 ): OnboardingFragmentState {
   const local = clamp01(localProgress)
-  const safeIndex = getSafeFragmentIndex(fragmentIndex)
-  const seed = PUZZLE_SEEDS[safeIndex]
-  const column = safeIndex % PUZZLE_COLUMNS
-  const row = Math.floor(safeIndex / PUZZLE_COLUMNS)
-  const focusX = (3 - column) * 100
-  const focusY = (1.5 - row) * 100
-  const focusZ = -520
-
-  const isFirstAssembly = stepIndex <= 0
-  const entryStart = isFirstAssembly ? 0.04 + seed.order * 0.012 : seed.order * 0.0028
-  const entryDuration = isFirstAssembly ? 0.3 : 0.22
-  const assembly = smootherstep(entryStart, entryStart + entryDuration, local)
-  const entryOpacity = isFirstAssembly
-    ? smootherstep(entryStart, entryStart + 0.14, local)
-    : assembly
-  const startX = isFirstAssembly ? seed.x : focusX
-  const startY = isFirstAssembly ? seed.y : focusY
-  const startZ = isFirstAssembly ? seed.z : focusZ
-  const startScale = isFirstAssembly
-    ? (Math.abs(seed.z) > 900 ? 0.2 : 0.82)
-    : 0.52
-  const startOpacity = isFirstAssembly ? 0 : 0.28
-  const startBlur = isFirstAssembly ? 40 : 22
-  const entryOvershoot = isFirstAssembly
-    ? 0
-    : Math.max(0,
-      smootherstep(entryStart + 0.04, entryStart + 0.12, local)
-      - smootherstep(entryStart + 0.12, entryStart + 0.22, local))
-
-  const lift = smootherstep(0.76, 0.855, local)
-  const collapse = smootherstep(0.855, 1, local)
-  const liftedZ = mix(0, 96, lift)
-  const liftedScale = mix(1, 1.035, lift)
-  const liftedBlur = mix(0, 0.8, lift)
-  const radialX = column - 3
-  const radialY = row - 1.5
-
-  const enteredX = mix(startX, 0, assembly)
-  const enteredY = mix(startY, 0, assembly)
-  const enteredZ = mix(startZ, 0, assembly) + entryOvershoot * 78
-  const enteredScale = mix(startScale, 1, assembly) + entryOvershoot * 0.025
-  const enteredOpacity = mix(startOpacity, 1, entryOpacity)
-  const enteredBlur = mix(startBlur, 0, assembly)
-  const enteredRotateX = mix(isFirstAssembly ? 0 : radialY * -5.5, 0, assembly)
-  const enteredRotateY = mix(isFirstAssembly ? 0 : radialX * 5.5, 0, assembly)
-
+  const seed = PUZZLE_SEEDS[getSafeFragmentIndex(fragmentIndex)]
+  const lead = seed.order < 6
+  const approach = 1 - (1 - clamp01(local / 0.12)) ** 4
+  const assemblyProgress = clamp01((local - (lead ? 0.12 : 0.18 + seed.order * 0.004)) / (lead ? 0.28 : 0.18))
+  const assembly = lead
+    ? assemblyProgress < 0.5 ? 8 * assemblyProgress ** 4 : 1 - (-2 * assemblyProgress + 2) ** 4 / 2
+    : 1 - (1 - assemblyProgress) ** 4
+  const depthBlur = Math.abs(seed.z) > 900 ? 12 : 0
+  const x = lead ? mix(seed.x * 2, seed.x, approach) : seed.x
+  const y = lead ? mix(seed.y * 3, seed.y, approach) : seed.y
+  const z = lead ? mix(seed.z - 1500, seed.z, approach) : -1000
   return {
-    x: round(mix(enteredX, focusX, collapse)),
-    y: round(mix(enteredY, focusY, collapse)),
-    z: round(mix(enteredZ + liftedZ, focusZ, collapse)),
-    scale: round(mix(enteredScale * liftedScale, 0.52, collapse)),
-    opacity: round(mix(enteredOpacity, 0.28, collapse)),
-    blur: round(mix(Math.max(enteredBlur, liftedBlur), 22, collapse)),
-    rotateX: round(mix(enteredRotateX, radialY * -5.5, collapse)),
-    rotateY: round(mix(enteredRotateY, radialX * 5.5, collapse)),
+    x: round(x * (1 - assembly)),
+    y: round(y * (1 - assembly)),
+    z: round(z * (1 - assembly)),
+    scale: round(mix(lead ? mix(0.2, 1, approach) : 0.2, 1, assembly)),
+    opacity: round(lead ? mix(0.8 * approach, 1, assembly) : assembly),
+    blur: round((lead ? mix(depthBlur + 20, depthBlur, approach) : 40) * (1 - assembly)),
+    rotateX: 0,
+    rotateY: 0,
   }
 }
 
-export function getOnboardingHandoffState(
-  localProgress: number,
-  stepIndex = 0,
-): OnboardingHandoffState {
+export function getOnboardingSurfaceState(localProgress: number) {
   const local = clamp01(localProgress)
-
-  if (stepIndex > 0 && local < 0.24) {
-    const settle = smootherstep(0, 0.24, local)
-
-    return {
-      opacity: round(mix(0.34, 0, settle)),
-      scale: round(mix(0.58, 0.82, settle)),
-      blur: round(mix(28, 18, settle)),
-    }
-  }
-
-  if (local < 0.74) {
-    return { opacity: 0, scale: 0.82, blur: 18 }
-  }
-
-  const lift = smootherstep(0.74, 0.88, local)
-  const collapse = smootherstep(0.88, 1, local)
-
+  const entry = smootherstep(0, 0.025, local)
+  const exit = smootherstep(0.86, 1, local)
   return {
-    opacity: round(mix(mix(0, 0.72, lift), 0.34, collapse)),
-    scale: round(mix(mix(0.82, 1.18, lift), 0.58, collapse)),
-    blur: round(mix(mix(18, 26, lift), 28, collapse)),
+    opacity: round(entry * (1 - exit)),
+    scale: round(1 + 0.055 * exit),
+    assembled: round(smootherstep(0.47, 0.51, local)),
   }
 }
 
 export function getOnboardingCopyState(localProgress: number): OnboardingCopyState {
-  const local = clamp01(localProgress)
-  const entry = smootherstep(0, 0.14, local)
-  const exit = smootherstep(0.82, 0.97, local)
-
+  const entry = smootherstep(0.1, 0.24, clamp01(localProgress))
+  const exit = smootherstep(0.84, 0.98, clamp01(localProgress))
   return {
     opacity: round(entry * (1 - exit)),
-    blur: round(Math.max(18 * (1 - entry), 18 * exit)),
-    y: round(mix(24, 0, entry) + mix(0, -30, exit)),
+    blur: round(6 * Math.max(1 - entry, exit)),
+    y: round(14 * (1 - entry) - 10 * exit),
   }
+}
+
+/** PRODUX-style finite 1.5s scrub; no perpetual interpolation loop. */
+export function sampleOnboardingScrub(from: number, to: number, elapsedMs: number) {
+  if (elapsedMs <= 0) return from
+  if (elapsedMs >= 1500) return to
+  return from + (to - from) * (1 - 2 ** (-10 * elapsedMs / 1500))
 }
