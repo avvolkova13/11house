@@ -332,8 +332,9 @@ body::-webkit-scrollbar {
 
 .hero-title-letter {
   overflow: hidden;
-  padding-bottom: 0.22em;
-  margin-bottom: -0.22em;
+  /* Let glyph ink extend past the tight advance width inside the reveal mask. */
+  padding: 0.12em 0.1em 0.22em;
+  margin: -0.12em -0.1em -0.22em;
   line-height: 1;
 }
 
