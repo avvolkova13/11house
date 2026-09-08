@@ -18,8 +18,7 @@ export type PricingFrameGate = {
 }
 
 export function shouldRunPricingFrame(input: PricingFrameGate): boolean {
-  return input.phase === 'transitioning'
-    && input.inView
+  return input.inView
     && input.documentVisible
     && !input.reducedMotion
     && !input.fallback

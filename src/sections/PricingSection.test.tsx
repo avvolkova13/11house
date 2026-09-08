@@ -497,7 +497,7 @@ describe('PricingWebGLStage lifecycle', () => {
     }
 
     expect(shouldRunPricingFrame(active)).toBe(true)
-    expect(shouldRunPricingFrame({ ...active, phase: 'holding' })).toBe(false)
+    expect(shouldRunPricingFrame({ ...active, phase: 'holding' })).toBe(true)
     expect(shouldRunPricingFrame({ ...active, inView: false })).toBe(false)
     expect(shouldRunPricingFrame({ ...active, documentVisible: false })).toBe(false)
     expect(shouldRunPricingFrame({ ...active, reducedMotion: true })).toBe(false)
@@ -667,7 +667,7 @@ describe('PricingWebGLStage React lifecycle integration', () => {
     }
   }
 
-  it('renders the settled reflection once without scheduling idle animation frames', async () => {
+  it('animates settled artwork at 30fps and cancels frames on unmount', async () => {
     const initialization = createDeferred<void>()
     pricingSceneHarness.setInitialization(initialization.promise)
     const mounted = await mountStage()
@@ -685,13 +685,17 @@ describe('PricingWebGLStage React lifecycle integration', () => {
       direction: 'forward',
       progress: 0,
     }])
-    expect(testDom.animationFrames).toHaveLength(0)
+    expect(testDom.animationFrames).toHaveLength(1)
     await act(async () => {
-      testDom.setNow(120)
+      testDom.runAnimationFrame(120)
       await flushMicrotasks()
     })
-    expect(scene.renderedStates).toHaveLength(1)
-    expect(testDom.animationFrames).toHaveLength(0)
+    expect(scene.renderedStates).toHaveLength(2)
+    await act(async () => testDom.runAnimationFrame(136))
+    expect(scene.renderedStates).toHaveLength(2)
+    await act(async () => testDom.runAnimationFrame(154))
+    expect(scene.renderedStates).toHaveLength(3)
+    expect(testDom.animationFrames).toHaveLength(1)
     await mounted.unmount()
     expect(testDom.animationFrames).toHaveLength(0)
     expect(scene.dispose).toHaveBeenCalledOnce()

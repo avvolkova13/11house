@@ -58,25 +58,25 @@ const PLAN_ART_PALETTES: Record<PricingPlan['key'], PlanArtPalette> = {
     ribbon: 'rgba(72, 180, 210, 0.42)',
   },
   studio: {
-    backdrop: ['#e9e7df', '#cbd7eb', '#183f7a'],
-    glow: 'rgba(230, 185, 66, 0.52)',
-    bright: 'rgba(255, 255, 255, 0.94)',
-    accent: 'rgba(21, 55, 112, 0.26)',
-    ring: 'rgba(255, 255, 255, 0.6)',
-    ribbon: 'rgba(255, 255, 255, 0.18)',
+    backdrop: ['#081326', '#1d3b68', '#4d6f9f'],
+    glow: 'rgba(230, 205, 139, 0.44)',
+    bright: 'rgba(239, 246, 255, 0.82)',
+    accent: 'rgba(106, 157, 218, 0.3)',
+    ring: 'rgba(224, 239, 255, 0.44)',
+    ribbon: 'rgba(191, 219, 252, 0.18)',
   },
 }
 
 export function getPricingTextureLayout(): PricingTextureLayout {
   return {
     safe: TEXTURE_SAFE,
-    art: { left: 0, right: PRICING_TEXTURE_WIDTH, top: 0, bottom: 650 },
+    art: { left: 0, right: PRICING_TEXTURE_WIDTH, top: 0, bottom: 560 },
     brand: { left: 72, top: 76 },
     action: { right: 952, top: 76 },
-    name: { left: 72, top: 720 },
+    name: { left: 72, top: 736 },
     price: { left: 72, top: 866 },
-    audience: { left: 72, top: 954, width: 670 },
-    commission: { left: 72, right: 952, top: 1166, bottom: 1278 },
+    audience: { left: 72, top: 980, width: 880 },
+    commission: { left: 72, right: 952, top: 1210, bottom: 1288 },
   } as const
 }
 
@@ -136,7 +136,7 @@ function drawPricingBackground(context: CanvasRenderingContext2D, plan: PricingP
 
   context.save()
   context.clearRect(0, 0, width, height)
-  context.fillStyle = '#11131b'
+  context.fillStyle = '#080f1d'
   context.fillRect(0, 0, width, height)
 
   const baseGlow = context.createLinearGradient(0, 0, width, 650)
@@ -186,6 +186,8 @@ function drawPricingArtwork(
   context.fillStyle = field
   context.fillRect(0, 0, width, bottom)
 
+  context.save()
+  context.scale(1, bottom / 650)
   switch (plan.key) {
     case 'start':
       drawStartArtwork(context, palette)
@@ -197,6 +199,7 @@ function drawPricingArtwork(
       drawStudioArtwork(context, palette)
       break
   }
+  context.restore()
 
   const sheen = context.createLinearGradient(0, 0, 0, bottom)
   sheen.addColorStop(0, 'rgba(255, 255, 255, 0.08)')
@@ -247,7 +250,7 @@ function drawAuroraField(context: CanvasRenderingContext2D, palette: PlanArtPale
 
   context.globalAlpha = 0.6
   context.strokeStyle = palette.ring
-  context.lineWidth = 2.2
+  context.lineWidth = 3
   for (let index = 0; index < 3; index += 1) {
     context.beginPath()
     context.moveTo(-30, 516 + index * 28)
@@ -295,7 +298,7 @@ function drawLiquidLens(context: CanvasRenderingContext2D, palette: PlanArtPalet
 
   context.globalAlpha = 0.62
   context.strokeStyle = palette.ring
-  context.lineWidth = 2.6
+  context.lineWidth = 3
   context.beginPath()
   context.moveTo(270, 180)
   context.bezierCurveTo(386, 92, 598, 92, 692, 180)
@@ -330,12 +333,12 @@ function drawChromaticRibbon(context: CanvasRenderingContext2D, palette: PlanArt
   ribbon.addColorStop(1, 'rgba(244, 231, 192, 0.12)')
   context.fillStyle = ribbon
   context.beginPath()
-  context.moveTo(70, 174)
+  context.moveTo(-80, 174)
   context.bezierCurveTo(250, -18, 418, 54, 518, 170)
   context.bezierCurveTo(666, 342, 824, 166, 1032, 224)
   context.lineTo(1032, 484)
   context.bezierCurveTo(818, 396, 664, 548, 482, 372)
-  context.bezierCurveTo(340, 234, 218, 304, 70, 422)
+  context.bezierCurveTo(340, 234, 218, 304, -80, 422)
   context.closePath()
   context.fill()
 
@@ -345,20 +348,20 @@ function drawChromaticRibbon(context: CanvasRenderingContext2D, palette: PlanArt
   fold.addColorStop(1, 'rgba(117, 151, 210, 0.05)')
   context.fillStyle = fold
   context.beginPath()
-  context.moveTo(116, 496)
+  context.moveTo(-80, 496)
   context.bezierCurveTo(322, 316, 490, 506, 620, 258)
   context.bezierCurveTo(710, 86, 854, 54, 1052, 122)
   context.lineTo(1052, 272)
   context.bezierCurveTo(842, 210, 770, 208, 648, 408)
-  context.bezierCurveTo(472, 626, 274, 414, 116, 598)
+  context.bezierCurveTo(472, 626, 274, 414, -80, 598)
   context.closePath()
   context.fill()
 
   context.globalAlpha = 0.68
   context.strokeStyle = palette.ring
-  context.lineWidth = 2.4
+  context.lineWidth = 3
   context.beginPath()
-  context.moveTo(80, 286)
+  context.moveTo(-80, 286)
   context.bezierCurveTo(294, 100, 450, 146, 568, 282)
   context.bezierCurveTo(694, 424, 820, 254, 1040, 310)
   context.stroke()
@@ -371,46 +374,37 @@ function drawPricingTypography(
   layout: PricingTextureLayout,
 ): void {
   const { width, height } = context.canvas
-  const palette = PLAN_ART_PALETTES[plan.key]
-
   context.save()
-
-  const contentWash = context.createLinearGradient(0, 410, 0, height)
-  contentWash.addColorStop(0, 'rgba(10, 12, 19, 0)')
-  contentWash.addColorStop(0.24, 'rgba(10, 12, 19, 0.16)')
-  contentWash.addColorStop(0.49, 'rgba(9, 11, 17, 0.75)')
-  contentWash.addColorStop(0.62, 'rgba(9, 11, 17, 0.95)')
-  contentWash.addColorStop(1, '#090b11')
+  const contentWash = context.createLinearGradient(0, layout.art.bottom, 0, height)
+  contentWash.addColorStop(0, '#0c1423')
+  contentWash.addColorStop(1, '#080e1a')
   context.fillStyle = contentWash
-  context.fillRect(0, 0, width, height)
+  context.fillRect(0, layout.art.bottom, width, height - layout.art.bottom)
 
   context.fillStyle = 'rgba(255, 255, 255, 0.7)'
-  context.font = `650 22px ${FONT_STACK}`
+  context.font = `650 30px ${FONT_STACK}`
   context.textBaseline = 'top'
   drawTrackedText(context, 'ELEVENHOUSE', layout.brand.left, layout.brand.top, 3)
 
-  context.fillStyle = 'rgba(248, 246, 240, 0.76)'
-  context.font = `500 22px ${FONT_STACK}`
-  drawTrackedText(context, 'ПОДРОБНЕЕ', layout.action.right, layout.action.top, 2, 'right')
-
   context.fillStyle = '#f8f6f0'
-  context.font = `400 92px ${FONT_STACK}`
+  context.font = `500 104px ${FONT_STACK}`
   context.textBaseline = 'alphabetic'
   context.fillText(plan.name, layout.name.left, layout.name.top)
 
   context.fillStyle = '#f8f6f0'
-  context.font = `520 40px ${FONT_STACK}`
+  context.font = `600 64px ${FONT_STACK}`
   context.textBaseline = 'alphabetic'
   context.fillText(plan.price, layout.price.left, layout.price.top)
 
-  context.fillStyle = 'rgba(248, 246, 240, 0.48)'
-  context.font = `500 18px ${FONT_STACK}`
-  drawTrackedText(context, plan.period.toUpperCase(), layout.price.left + 175, layout.price.top - 8, 2)
-
-  context.fillStyle = 'rgba(248, 246, 240, 0.58)'
-  context.font = `400 24px ${FONT_STACK}`
+  context.fillStyle = '#b9c7db'
+  context.font = `500 34px ${FONT_STACK}`
   context.textBaseline = 'top'
-  drawWrappedText(context, plan.audience, layout.audience.left, layout.audience.top, layout.audience.width, 34)
+  context.fillText(plan.period, layout.price.left, layout.price.top + 24)
+
+  context.fillStyle = '#d4deec'
+  context.font = `450 42px ${FONT_STACK}`
+  context.textBaseline = 'top'
+  drawWrappedText(context, plan.audience, layout.audience.left, layout.audience.top, layout.audience.width, 56)
 
   context.strokeStyle = 'rgba(248, 246, 240, 0.16)'
   context.lineWidth = 1
@@ -419,15 +413,15 @@ function drawPricingTypography(
   context.lineTo(layout.commission.right, layout.commission.top)
   context.stroke()
 
-  context.fillStyle = 'rgba(248, 246, 240, 0.5)'
-  context.font = `500 18px ${FONT_STACK}`
-  drawTrackedText(context, 'КОМИССИЯ С ПРОДАЖ', layout.commission.left, layout.commission.top + 12, 1.8)
+  context.fillStyle = '#b9c7db'
+  context.font = `500 32px ${FONT_STACK}`
+  context.fillText('Комиссия с продаж', layout.commission.left, layout.commission.top + 28)
 
   context.fillStyle = '#e0b64e'
-  context.font = `540 28px ${FONT_STACK}`
+  context.font = `600 44px ${FONT_STACK}`
   context.textBaseline = 'top'
   context.textAlign = 'right'
-  context.fillText(plan.commission, layout.commission.right, layout.commission.top + 2)
+  context.fillText(plan.commission, layout.commission.right, layout.commission.top + 18)
 
   context.restore()
 }
@@ -438,13 +432,13 @@ function drawPricingBorder(context: CanvasRenderingContext2D): void {
   context.save()
   context.beginPath()
   roundedRectPath(context, 1.5, 1.5, width - 3, height - 3, CARD_RADIUS)
-  context.strokeStyle = 'rgba(255, 255, 255, 0.22)'
+  context.strokeStyle = 'rgba(176, 207, 239, 0.22)'
   context.lineWidth = 1.5
   context.stroke()
 
   context.beginPath()
   roundedRectPath(context, 2.5, 2.5, width - 5, height - 5, CARD_RADIUS - 1)
-  context.strokeStyle = 'rgba(207, 163, 61, 0.14)'
+  context.strokeStyle = 'rgba(119, 161, 210, 0.16)'
   context.lineWidth = 1
   context.stroke()
   context.restore()
@@ -458,9 +452,10 @@ function drawGlow(
   color: string,
   opacity: number,
 ): void {
-  const gradient = context.createRadialGradient(x, y, Math.max(2, radius * 0.08), x, y, radius)
+  const gradient = context.createRadialGradient(x, y, 0, x, y, radius)
   gradient.addColorStop(0, applyOpacity(color, opacity))
-  gradient.addColorStop(0.45, applyOpacity(color, opacity * 0.48))
+  gradient.addColorStop(0.12, applyOpacity(color, opacity * 0.76))
+  gradient.addColorStop(0.45, applyOpacity(color, opacity * 0.22))
   gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
 
   context.save()

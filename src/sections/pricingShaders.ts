@@ -30,6 +30,7 @@ precision highp float;
 uniform sampler2D uTexture;
 uniform float uVelocity;
 uniform float uDirection;
+uniform float uTime;
 uniform vec2 uCardSize;
 
 varying vec2 vUv;
@@ -49,7 +50,24 @@ float roundedBoxMask(vec2 uv, vec2 size, float radius) {
 
 void main() {
   vec2 faceUv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);
-  vec4 base = texture2D(uTexture, boundedUv(faceUv));
+  // Animate only the illustration interior; the brand, content and edges stay fixed.
+  float artMask = smoothstep(0.587, 0.65, faceUv.y) * (1.0 - smoothstep(0.85, 0.91, faceUv.y));
+  float phase = uTime * 0.65;
+  vec2 drift = vec2(
+    sin(phase + faceUv.y * 7.0) - sin(faceUv.y * 7.0),
+    sin(phase * 0.73 + faceUv.x * 6.0) - sin(faceUv.x * 6.0)
+  ) * vec2(0.020, 0.014) * artMask * sin(faceUv.x * 3.14159265);
+  vec4 base = texture2D(uTexture, boundedUv(faceUv + drift));
+  // Breathe the existing light sources rather than flashing the whole image.
+  float light = smoothstep(0.34, 0.88, max(base.r, max(base.g, base.b)));
+  float breathe = sin(phase * 1.35 + faceUv.x * 2.4);
+  float restingBreath = sin(faceUv.x * 2.4);
+  base.rgb *= 1.0 + artMask * light * (breathe - restingBreath) * 0.26;
+  // A broad, slow glint follows the brighter ribbons, with no new particles.
+  float sweepCenter = 0.5 + 0.46 * sin(phase * 0.72);
+  float sweep = exp(-pow((faceUv.x - sweepCenter) / 0.16, 2.0));
+  float restingSweep = exp(-pow((faceUv.x - 0.5) / 0.16, 2.0));
+  base.rgb += vec3(0.10, 0.17, 0.20) * artMask * light * (sweep - restingSweep);
   float cornerMask = roundedBoxMask(vUv, uCardSize, 0.15);
   float edge = pow(1.0 - abs(vFacing), 3.2) * uVelocity;
   float side = smoothstep(-0.42, 0.42, (faceUv.x - 0.5) * uDirection);

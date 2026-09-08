@@ -215,7 +215,7 @@ export function PricingWebGLStage({
       transitionProgress,
     )
 
-    if (renderState) scene.render(renderState, timestamp / 1000)
+    if (renderState) scene.render(renderState, current.prefersReducedMotion || frameOverrideRef.current ? 0 : timestamp / 1000)
   }, [])
 
   useEffect(() => {
@@ -419,6 +419,7 @@ export function PricingWebGLStage({
     }
     if (!scene || !shouldRunPricingFrame(frameGate)) return
 
+    let lastArtworkFrame = -Infinity
     const renderFrame = (timestamp: number) => {
       frameRef.current = 0
       if (!mountedRef.current || fallbackRef.current || sceneRef.current !== scene) return
@@ -435,6 +436,12 @@ export function PricingWebGLStage({
       if (!shouldRunPricingFrame(currentGate)) return
 
       const isTransitioning = current.motionState.phase === 'transitioning'
+      // Quiet artwork runs at 30 fps; card transitions retain display refresh rate.
+      if (!isTransitioning && timestamp - lastArtworkFrame < 1000 / 30) {
+        frameRef.current = requestAnimationFrame(renderFrame)
+        return
+      }
+      lastArtworkFrame = timestamp
       const transitionStartedAt = transitionStartedAtRef.current
       if (isTransitioning && transitionStartedAt === null) return
 

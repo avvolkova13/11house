@@ -6,7 +6,7 @@ import {
 } from './pricingWebglLifecycle'
 
 describe('pricing WebGL lifecycle', () => {
-  it('renders transitions but rests the GPU while the card and its reflection are still', () => {
+  it('animates visible artwork and suspends rendering when hidden or motion is reduced', () => {
     expect(shouldRunPricingFrame({
       phase: 'transitioning',
       inView: true,
@@ -20,7 +20,7 @@ describe('pricing WebGL lifecycle', () => {
       documentVisible: true,
       reducedMotion: false,
       fallback: false,
-    })).toBe(false)
+    })).toBe(true)
     expect(shouldRunPricingFrame({
       phase: 'transitioning',
       inView: false,
