@@ -84,18 +84,19 @@ void main() {
   vUv = uv;
   float distanceFromCard = uv.y;
   float bend = sin(distanceFromCard * 1.57079633);
-  float trailingYaw = uVelocity * uDirection * bend * bend * 0.06;
-  float yaw = uCardYaw - sin(uCardYaw) * bend * 0.18 - trailingYaw;
-  float spread = 1.0 + bend * bend * (0.5 + uVelocity * 0.08) * uReflectionFlare;
+  float yaw = uCardYaw;
+  // Bend the centreline, not the face angle: an edge-on card keeps a narrow echo.
+  float sweep = sin(uCardYaw) * bend * bend * uCardSize.x * (0.08 + uVelocity * 0.03);
+  float spread = 1.0 + bend * bend * (0.36 + uVelocity * 0.08) * uReflectionFlare;
   // Extra transparent geometry gives the spectral fringe room outside the mirror.
-  float across = (uv.x - 0.5) * 1.35 * uCardSize.x * spread;
+  float across = (uv.x - 0.5) * 1.8 * uCardSize.x * spread;
   float rise = distanceFromCard * uCardSize.y * (uReflectionReach + uVelocity * 0.025);
   float curl = bend * sin(uCardYaw) * (uv.x - 0.5) * uCardSize.y * 0.095;
   // Lift the corners away from the contact line: the opening is a shallow arc.
-  float lip = pow(abs((uv.x - 0.5) * 2.7), 4.0) * (1.0 - distanceFromCard) * uCardSize.y * 0.045;
+  float lip = pow(abs((uv.x - 0.5) * 2.7), 4.0) * (1.0 - distanceFromCard) * uCardSize.y * 0.018;
 
   vec3 reflectedPosition = vec3(
-    across * cos(yaw),
+    across * cos(yaw) - sweep,
     uReflectionSide * (rise + curl + lip + uCardSize.y * 0.018),
     -across * sin(yaw) + bend * uCardSize.y * 0.065
   );
@@ -136,25 +137,26 @@ vec4 opticalSample(vec2 sampleUv, float shift) {
   vec2 greenUv = sampleUv + vec2(shift, 0.0);
   vec4 red = texture2D(uTexture, boundedUv(redUv));
   vec4 green = texture2D(uTexture, boundedUv(greenUv));
-  float softness = 0.035 + shift * 0.8;
+  float softness = 0.055 + shift * 1.4;
+  vec2 blueCoverageUv = vec2((sampleUv.x - 0.5) * (1.0 + shift * 2.0) + 0.5, sampleUv.y);
   return vec4(
     mix(1.0, red.r, sourceCoverage(redUv, softness) * red.a),
     mix(1.0, green.g, sourceCoverage(greenUv, softness) * green.a),
-    mix(1.0, center.b, sourceCoverage(sampleUv, softness) * center.a),
+    mix(1.0, center.b, sourceCoverage(blueCoverageUv, softness) * center.a),
     1.0
   );
 }
 
 void main() {
   float distanceFromCard = vUv.y;
-  float mirrorX = (vUv.x - 0.5) * 1.35 + 0.5;
+  float mirrorX = (vUv.x - 0.5) * 1.8 + 0.5;
   float faceX = vReflectionFacing >= 0.0 ? mirrorX : 1.0 - mirrorX;
   // Top travels down from the top of the source; bottom travels up from its foot.
   float sourceDepth = pow(distanceFromCard, 0.85) * 0.46;
   float sourceY = uReflectionSide > 0.0 ? 1.0 - sourceDepth : sourceDepth;
   vec2 mirroredUv = vec2(faceX, sourceY);
-  float blurRadius = 0.004 + pow(distanceFromCard, 2.0) * 0.018;
-  float chromaticShift = (0.006 + pow(distanceFromCard, 1.35) * 0.065) * (1.0 + uVelocity * 0.3);
+  float blurRadius = 0.005 + pow(distanceFromCard, 2.0) * 0.045;
+  float chromaticShift = (0.008 + pow(distanceFromCard, 1.2) * 0.12) * (1.0 + uVelocity * 0.3);
   vec2 blurX = vec2(blurRadius, 0.0);
   vec2 blurY = vec2(0.0, blurRadius * 1.8);
 
@@ -168,13 +170,14 @@ void main() {
   blurred += opticalSample(mirroredUv - blurX + blurY, chromaticShift) * 0.08;
   blurred += opticalSample(mirroredUv + blurX + blurY, chromaticShift) * 0.08;
 
-  float outerFade = 1.0 - smoothstep(0.42, 1.18, distanceFromCard);
-  float contactFade = smoothstep(0.0, 0.15, distanceFromCard);
+  // The viewport clips the far end; never fade to an artificial horizon inside it.
+  float outerFade = 1.0 - smoothstep(0.9, 1.4, distanceFromCard);
+  float contactFade = smoothstep(0.0, 0.10, distanceFromCard);
   float luminance = dot(blurred.rgb, vec3(0.2126, 0.7152, 0.0722));
-  vec3 reflectedColor = pow(max(vec3(0.0), mix(vec3(luminance), blurred.rgb, 1.5)), vec3(0.85));
+  vec3 reflectedColor = pow(max(vec3(0.0), mix(vec3(luminance), blurred.rgb, 1.9)), vec3(0.72));
   float dispersion = max(blurred.r, max(blurred.g, blurred.b)) - min(blurred.r, min(blurred.g, blurred.b));
   // On a dark foot the white field dominates; refraction remains at its edges.
-  float surfacePresence = uReflectionSide > 0.0 ? 0.94 : mix(0.035, 0.32, smoothstep(0.03, 0.65, dispersion));
+  float surfacePresence = uReflectionSide > 0.0 ? 0.98 : mix(0.045, 0.6, smoothstep(0.02, 0.38, dispersion));
   float alphaMask = outerFade * contactFade * surfacePresence;
 
   gl_FragColor = vec4(clamp(reflectedColor, 0.0, 1.0), blurred.a * alphaMask);

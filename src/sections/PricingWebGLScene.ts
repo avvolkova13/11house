@@ -260,7 +260,9 @@ export class PricingWebGLScene {
       canvas: this.canvas,
       alpha: true,
       antialias: true,
-      premultipliedAlpha: false,
+      // NormalBlending accumulates premultiplied RGB in the transparent canvas.
+      // Match browser compositing so white fringe pixels do not turn into grey sheets.
+      premultipliedAlpha: true,
       powerPreference: 'high-performance',
     })
     this.renderer.outputColorSpace = SRGBColorSpace
@@ -292,8 +294,9 @@ export class PricingWebGLScene {
     })
 
     this.planes = PLANE_SLOTS.map((slot) => createPlaneResources(slot, this.textures[0].texture))
-    this.planes.forEach(({ bottomReflection, mesh, topReflection }) => {
-      this.scene.add(bottomReflection, topReflection, mesh)
+    this.planes.forEach(({ mesh }) => {
+      // Keep the card choreography; optical reflections are hidden from the scene.
+      this.scene.add(mesh)
     })
 
     this.resize(this.viewport.width, this.viewport.height, this.viewport.dpr)

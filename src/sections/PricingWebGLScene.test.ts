@@ -371,6 +371,10 @@ describe('PricingWebGLScene lifecycle', () => {
 
     expect(secondInitialization).toBe(firstInitialization)
     await firstInitialization
+    expect(threeHarness.rendererInstances[0].options).toMatchObject({
+      alpha: true,
+      premultipliedAlpha: true,
+    })
     expect(textureHarness.createPricingCardCanvas).toHaveBeenCalledTimes(3)
     expect(threeHarness.textureInstances).toHaveLength(6)
     expect(threeHarness.materialInstances).toHaveLength(9)

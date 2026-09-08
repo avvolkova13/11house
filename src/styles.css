@@ -2751,7 +2751,7 @@ body::-webkit-scrollbar {
   isolation: isolate;
   contain: layout paint;
   background: #fff;
-  border-block: clamp(24px, 3vw, 48px) solid #fff;
+  padding-block: clamp(24px, 3vw, 48px);
   box-sizing: content-box;
 }
 
@@ -2781,8 +2781,7 @@ body::-webkit-scrollbar {
 .pricing-webgl-stage {
   z-index: 1;
   overflow: hidden;
-  /* The optical tails dissolve into the white top/bottom margins. */
-  mask-image: linear-gradient(to bottom, transparent, #000 18px, #000 calc(100% - 18px), transparent);
+  /* Fill the white field, including its breathing room; crop at its real edge. */
 }
 
 .pricing-webgl-stage__canvas {
