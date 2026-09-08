@@ -27,9 +27,6 @@ import {
 } from './scroll/heroHandoff'
 
 export default function App() {
-  // Keep the presentation lock only in production builds for now. Local
-  // development should always be able to continue through the full page.
-  const holdHeroHandoff = !import.meta.env.DEV
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     || (import.meta.env.DEV && new URLSearchParams(window.location.search).has('reduced-motion'))
   const [metrics, setMetrics] = useState(() => (
@@ -112,7 +109,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (handoffPhase !== 'tunnel' || holdHeroHandoff) return
+    if (handoffPhase !== 'tunnel') return
 
     const unsubscribe = scrollAdapter.subscribe((snapshot) => {
       if (shouldBeginHeroHandoff(snapshot, metrics)) enterStory()
@@ -121,7 +118,7 @@ export default function App() {
     return () => {
       unsubscribe()
     }
-  }, [enterStory, handoffPhase, holdHeroHandoff, metrics, scrollAdapter])
+  }, [enterStory, handoffPhase, metrics, scrollAdapter])
 
   const runwayEnd = getHeroRunwayEnd(metrics, handoffPhase)
   const runwayStyle = {
