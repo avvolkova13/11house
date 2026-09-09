@@ -64,13 +64,15 @@ function HeroTitleGlyphs({ copy }: HeroTitleGlyphsProps) {
 }
 
 type CosmicHeroProps = {
+  backgroundOnly?: boolean
   handoffPhase: HeroHandoffPhase
   onEnterStory: () => void
-  scrollAdapter: HeroScrollAdapter
+  scrollAdapter: Pick<HeroScrollAdapter, 'snapshot' | 'subscribe'>
   runwayStyle: CSSProperties
 }
 
 export function CosmicHero({
+  backgroundOnly = false,
   handoffPhase,
   onEnterStory,
   scrollAdapter,
@@ -130,7 +132,7 @@ export function CosmicHero({
   }, [entryPhase])
 
   useEffect(() => {
-    if (reducedMotion) return
+    if (reducedMotion || backgroundOnly) return
 
     setCopyProgress(clampHeroProgress(scrollAdapter.snapshot.travelProgress))
 
@@ -139,7 +141,7 @@ export function CosmicHero({
     })
 
     return unsubscribe
-  }, [reducedMotion, scrollAdapter])
+  }, [reducedMotion, scrollAdapter, backgroundOnly])
 
   const tunnelMix = getTunnelMix(copyProgress)
   const copyStyle = {
@@ -180,14 +182,15 @@ export function CosmicHero({
   return (
     <section
       className="cosmic-runway"
+      data-background-only={backgroundOnly || undefined}
       data-intro={entryPhase}
       data-motion={reducedMotion ? 'reduced' : 'full'}
       style={runwayStyle}
     >
-      <section id="top" className={`cosmic-hero${fallback ? ' cosmic-hero--fallback' : ''}`}>
-        <LandingHeader onNavigate={handleHeaderNavigation} />
+      <section id={backgroundOnly ? undefined : 'top'} className={`cosmic-hero${fallback ? ' cosmic-hero--fallback' : ''}`}>
+        {!backgroundOnly && <LandingHeader onNavigate={handleHeaderNavigation} />}
         <canvas ref={canvasRef} className="cosmic-canvas" />
-        <div className="hero-copy" aria-live="polite" style={copyStyle}>
+        {!backgroundOnly && <div className="hero-copy" aria-live="polite" style={copyStyle}>
           <div className="hero-copy__stages" aria-label="ElevenHouse">
             {HERO_NARRATIVE_STAGES.map((stage, index) => {
               const stageOffset = reducedMotion
@@ -292,7 +295,7 @@ export function CosmicHero({
               )
             })}
           </div>
-        </div>
+        </div>}
       </section>
     </section>
   )

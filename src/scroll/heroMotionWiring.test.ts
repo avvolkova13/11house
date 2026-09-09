@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
 import appSource from '../App.tsx?raw'
+import journeySource from '../journey/JourneyLanding.tsx?raw'
 import heroSource from '../components/CosmicHero.tsx?raw'
 import sceneSource from '../cosmic/CosmicScene.ts?raw'
 
 describe('Hero motion wiring', () => {
-  it('advances one shared visual timeline on animation frames', () => {
-    expect(appSource).toContain('scrollAdapter.advance(frameTime)')
+  it('advances the scene adapter independently of interface steps', () => {
+    expect(appSource).toContain('<JourneyLanding />')
+    expect(journeySource).toContain('scrollAdapter.advance(frameTime)')
     expect(heroSource).toContain('snapshot.travelProgress')
     expect(sceneSource).toContain('snapshot.travelProgress')
   })

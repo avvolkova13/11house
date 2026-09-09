@@ -1,0 +1,169 @@
+/* Selected original app/styles.css rules, scoped to extracted fragments. No app reset or background imported. */
+.eh-journey .eh-source {
+
+  /* --- Палитра из брифа --- */
+  --night:        #0B0B1F;  /* фон / ночь */
+  --violet-deep:  #2A1B4E;  /* тёмный фиолет */
+  --amethyst:     #8B5CF6;  /* аметист */
+  --gold:         #F4C430;  /* золото */
+  --moon:         #D8D4EC;  /* лунный */
+
+  /* --- Производные поверхности (слои тёмного космоса) --- */
+  --bg-0:  #07060F;            /* самый глубокий — за всем */
+  --bg-1:  #0B0B1F;            /* база приложения */
+  --surface-1: #110F26;        /* сайдбар, борта */
+  --surface-2: #16142F;        /* карточки */
+  --surface-3: #1E1B3E;        /* приподнятые / hover */
+  --surface-4: #272252;        /* активные / выделенные */
+
+  --line:        rgba(216, 212, 236, 0.08);
+  --line-strong: rgba(216, 212, 236, 0.14);
+  --line-amethyst: rgba(139, 92, 246, 0.32);
+
+  /* --- Текст --- */
+  --text-1: #ECEAF7;   /* основной */
+  --text-2: #A7A2C8;   /* вторичный */
+  --text-3: #6F6A93;   /* приглушённый / подписи */
+  --text-on-accent: #0B0B1F;
+
+  /* --- Акцент (управляется Tweaks: аметист / золото) --- */
+  --accent: var(--amethyst);
+  --accent-soft: rgba(139, 92, 246, 0.14);
+  --accent-line: rgba(139, 92, 246, 0.40);
+  --accent-text: #B79CFB;
+  --accent-glow: rgba(139, 92, 246, 0.45);
+
+  /* семантические */
+  --pos: #4EC8A0;
+  --pos-soft: rgba(78, 200, 160, 0.14);
+  --warn: #F4C430;
+  --warn-soft: rgba(244, 196, 48, 0.14);
+  --info: #6FA8FF;
+
+  /* радиусы / тени (крутятся в Tweaks) */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+
+  --shadow-card: 0 1px 0 rgba(255,255,255,0.03) inset, 0 18px 40px -24px rgba(0,0,0,0.8);
+  --glow: 1;  /* множитель свечений, Tweaks */
+
+  --font: 'Onest', 'Manrope', system-ui, -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --sidebar-w: 248px;
+  --topbar-h: 68px;
+  --subheader-h: 60px;      /* высота под-шапки модуля */
+  --panel-w: 340px;         /* правые панели деталей/инспектора */
+  --panel-bg: rgba(13, 12, 32, 0.6);
+}
+
+
+.eh-source .mono { font-family: var(--mono); font-feature-settings: "tnum" 1; letter-spacing: -0.01em; }
+.eh-source .card {
+  background: linear-gradient(180deg, var(--surface-2), color-mix(in srgb, var(--surface-2) 92%, black));
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+}
+.eh-source .btn {
+  font-family: var(--font); font-size: 14px; font-weight: 600;
+  border-radius: var(--r-md); border: 1px solid transparent;
+  padding: 10px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+  transition: transform .12s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+  white-space: nowrap; line-height: 1;
+}
+.eh-source .btn:active { transform: translateY(1px); }
+.eh-source .btn-primary {
+  background: var(--accent); color: var(--text-on-accent);
+  box-shadow: 0 0 0 1px var(--accent-line), 0 10px 26px -10px var(--accent-glow);
+}
+.eh-source .btn-primary:hover { box-shadow: 0 0 0 1px var(--accent-line), 0 14px 30px -8px var(--accent-glow); }
+.eh-source .btn-ghost { background: var(--surface-3); color: var(--text-1); border-color: var(--line-strong); }
+.eh-source .btn-ghost:hover { background: var(--surface-4); }
+.eh-source .btn-quiet { background: transparent; color: var(--text-2); }
+.eh-source .btn-quiet:hover { color: var(--text-1); background: var(--surface-2); }
+.eh-source .chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 500;
+  border: 1px solid var(--line-strong); color: var(--text-2); background: var(--surface-2);
+  cursor: pointer; transition: all .14s ease; white-space: nowrap;
+}
+.eh-source .chip:hover { border-color: var(--accent-line); color: var(--text-1); }
+.eh-source .chip.on { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent-text); }
+.eh-source .kicker {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-3);
+}
+.eh-source .input {
+  width: 100%; font-family: var(--font); font-size: 15px; color: var(--text-1);
+  background: var(--bg-1); border: 1px solid var(--line-strong); border-radius: var(--r-md);
+  padding: 12px 14px; outline: none; transition: border-color .15s ease, box-shadow .15s ease;
+}
+.eh-source .input::placeholder { color: var(--text-3); }
+.eh-source .input:focus { border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
+.eh-source textarea.input { resize: none; line-height: 1.55; }
+.eh-source .label { font-size: 13px; font-weight: 600; color: var(--text-2); margin-bottom: 8px; display: block; }
+.eh-source .hint { font-size: 12.5px; color: var(--text-3); line-height: 1.5; }
+
+/* Only the framing and narrow-screen sizing below are specific to the landing. */
+.eh-journey .eh-source { color: var(--text-1); font-family: var(--font); }
+.eh-journey .eh-source .input { min-width: 0; }
+.eh-journey .eh-source__fragment { width: 100%; }
+.eh-journey .eh-source__narrow { width: min(470px, 100%); margin: auto; padding: 26px; background: #0b0b1ff5; border: 1px solid var(--line-strong); border-radius: 24px; box-shadow: 0 20px 90px #0005; }
+.eh-journey .eh-source__narrow h3 { font-size: 17px; margin: 0 0 16px; }
+.eh-journey .eh-source__narrow p { font-size: 13.5px; line-height: 1.55; }
+.eh-journey .eh-source__muted { color: var(--text-2); font-size: 11.5px; line-height: 1.5; }
+.eh-journey .eh-source__person { display: flex; gap: 13px; align-items: center; margin: 12px 0 22px; }
+.eh-journey .eh-source__person strong { display: block; font-size: 17px; font-weight: 700; }
+.eh-journey .eh-source__person span span, .eh-journey .eh-source__person div > span { display: block; font-size: 13px; color: var(--accent-text); margin-top: 4px; }
+.eh-journey .eh-source__field { margin-bottom: 18px; }
+.eh-journey .eh-source__action { margin-top: 20px; width: 100%; justify-content: center; min-height: 44px; white-space: normal; line-height: 1.3; }
+.eh-journey .eh-source__stack { display: flex; flex-direction: column; gap: 12px; }
+.eh-journey .eh-source__composer { display: flex; gap: 10px; padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--line); }
+.eh-journey .eh-source__composer .input { min-width: 0; }
+.eh-journey .eh-source__status { color: var(--pos); font-size: 11.5px; line-height: 1.5; }
+.eh-journey .eh-source__history-row { display: flex; gap: 12px; padding: 14px 0; border-top: 1px solid var(--line); }
+.eh-journey .eh-source__history-row > div { flex: 1; }
+.eh-journey .eh-source__history-row strong { display: block; margin-top: 3px; font-size: 13.5px; }
+.eh-journey .eh-source__history-row p { margin: 4px 0 0; color: var(--text-2); font-size: 12px; }
+.eh-journey .eh-source__history-icon { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--line-strong); border-radius: 10px; color: var(--accent-text); background: var(--surface-2); flex-shrink: 0; }
+.eh-journey .eh-source__calculation { display: flex; flex-direction: column; align-items: center; gap: 20px; width: min(440px, 100%); margin: auto; padding: 22px; border-radius: 24px; background: #0b0b1ff5; border: 1px solid var(--line-strong); }
+.eh-journey .eh-source__calculation-caption { text-align: center; }
+.eh-journey .eh-source__calculation-caption strong { display: block; font-size: 14px; }
+.eh-journey .eh-source__calculation-caption span { display: block; color: var(--text-2); font-size: 11px; margin-top: 5px; }
+.eh-journey .eh-source__calculation > svg { max-width: 100%; height: auto; max-height: 360px; }
+.eh-journey .eh-source__calculation > div[style*="grid"] { max-width: 100%; }
+.eh-journey .eh-source__slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.eh-journey .eh-source__slots .chip { justify-content: center; min-height: 42px; }
+.eh-journey .eh-source__product-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; background: var(--accent-soft); color: var(--accent-text); }
+.eh-journey .eh-source__brief { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--accent-soft); border: 1px solid var(--accent-line); margin-bottom: 16px; font-size: 12.5px; line-height: 1.5; }
+.eh-journey .eh-source__brief svg { flex-shrink: 0; color: var(--accent-text); }
+.eh-journey .eh-source__journal-entry > span { display: block; margin-bottom: 6px; }
+.eh-journey .eh-source__journal-entry p { margin: 0 0 10px; }
+.eh-journey .eh-source__flow { display: flex; gap: 26px; align-items: center; justify-content: center; padding: 25px 0; }
+.eh-journey .eh-source__flow-node { position: relative; width: 235px; flex: 1 1 0; border-radius: 16px; background: linear-gradient(180deg, #1A1736, #14122B); border: 1px solid; box-shadow: 0 14px 30px -20px #000d; }
+.eh-journey .eh-source__flow-node > div:first-child { border-radius: 16px 16px 0 0; }
+.eh-journey .eh-source__flow-node:not(:last-child)::after { content: ''; position: absolute; top: 50%; left: 100%; width: 26px; border-top: 1px solid var(--accent-line); }
+.eh-journey .eh-source__flow-node .chip { white-space: normal; font-size: 10px; padding: 5px 8px; text-align: left; }
+.eh-journey .eh-source__balances { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 700px) {
+  .eh-journey .eh-source__narrow { padding: 20px; }
+  .eh-journey .eh-source__flow { flex-direction: column; gap: 20px; padding: 0; }
+  .eh-journey .eh-source__flow-node { width: min(300px, 100%); }
+  .eh-journey .eh-source__flow-node:not(:last-child)::after { left: 50%; top: 100%; height: 20px; width: 0; border-top: 0; border-left: 1px solid var(--accent-line); }
+  .eh-journey .eh-source__balances { grid-template-columns: 1fr; }
+  .eh-journey .eh-source__person strong { font-size: 16px; }
+  .eh-journey .eh-source__calculation { padding: 16px; }
+}
+
+/* app/app.jsx TWEAK_DEFAULTS.accent = gold; exact source accent override. */
+.eh-journey .eh-source {
+  --accent: var(--gold);
+  --accent-soft: rgba(244, 196, 48, 0.14);
+  --accent-line: rgba(244, 196, 48, 0.42);
+  --accent-text: #F6D266;
+  --accent-glow: rgba(244, 196, 48, 0.40);
+  --text-on-accent: #2A1B0B;
+}

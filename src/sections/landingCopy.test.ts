@@ -41,8 +41,8 @@ const workspaceSource = readRaw(
 const practitionerSource = Object.values(import.meta.glob('./PractitionerResults.tsx', {
   eager: true, query: '?raw', import: 'default',
 })).join('\n')
-const appSource = readRaw(
-  import.meta.glob('../App.tsx', { eager: true, query: '?raw', import: 'default' }),
+const journeySource = readRaw(
+  import.meta.glob('../journey/JourneyLanding.tsx', { eager: true, query: '?raw', import: 'default' }),
 )
 const finalCtaSource = readRaw(
   import.meta.glob('./FinalCta.tsx', { eager: true, query: '?raw', import: 'default' }),
@@ -196,7 +196,7 @@ describe('marketing brief copy contract', () => {
     expect(workspaceSource).not.toContain('unified-workspace__index')
   })
 
-  it('places three sourced practitioner results between workspace and pricing', () => {
+  it('preserves practitioner results after the CRM journey and before pricing', () => {
     expect(practitionerSource.match(/monogram:/g) ?? []).toHaveLength(3)
     expect(practitionerSource).toContain('Марина К.')
     expect(practitionerSource).toContain('Дарья Л.')
@@ -205,10 +205,11 @@ describe('marketing brief copy contract', () => {
     expect(practitionerSource).toContain('18 продаж на автопилоте')
     expect(practitionerSource).toContain('+47% к среднему чеку')
 
-    const workspacePosition = appSource.indexOf('<UnifiedWorkspace />')
-    const resultsPosition = appSource.indexOf('<PractitionerResults />')
-    const pricingPosition = appSource.indexOf('<PricingSection />')
-    expect(workspacePosition).toBeLessThan(resultsPosition)
+    const journeyPosition = journeySource.indexOf('<ProductExperience ')
+    const resultsPosition = journeySource.indexOf('<PractitionerResults />')
+    const pricingPosition = journeySource.indexOf('<PricingSection />')
+    expect(journeyPosition).toBeGreaterThan(-1)
+    expect(journeyPosition).toBeLessThan(resultsPosition)
     expect(resultsPosition).toBeLessThan(pricingPosition)
   })
 

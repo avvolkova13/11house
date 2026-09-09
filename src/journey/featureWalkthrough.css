@@ -1,0 +1,64 @@
+/* Only the selected-feature story. Approved menu, access, Hero and cosmic renderer are unaffected. */
+.eh-journey .eh-walkthrough { width: 100%; overflow-anchor: none; }
+.eh-journey .eh-experience__selected:has(.eh-walkthrough) { width: min(1060px, 100%); }
+.eh-journey .eh-walkthrough__purpose { max-width: 740px; margin: -10px auto 44px; text-align: center; font-size: 15px; line-height: 1.75; color: #bec3d2; text-wrap: pretty; }
+.eh-journey .eh-walkthrough__body { display: grid; grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr); gap: clamp(32px, 5vw, 72px); align-items: start; }
+.eh-journey .eh-walkthrough__explanation { padding-top: 20px; align-self: stretch; }
+.eh-journey .eh-walkthrough__counter { margin: 0 0 22px; color: #edcf85; font-size: 13px; letter-spacing: .12em; }
+.eh-journey .eh-walkthrough__counter span { color: #858c9e; }
+.eh-journey .eh-walkthrough__copy { min-height: 190px; animation: eh-story-copy .3s ease both; }
+.eh-journey .eh-walkthrough__copy h3 { margin: 0 0 18px; font-size: clamp(25px, 2.5vw, 33px); line-height: 1.16; font-weight: 450; letter-spacing: -.045em; text-wrap: balance; }
+.eh-journey .eh-walkthrough__copy p { color: #bec3d2; font-size: 14px; line-height: 1.8; margin: 0; }
+.eh-journey .eh-walkthrough__steps { display: grid; gap: 3px; margin-top: 32px; }
+.eh-journey .eh-walkthrough__steps button { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 44px; padding: 10px 0; text-align: left; border: 0; border-bottom: 1px solid #d8d4ec1a; background: transparent; color: #a1a8bb; font: inherit; font-size: 13px; cursor: pointer; }
+.eh-journey .eh-walkthrough__steps button span { width: 23px; font-size: 10px; }
+.eh-journey .eh-walkthrough__steps button[aria-current] { color: #f3d99d; border-color: #ddc68e90; }
+.eh-journey .eh-walkthrough__visual { --eh-fragment-width: 470px; min-width: 0; display: flex; flex-direction: column; align-self: stretch; margin-top: -4px; margin-bottom: -18px; }
+.eh-journey .eh-walkthrough__action { display: flex; align-items: flex-start; gap: 10px; width: min(var(--eh-fragment-width), 100%); min-height: 18px; margin: 0 auto 26px; color: #dccb9e; font-size: 12px; line-height: 1.5; }
+.eh-journey .eh-walkthrough__visual:has(.eh-source__calculation) { --eh-fragment-width: 440px; }
+.eh-journey .eh-walkthrough__visual:has(.eh-source__flow) { --eh-fragment-width: 350px; }
+.eh-journey .eh-walkthrough__action > span { font-size: 18px; line-height: 1; }
+.eh-journey .eh-walkthrough__stage { width: min(var(--eh-fragment-width), 100%); margin-inline: auto; text-align: left; flex-shrink: 0; }
+.eh-journey .eh-walkthrough__footer { width: min(var(--eh-fragment-width), 100%); margin: auto auto 0; padding-top: 22px; flex-shrink: 0; }
+.eh-journey .eh-walkthrough__footer .eh-experience__another { width: 100%; margin-top: 0; }
+.eh-journey .eh-walkthrough__playback { margin: 24px 0 0; }
+.eh-journey .eh-walkthrough__track { height: 2px; background: #d8d4ec25; overflow: hidden; }
+.eh-journey .eh-walkthrough__track span { display: block; height: 100%; background: #e2c477; transform-origin: left; }
+.eh-journey .eh-walkthrough__controls { display: flex; justify-content: space-between; gap: 16px; margin-top: 12px; }
+.eh-journey .eh-walkthrough__controls button { min-height: 44px; padding: 8px 0; border: 0; background: transparent; color: #d8dce5; font: inherit; font-size: 12px; cursor: pointer; }
+.eh-journey .eh-walkthrough__controls button:disabled { opacity: .35; cursor: default; }
+.eh-journey .eh-walkthrough__controls .eh-walkthrough__toggle { display: grid; place-items: center; flex: 0 0 44px; color: #a1a8bb; }
+.eh-journey .eh-walkthrough__toggle:hover { color: #edcf85; }
+.eh-journey .eh-walkthrough__toggle:focus-visible { outline: 1px solid #edcf85; outline-offset: 2px; border-radius: 4px; }
+.eh-journey .eh-walkthrough__outcome { width: min(470px, 100%); margin: 26px auto 0; color: #edcf85; text-align: left; font-size: 15px; line-height: 1.7; }
+.eh-journey .eh-walkthrough [data-guide-active="true"] { outline: 1px solid var(--accent-line); outline-offset: 3px; }
+.eh-journey .eh-walkthrough [data-guide-press="true"] { transform: translateY(2px); filter: brightness(.8); }
+.eh-journey .eh-source__reveal { opacity: var(--reveal, 1); transform: translateY(calc((1 - var(--reveal, 1)) * 10px)); }
+.eh-journey .eh-source__notice { display: flex; align-items: center; gap: 8px; color: var(--pos); margin-top: 14px; min-height: 20px; font-size: 12px; line-height: 1.5; }
+.eh-journey .eh-source__drawing { width: 100%; display: grid; place-items: center; clip-path: inset(0 calc((1 - var(--draw, 1)) * 100%) 0 0); }
+.eh-journey .eh-source__drawing > svg { width: 100%; height: auto; max-height: 360px; }
+.eh-journey .eh-source__drawing > div { width: 100%; justify-content: center; }
+.eh-journey .eh-source__chart-help { border-top: 1px solid var(--line-strong); padding-top: 14px; margin: 0; color: var(--text-2); font-size: 12px; line-height: 1.65; }
+.eh-journey .eh-walkthrough .eh-source__flow { flex-direction: column; gap: 18px; padding: 0; }
+.eh-journey .eh-walkthrough .eh-source__flow-node { flex: none; width: min(350px, 100%); }
+.eh-journey .eh-walkthrough .eh-source__flow-node:not(:last-child)::after { left: 50%; top: 100%; width: 0; height: 18px; border-top: 0; border-left: 1px solid var(--accent-line); }
+.eh-journey .eh-walkthrough .eh-source__flow-node[data-pending="true"] { opacity: .4; }
+@keyframes eh-story-copy { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@media (max-width: 700px) {
+  .eh-journey .eh-walkthrough__purpose { font-size: 13px; line-height: 1.7; margin-bottom: 28px; }
+  .eh-journey .eh-walkthrough__body { display: block; }
+  .eh-journey .eh-walkthrough__explanation { position: sticky; top: 82px; z-index: 5; padding: 14px 0 18px; background: #030917; box-shadow: 0 0 0 12px #030917; margin-bottom: 24px; }
+  .eh-journey .eh-walkthrough__counter { margin-bottom: 8px; font-size: 11px; }
+  .eh-journey .eh-walkthrough__copy { min-height: 0; }
+  .eh-journey .eh-walkthrough__copy h3 { font-size: 23px; margin-bottom: 10px; }
+  .eh-journey .eh-walkthrough__copy p { font-size: 12px; line-height: 1.65; }
+  .eh-journey .eh-walkthrough__steps { display: none; }
+  .eh-journey .eh-walkthrough__steps button { width: auto; gap: 6px; min-height: 40px; font-size: 11px; }
+  .eh-journey .eh-walkthrough__steps button span { width: auto; }
+  .eh-journey .eh-walkthrough__visual { margin-top: 0; margin-bottom: 0; }
+  .eh-journey .eh-walkthrough__controls { gap: 10px; }
+  .eh-journey .eh-walkthrough__controls button { font-size: 11px; }
+}
+.eh-journey .eh-walkthrough .chip:disabled { cursor: default; opacity: .45; }
+.eh-journey[data-motion="reduced"] .eh-walkthrough__copy { animation: none; }
+.eh-journey[data-motion="reduced"] .eh-walkthrough :where(.btn, .chip, .input) { transition: none; }

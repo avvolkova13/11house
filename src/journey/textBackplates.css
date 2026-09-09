@@ -1,0 +1,32 @@
+/* Backplates only for the explanatory column. Insets preserve the approved
+   text wrapping, section geometry and scroll/animation measurements. */
+.eh-journey .eh-walkthrough__explanation {
+  position: relative;
+  isolation: isolate;
+}
+
+.eh-journey .eh-walkthrough__explanation::before {
+  content: '';
+  position: absolute;
+  inset: -4px -22px -18px;
+  z-index: -1;
+  pointer-events: none;
+  background: rgba(3, 9, 23, .88);
+  border: 1px solid rgba(216, 212, 236, .08);
+  border-radius: 20px;
+}
+
+.eh-journey .eh-walkthrough__copy p { color: #d3d7e1; }
+
+@media (max-width: 700px) {
+  .eh-journey .eh-walkthrough__explanation {
+    position: sticky;
+    background: transparent;
+    box-shadow: none;
+  }
+  .eh-journey .eh-walkthrough__explanation::before {
+    inset: 0 -12px;
+    background: rgba(3, 9, 23, .96);
+    border-radius: 14px;
+  }
+}

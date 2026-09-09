@@ -20,7 +20,7 @@ import { getIntroScrollMotion, getIntroVelocityAfterDelta } from './introMotion'
 type CosmicSceneOptions = {
   reducedMotion: boolean
   onFallback: () => void
-  scrollAdapter: HeroScrollAdapter
+  scrollAdapter: Pick<HeroScrollAdapter, 'snapshot' | 'subscribe'>
 }
 
 export class CosmicScene {

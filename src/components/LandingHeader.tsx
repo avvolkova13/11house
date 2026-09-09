@@ -2,6 +2,7 @@ import type { MouseEvent } from 'react'
 
 type LandingHeaderProps = {
   onNavigate: (event: MouseEvent<HTMLAnchorElement>, target: string) => void
+  destinations?: Readonly<Record<string, string>>
 }
 
 const navigation = [
@@ -11,7 +12,7 @@ const navigation = [
   { label: 'FAQ', target: '#faq-title' },
 ]
 
-export function LandingHeader({ onNavigate }: LandingHeaderProps) {
+export function LandingHeader({ onNavigate, destinations }: LandingHeaderProps) {
   return (
     <header className="landing-header">
       <a className="landing-header__brand" href="#top" aria-label="ElevenHouse — на главную">
@@ -21,7 +22,7 @@ export function LandingHeader({ onNavigate }: LandingHeaderProps) {
 
       <nav aria-label="Основная навигация" className="landing-header__nav">
         {navigation.map((item) => (
-          <a href={item.target} key={item.label} onClick={(event) => onNavigate(event, item.target)}>
+          <a href={destinations?.[item.target] ?? item.target} key={item.label} onClick={(event) => onNavigate(event, destinations?.[item.target] ?? item.target)}>
             {item.label}
           </a>
         ))}
