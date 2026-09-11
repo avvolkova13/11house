@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { PricingWebGLScene } from './PricingWebGLScene'
-import type { PricingWebGLRenderState } from './PricingWebGLScene'
+import type { PricingWebGLSceneOptions, PricingWebGLRenderState } from './PricingWebGLScene'
 import type { PricingPlan } from './pricingData'
 import {
   getPricingRenderMode,
@@ -38,6 +38,7 @@ export type PricingWebGLStageProps = {
   inView: boolean
   prefersReducedMotion: boolean
   onFallback: () => void
+  onCardFrame?: PricingWebGLSceneOptions['onCardFrame']
 }
 
 export function parsePricingFrameOverride(search: string): PricingFrameOverride | null {
@@ -159,6 +160,7 @@ export function PricingWebGLStage({
   inView,
   prefersReducedMotion,
   onFallback,
+  onCardFrame,
 }: PricingWebGLStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const sceneRef = useRef<PricingWebGLScene | null>(null)
@@ -169,6 +171,8 @@ export function PricingWebGLStage({
   const fallbackRef = useRef(false)
   const initialPlansRef = useRef(plans)
   const onFallbackRef = useRef(onFallback)
+  const onCardFrameRef = useRef(onCardFrame)
+  onCardFrameRef.current = onCardFrame
   const [initialized, setInitialized] = useState(false)
   const [contextLost, setContextLost] = useState(false)
   const [fallback, setFallback] = useState(false)
@@ -286,6 +290,7 @@ export function PricingWebGLStage({
     try {
       scene = new PricingWebGLScene(sceneCanvas, initialPlansRef.current, {
         maxDpr: 1.5,
+        onCardFrame: (...args) => onCardFrameRef.current?.(...args),
         onContextLost: () => {
           if (active && mountedRef.current) setContextLost(true)
           reportSelfReleasedSceneFallback()

@@ -62,7 +62,7 @@ const pricingSceneHarness = vi.hoisted(() => {
       const safeInset = safeWidth <= 560 ? 16 : 0
       const availableWidth = Math.max(1, safeWidth - safeInset * 2)
       const availableHeight = Math.max(1, safeHeight - safeInset * 2)
-      const aspectRatio = 1356 / 1024
+      const aspectRatio = 1800 / 1024
       const widthFitHeight = availableWidth * aspectRatio
       const fitAxis = widthFitHeight <= availableHeight ? 'width' : 'height'
       const projectedWidth = fitAxis === 'width'
@@ -147,6 +147,18 @@ function projectExpectedHoldSideBounds(width: number, height: number) {
 }
 
 describe('PricingSection', () => {
+  it('keeps plan details and a registration action inside the cards without a separate details block', () => {
+    const html = renderToStaticMarkup(<PricingSection />)
+    expect(html).not.toContain('class="pricing-details"')
+    expect(html).not.toContain('pricing-section__note')
+    expect(html).toContain('aria-label="Тариф Pro"')
+    expect(html).toMatch(/class="pricing-card-action"[^>]*href="https:\/\/app\.elevenhouse\.ai\/auth\?mode=register"[^>]*>Выбрать Pro<\/a>/)
+    expect(html).toContain('30 записей в месяц')
+    expect(html).toContain('20 AI-действий в месяц')
+    expect(html).toContain('До 5 астрологов')
+    expect(html).toContain('Всё из Старт, плюс')
+    expect(html).toContain('Всё из Pro, плюс')
+  })
   it('renders one synchronized holding state with Pro in the center', () => {
     const html = renderToStaticMarkup(<PricingSection />)
 
@@ -300,82 +312,11 @@ describe('PricingSection', () => {
     }
   })
 
-  it('keeps narrow-tablet controls over a stable projected side-card area without active overlap', () => {
-    const css = readFileSync(new URL('../styles.css', import.meta.url), 'utf8')
-    const normalizedCss = css.replace(/\s+/g, ' ')
-
-    expect(normalizedCss).toContain(
-      '@media (min-width: 561px) and (max-width: 674px) { .pricing-orbit-hit-area[data-card-role="next"] { transform: translate(-100%, -50%); }',
-    )
-    expect(normalizedCss).toContain(
-      '.pricing-orbit-hit-area[data-card-role="previous"] { transform: translate(0, -50%); } }',
-    )
-
-    const coverageByWidth = new Map<number, number>()
-
-    for (const { width, height, mode, minimumCoverage } of [
-      { width: 560, height: 570, mode: 'mobile' as const, minimumCoverage: 0.5 },
-      { width: 561, height: 650, mode: 'narrow-tablet' as const, minimumCoverage: 0.8 },
-      { width: 568, height: 650, mode: 'narrow-tablet' as const, minimumCoverage: 0.8 },
-      { width: 600, height: 650, mode: 'narrow-tablet' as const, minimumCoverage: 0.8 },
-      { width: 601, height: 650, mode: 'narrow-tablet' as const, minimumCoverage: 0.8 },
-      { width: 640, height: 650, mode: 'narrow-tablet' as const, minimumCoverage: 0.7 },
-      { width: 674, height: 650, mode: 'narrow-tablet' as const, minimumCoverage: 0.63 },
-      { width: 675, height: 650, mode: 'tablet' as const, minimumCoverage: 0.99 },
-      { width: 768, height: 650, mode: 'tablet' as const, minimumCoverage: 0.99 },
-    ]) {
-      const activeWidth = projectExpectedHoldFrame(width, height).width
-      const active = {
-        left: (width - activeWidth) / 2,
-        right: (width + activeWidth) / 2,
-      }
-      const sideWidth = mode === 'mobile'
-        ? 48
-        : Math.min(width * 0.3, 270, width * 0.78 - activeWidth)
-      const zones = mode === 'mobile'
-        ? {
-            left: { left: 0, right: sideWidth },
-            right: { left: width - sideWidth, right: width },
-          }
-        : mode === 'narrow-tablet'
-          ? {
-              left: { left: width * 0.11 - sideWidth, right: width * 0.11 },
-              right: { left: width * 0.89, right: width * 0.89 + sideWidth },
-            }
-          : {
-              left: {
-                left: width * 0.11 - sideWidth / 2,
-                right: width * 0.11 + sideWidth / 2,
-              },
-              right: {
-                left: width * 0.89 - sideWidth / 2,
-                right: width * 0.89 + sideWidth / 2,
-              },
-            }
-      const projectedSides = projectExpectedHoldSideBounds(width, height)
-      const overlap = (first: { left: number; right: number }, second: { left: number; right: number }) => (
-        Math.max(0, Math.min(first.right, second.right) - Math.max(first.left, second.left))
-      )
-      const leftCoverage = overlap(zones.left, projectedSides.left) / (
-        projectedSides.left.right - projectedSides.left.left
-      )
-      const rightCoverage = overlap(zones.right, projectedSides.right) / (
-        projectedSides.right.right - projectedSides.right.left
-      )
-
-      expect(zones.left.right).toBeLessThanOrEqual(active.left + 0.001)
-      expect(zones.right.left).toBeGreaterThanOrEqual(active.right - 0.001)
-      expect(leftCoverage).toBeGreaterThanOrEqual(minimumCoverage)
-      expect(rightCoverage).toBeGreaterThanOrEqual(minimumCoverage)
-      coverageByWidth.set(width, Math.min(leftCoverage, rightCoverage))
-    }
-
-    expect(coverageByWidth.get(601)).toBeGreaterThanOrEqual(
-      (coverageByWidth.get(600) ?? 0) - 0.01,
-    )
-    expect(coverageByWidth.get(675)).toBeGreaterThanOrEqual(
-      coverageByWidth.get(674) ?? 1,
-    )
+  it('projects the text and selection hit area with the same matrix, including tablet widths', () => {
+    const source = readFileSync(new URL('./PricingOrbit.tsx', import.meta.url), 'utf8')
+    expect(source).toContain('element.style.transform = transform')
+    expect(source).toContain('control.style.transform = transform')
+    expect(source).toContain('onCardFrame={updateCardFrame}')
   })
 
   it('tracks pointer and keyboard modality before focus enters the pricing stage', () => {

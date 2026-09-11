@@ -51,7 +51,7 @@ float roundedBoxMask(vec2 uv, vec2 size, float radius) {
 void main() {
   vec2 faceUv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);
   // Animate only the illustration interior; the brand, content and edges stay fixed.
-  float artMask = smoothstep(0.587, 0.65, faceUv.y) * (1.0 - smoothstep(0.85, 0.91, faceUv.y));
+  float artMask = smoothstep(0.688, 0.73, faceUv.y) * (1.0 - smoothstep(0.90, 0.94, faceUv.y));
   float phase = uTime * 0.65;
   vec2 drift = vec2(
     sin(phase + faceUv.y * 7.0) - sin(faceUv.y * 7.0),

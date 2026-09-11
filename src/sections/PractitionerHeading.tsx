@@ -147,7 +147,7 @@ export function PractitionerHeading() {
       <span className="practitioner-results__heading-line">
         <span data-review-word="0">Реальные</span>{' '}<span data-review-word="1">результаты</span>
       </span>
-      <span className="practitioner-results__heading-line"><span data-review-word="2">практиков.</span></span>
+      <span className="practitioner-results__heading-line"><span data-review-word="2">практиков</span></span>
       <canvas className="practitioner-results__heading-canvas" ref={canvasRef} aria-hidden="true" />
     </h2>
   )

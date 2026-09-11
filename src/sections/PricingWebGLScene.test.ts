@@ -218,7 +218,7 @@ vi.mock('three', () => ({
 }))
 
 vi.mock('./pricingCardTexture', () => ({
-  PRICING_TEXTURE_HEIGHT: 1356,
+  PRICING_TEXTURE_HEIGHT: 1800,
   PRICING_TEXTURE_WIDTH: 1024,
   createPricingCardCanvas: textureHarness.createPricingCardCanvas,
   createPricingReflectionCanvas: (source: HTMLCanvasElement) => source,
@@ -297,11 +297,11 @@ describe('PricingWebGLScene source contract', () => {
     if (!getPricingHoldFrame) return
 
     const cases = [
-      { width: 390, height: 570, fitAxis: 'width' as const, safeInset: 16, cardWidth: 275.3846153846, cardHeight: 364.6694711538 },
-      { width: 440, height: 570, fitAxis: 'height' as const, safeInset: 16, cardWidth: 312.5209893351, cardHeight: 413.8461538462 },
-      { width: 480, height: 570, fitAxis: 'height' as const, safeInset: 16, cardWidth: 312.5209893351, cardHeight: 413.8461538462 },
-      { width: 560, height: 570, fitAxis: 'height' as const, safeInset: 16, cardWidth: 312.5209893351, cardHeight: 413.8461538462 },
-      { width: 561, height: 650, fitAxis: 'height' as const, safeInset: 0, cardWidth: 377.581120944, cardHeight: 500 },
+      { width: 390, height: 720, fitAxis: 'width' as const, safeInset: 16, cardWidth: 344.2307692307692, cardHeight: 605.0931490384615 },
+      { width: 440, height: 720, fitAxis: 'height' as const, safeInset: 16, cardWidth: 376.34188034188037, cardHeight: 661.5384615384615 },
+      { width: 480, height: 720, fitAxis: 'height' as const, safeInset: 16, cardWidth: 376.34188034188037, cardHeight: 661.5384615384615 },
+      { width: 560, height: 720, fitAxis: 'height' as const, safeInset: 16, cardWidth: 376.34188034188037, cardHeight: 661.5384615384615 },
+      { width: 561, height: 780, fitAxis: 'height' as const, safeInset: 0, cardWidth: 341.3333333333333, cardHeight: 600.0 },
     ]
 
     for (const expected of cases) {

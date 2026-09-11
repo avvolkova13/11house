@@ -22,7 +22,7 @@ describe('PractitionerResults', () => {
     expect(html).toContain('id="practitioner-results-title"')
     expect(html).toContain('Реальные')
     expect(html).toContain('результаты')
-    expect(html).toContain('практиков.')
+    expect(html).toContain('практиков')
     expect(html).toContain('class="practitioner-results__heading-canvas" aria-hidden="true"')
     expect(html.match(/data-review-word=/g)).toHaveLength(3)
   })

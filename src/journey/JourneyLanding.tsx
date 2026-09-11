@@ -5,9 +5,11 @@ import { PractitionerResults } from '../sections/PractitionerResults'
 import { PricingSection } from '../sections/PricingSection'
 import { FaqSection } from '../sections/FaqSection'
 import { ProductExperience } from './ProductExperience'
+import { FinaleFooter } from './FinaleFooter'
 import { JourneySceneAdapter } from './JourneySceneAdapter'
+import { attachFinaleScrollCompletion } from './finaleScrollCompletion'
 import { attachOpeningScrollCompletion } from './openingScrollCompletion'
-import { clamp01, sampleJourneyScene, type JourneyLayout } from './journeyMotion'
+import { clamp01, sampleFinaleCurtain, sampleJourneyScene, type JourneyLayout } from './journeyMotion'
 import './journey.css'
 
 // Keep the section available for a later launch without mounting its animations.
@@ -32,6 +34,14 @@ export function JourneyLanding() {
     return attachOpeningScrollCompletion(window, document, () => {
       const access = rootRef.current?.querySelector('#journey-access')
       return access ? access.getBoundingClientRect().top + window.scrollY : Infinity
+    })
+  }, [reducedMotion])
+
+  useEffect(() => {
+    if (reducedMotion) return
+    return attachFinaleScrollCompletion(window, document, () => {
+      const finale = finaleRef.current
+      return finale ? finale.getBoundingClientRect().top + window.scrollY : Infinity
     })
   }, [reducedMotion])
 
@@ -67,14 +77,16 @@ export function JourneyLanding() {
     }
     const update = () => {
       const y = window.scrollY
-      root.dataset.reading = y > intro.offsetHeight * 0.6 && y < layout.finaleTop - window.innerHeight * 0.35 ? 'true' : 'false'
+      root.dataset.reading = y > intro.offsetHeight * 0.6 && y < layout.finaleTop ? 'true' : 'false'
       scrollAdapter.setTarget(sampleJourneyScene(y, layout))
       const introProgress = clamp01(y / Math.max(1, intro.offsetHeight - window.innerHeight))
       intro.style.setProperty('--opening-opacity', String(1 - clamp01((introProgress - 0.6) / 0.4)))
       if (openingStage) openingStage.inert = !reducedMotion && introProgress >= 0.99
-      const finaleProgress = clamp01((y - layout.finaleTop + window.innerHeight * 0.35) / (window.innerHeight * 0.8))
-      finale.style.setProperty('--finale-opacity', String(finaleProgress))
-      if (finaleStage) finaleStage.inert = !reducedMotion && finaleProgress <= 0.1
+      const curtain = sampleFinaleCurtain(y, layout.finaleTop, window.innerHeight, reducedMotion)
+      root.dataset.finaleCurtain = String(curtain.active)
+      root.style.setProperty('--finale-curtain-offset', `${curtain.offset}px`)
+      root.style.setProperty('--finale-curtain-hold', `${curtain.hold}px`)
+      if (finaleStage) finaleStage.inert = !reducedMotion && layout.finaleTop - y >= window.innerHeight
     }
     const advance = (frameTime: number) => {
       if (document.visibilityState !== 'hidden' && !reducedMotion) scrollAdapter.advance(frameTime)
@@ -143,7 +155,6 @@ export function JourneyLanding() {
           {showPractitionerResults && <PractitionerResults />}
           <PricingSection />
           <FaqSection />
-          <a className="eh-journey__to-finale" href="#journey-finale">Больше времени на консультации <span aria-hidden="true">↓</span></a>
         </div>
         <section className="eh-journey__finale" id="journey-finale" tabIndex={-1} ref={finaleRef} aria-labelledby="journey-finale-title">
           <div className="eh-journey__finale-stage">
@@ -155,7 +166,7 @@ export function JourneyLanding() {
               <a href="https://app.elevenhouse.ai">Создать кабинет</a>
               <p>Бесплатно без банковской карты</p>
             </div>
-            <footer className="eh-journey__footer"><span>ElevenHouse</span><a href="#top">К началу ↑</a></footer>
+            <FinaleFooter />
           </div>
         </section>
       </main>

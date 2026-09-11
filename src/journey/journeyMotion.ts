@@ -20,7 +20,9 @@ export function sampleJourneyScene(scrollY: number, layout: JourneyLayout) {
   for (const start of layout.chapterStarts.slice(1)) {
     flightPosition += smooth(start - viewport * 0.6, start + viewport * 0.1, y) * 760
   }
-  const finale = smooth(layout.finaleTop - viewport * 0.65, layout.finaleTop + viewport * 0.8, y)
+  // Prepare the tunnel behind the opaque FAQ, before the finale enters at the
+  // bottom of the viewport. The extra lead lets the scene inertia settle.
+  const finale = smooth(layout.finaleTop - viewport * 2, layout.finaleTop - viewport * 1.15, y)
   flightPosition += finale * 1800
   return {
     sceneProgress: 2.4 * intro + 3.92 * finale,
@@ -37,4 +39,14 @@ export function getChapterFrame(top: number, height: number, viewport: number, s
   // Fade only while the sticky stage is leaving, after all states have been readable.
   const departure = 1 - smooth(corridor, corridor + viewport * 0.6, -top)
   return { progress, step, opacity: arrival * departure, entrance: 1 - arrival }
+}
+
+/** A complete viewport rises over the stationary end of FAQ, then settles. */
+export function sampleFinaleCurtain(scrollY: number, finaleTop: number, viewport: number, reducedMotion = false) {
+  const height = Math.max(1, viewport)
+  const offset = finaleTop - scrollY
+  if (reducedMotion || !Number.isFinite(offset) || offset > height || offset <= 0) {
+    return { active: false, offset: 0, hold: 0 }
+  }
+  return { active: true, offset, hold: height - offset }
 }

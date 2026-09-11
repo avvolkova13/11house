@@ -29,7 +29,7 @@ export function ProductExperience({ reducedMotion, onNavigate }: { reducedMotion
 
   return <>
     <section className="eh-experience eh-experience--access" id="journey-access" data-chapter="access" aria-labelledby="access-title" tabIndex={-1}>
-      <header className="eh-experience__heading"><p className="eh-journey__eyebrow">ЗНАКОМСТВО С ELEVENHOUSE</p><h2 id="access-title">Всё начинается с вас.</h2></header>
+      <header className="eh-experience__heading"><p className="eh-journey__eyebrow">ЗНАКОМСТВО С ELEVENHOUSE</p><h2 id="access-title">Всё начинается с вас</h2></header>
       <AccessFragment reducedMotion={reducedMotion} onEnter={() => onNavigate('#journey-workspace')} />
     </section>
     <section className="eh-experience eh-experience--features" id="journey-workspace" data-chapter="workspace" aria-labelledby="features-title" tabIndex={-1}>

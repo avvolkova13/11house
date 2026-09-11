@@ -37,7 +37,7 @@ export function FaqSection() {
   return (
     <section className="faq-section" aria-labelledby="faq-title">
       <header>
-        <h2 id="faq-title">Частые вопросы.</h2>
+        <h2 id="faq-title">Частые вопросы</h2>
       </header>
       <div className="faq-section__list">
         {faqItems.map((item, index) => (

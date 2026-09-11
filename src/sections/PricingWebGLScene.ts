@@ -1,3 +1,4 @@
+import { getPricingDomOpacity, projectPricingDomCard } from './pricingDomProjection'
 import {
   CanvasTexture,
   DoubleSide,
@@ -54,6 +55,7 @@ type PricingPlaneSlot = typeof PLANE_SLOTS[number]
 export type PricingWebGLSceneOptions = {
   onContextLost: () => void
   maxDpr: number
+  onCardFrame?: (planIndex: number, transform: string, width: number, opacity: number, depth: number) => void
 }
 
 export type PricingWebGLRenderState = {
@@ -98,7 +100,8 @@ export function getPricingHoldFrame(width: number, height: number): PricingHoldF
   const widthDistance = CARD_WIDTH * safeHeight / (2 * halfFovTangent * availableWidth)
   const heightDistance = CARD_HEIGHT * safeHeight / (2 * halfFovTangent * availableHeight)
   const fitAxis = widthDistance >= heightDistance ? 'width' : 'height'
-  const cameraDistance = Math.max(widthDistance, heightDistance) * PRICING_CAMERA_FRAMING_SCALE
+  const framingScale = safeWidth <= MOBILE_BREAKPOINT ? 1.04 : PRICING_CAMERA_FRAMING_SCALE
+  const cameraDistance = Math.max(widthDistance, heightDistance) * framingScale
   const pixelsPerWorldUnit = safeHeight / (2 * halfFovTangent * cameraDistance)
 
   return Object.freeze({
@@ -210,6 +213,9 @@ export class PricingWebGLScene {
       const texture = this.textures[planIndex].texture
       const reflectionTexture = this.reflectionTextures[planIndex].texture
 
+      const domWidth = getPricingHoldFrame(this.viewport.width, this.viewport.height).width
+      const matrix = projectPricingDomCard(sample, this.viewport.width, this.viewport.height, this.camera.position.z, CARD_WIDTH, CARD_HEIGHT, domWidth)
+      this.options.onCardFrame?.(planIndex, `matrix3d(${matrix.join(',')})`, domWidth, getPricingDomOpacity(sample), sample.z)
       updateMainMesh(plane.mesh, texture, sample, turn, timeSeconds)
       updateReflectionMesh(plane.topReflection, reflectionTexture, sample, turn, timeSeconds, 'top')
       updateReflectionMesh(plane.bottomReflection, reflectionTexture, sample, turn, timeSeconds, 'bottom')

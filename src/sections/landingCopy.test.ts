@@ -81,8 +81,8 @@ describe('marketing brief copy contract', () => {
       'От построения карты до оплаты —<br />один рабочий процесс.',
       'AI берёт рутину на себя.<br />Последнее слово — за вами.',
       'Один кабинет вместо<br />нескольких сервисов.',
-      'Начните бесплатно.<br />Расширяйте возможности по мере роста.',
-      'Частые вопросы.',
+      'Начните бесплатно<br />Расширяйте возможности по мере роста',
+      'Частые вопросы',
       'Соберите практику<br />в одном кабинете.',
     ]
 
@@ -294,7 +294,8 @@ describe('marketing brief copy contract', () => {
 
   it('uses a synchronized hold-transition pricing scene', () => {
     expect(pricingSectionSource).toContain('<PricingOrbit')
-    expect(pricingSectionSource).toContain('pricing-details')
+    expect(pricingSectionSource).not.toContain('pricing-details')
+    expect(pricingOrbitSource).toContain('pricing-card-action')
     expect(pricingSectionSource).not.toContain('pricing-section__plans')
     expect(pricingOrbitSource).toContain('<PricingWebGLStage')
     expect(pricingOrbitSource).toContain('pricing-orbit-fallback')

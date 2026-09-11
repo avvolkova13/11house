@@ -1,8 +1,7 @@
-import { loadLandingFonts } from '../fonts'
 import type { PricingPlan } from './pricingData'
 
 export const PRICING_TEXTURE_WIDTH = 1024
-export const PRICING_TEXTURE_HEIGHT = 1356
+export const PRICING_TEXTURE_HEIGHT = 1800
 
 export type PricingTextureBounds = {
   left: number
@@ -21,6 +20,8 @@ export type PricingTextureLayout = {
   price: { left: number; top: number }
   audience: { left: number; top: number; width: number }
   commission: PricingTextureBounds
+  points: { left: number; top: number; lineHeight: number }
+  button: PricingTextureBounds
 }
 
 export type PricingCardTextureOptions = {
@@ -28,8 +29,7 @@ export type PricingCardTextureOptions = {
 }
 
 const CARD_RADIUS = 32
-const FONT_STACK = '"Manrope", "Helvetica Neue", Helvetica, sans-serif'
-const TEXTURE_SAFE = { left: 72, right: 952, top: 70, bottom: 1288 }
+const TEXTURE_SAFE = { left: 72, right: 952, top: 70, bottom: 1732 }
 
 type PlanArtPalette = {
   backdrop: [string, string, string]
@@ -73,10 +73,12 @@ export function getPricingTextureLayout(): PricingTextureLayout {
     art: { left: 0, right: PRICING_TEXTURE_WIDTH, top: 0, bottom: 560 },
     brand: { left: 72, top: 76 },
     action: { right: 952, top: 76 },
-    name: { left: 72, top: 736 },
-    price: { left: 72, top: 866 },
-    audience: { left: 72, top: 980, width: 880 },
-    commission: { left: 72, right: 952, top: 1210, bottom: 1288 },
+    name: { left: 72, top: 650 },
+    price: { left: 72, top: 650 },
+    audience: { left: 72, top: 750, width: 880 },
+    commission: { left: 72, right: 952, top: 900, bottom: 960 },
+    points: { left: 72, top: 1010, lineHeight: 60 },
+    button: { left: 72, right: 952, top: 1588, bottom: 1732 },
   } as const
 }
 
@@ -84,8 +86,6 @@ export async function createPricingCardCanvas(
   plan: PricingPlan,
   options: PricingCardTextureOptions = {},
 ): Promise<HTMLCanvasElement> {
-  await loadLandingFonts()
-
   const canvas = options.canvas ?? createCanvasElement()
   canvas.width = PRICING_TEXTURE_WIDTH
   canvas.height = PRICING_TEXTURE_HEIGHT
@@ -103,9 +103,9 @@ export async function createPricingCardCanvas(
   context.clip()
   drawPricingBackground(context, plan)
   drawPricingArtwork(context, plan, layout)
-  drawPricingTypography(context, plan, layout)
+  drawPricingContentBackground(context, layout)
   context.restore()
-  drawPricingBorder(context)
+  drawPricingBorder(context, plan.key === 'pro')
 
   return canvas
 }
@@ -368,72 +368,23 @@ function drawChromaticRibbon(context: CanvasRenderingContext2D, palette: PlanArt
   context.restore()
 }
 
-function drawPricingTypography(
-  context: CanvasRenderingContext2D,
-  plan: PricingPlan,
-  layout: PricingTextureLayout,
-): void {
+function drawPricingContentBackground(context: CanvasRenderingContext2D, layout: PricingTextureLayout): void {
   const { width, height } = context.canvas
-  context.save()
-  const contentWash = context.createLinearGradient(0, layout.art.bottom, 0, height)
-  contentWash.addColorStop(0, '#0c1423')
-  contentWash.addColorStop(1, '#080e1a')
-  context.fillStyle = contentWash
+  const wash = context.createLinearGradient(0, layout.art.bottom, 0, height)
+  wash.addColorStop(0, '#0c1423')
+  wash.addColorStop(1, '#080e1a')
+  context.fillStyle = wash
   context.fillRect(0, layout.art.bottom, width, height - layout.art.bottom)
-
-  context.fillStyle = 'rgba(255, 255, 255, 0.7)'
-  context.font = `650 30px ${FONT_STACK}`
-  context.textBaseline = 'top'
-  drawTrackedText(context, 'ELEVENHOUSE', layout.brand.left, layout.brand.top, 3)
-
-  context.fillStyle = '#f8f6f0'
-  context.font = `500 104px ${FONT_STACK}`
-  context.textBaseline = 'alphabetic'
-  context.fillText(plan.name, layout.name.left, layout.name.top)
-
-  context.fillStyle = '#f8f6f0'
-  context.font = `600 64px ${FONT_STACK}`
-  context.textBaseline = 'alphabetic'
-  context.fillText(plan.price, layout.price.left, layout.price.top)
-
-  context.fillStyle = '#b9c7db'
-  context.font = `500 34px ${FONT_STACK}`
-  context.textBaseline = 'top'
-  context.fillText(plan.period, layout.price.left, layout.price.top + 24)
-
-  context.fillStyle = '#d4deec'
-  context.font = `450 42px ${FONT_STACK}`
-  context.textBaseline = 'top'
-  drawWrappedText(context, plan.audience, layout.audience.left, layout.audience.top, layout.audience.width, 56)
-
-  context.strokeStyle = 'rgba(248, 246, 240, 0.16)'
-  context.lineWidth = 1
-  context.beginPath()
-  context.moveTo(layout.commission.left, layout.commission.top)
-  context.lineTo(layout.commission.right, layout.commission.top)
-  context.stroke()
-
-  context.fillStyle = '#b9c7db'
-  context.font = `500 32px ${FONT_STACK}`
-  context.fillText('Комиссия с продаж', layout.commission.left, layout.commission.top + 28)
-
-  context.fillStyle = '#e0b64e'
-  context.font = `600 44px ${FONT_STACK}`
-  context.textBaseline = 'top'
-  context.textAlign = 'right'
-  context.fillText(plan.commission, layout.commission.right, layout.commission.top + 18)
-
-  context.restore()
 }
 
-function drawPricingBorder(context: CanvasRenderingContext2D): void {
+function drawPricingBorder(context: CanvasRenderingContext2D, recommended: boolean): void {
   const { width, height } = context.canvas
 
   context.save()
   context.beginPath()
   roundedRectPath(context, 1.5, 1.5, width - 3, height - 3, CARD_RADIUS)
-  context.strokeStyle = 'rgba(176, 207, 239, 0.22)'
-  context.lineWidth = 1.5
+  context.strokeStyle = recommended ? 'rgba(226, 202, 121, 0.95)' : 'rgba(176, 207, 239, 0.22)'
+  context.lineWidth = recommended ? 3 : 1.5
   context.stroke()
 
   context.beginPath()
@@ -478,76 +429,6 @@ function applyOpacity(color: string, opacity: number): string {
   }
 
   return color
-}
-
-function drawTrackedText(
-  context: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  spacing: number,
-  align: CanvasTextAlign = 'left',
-): void {
-  context.save()
-  context.textAlign = 'left'
-
-  const letters = Array.from(text)
-  if (align === 'right') {
-    const totalWidth = letters.reduce((sum, letter, index) => {
-      const width = context.measureText(letter).width
-      return sum + width + (index === letters.length - 1 ? 0 : spacing)
-    }, 0)
-    let cursor = x - totalWidth
-    for (const letter of letters) {
-      context.fillText(letter, cursor, y)
-      cursor += context.measureText(letter).width + spacing
-    }
-  } else {
-    let cursor = x
-    for (const letter of letters) {
-      context.fillText(letter, cursor, y)
-      cursor += context.measureText(letter).width + spacing
-    }
-  }
-
-  context.restore()
-}
-
-function drawWrappedText(
-  context: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  lineHeight: number,
-): void {
-  const lines = wrapText(context, text, maxWidth)
-
-  for (let index = 0; index < lines.length; index += 1) {
-    context.fillText(lines[index], x, y + index * lineHeight)
-  }
-}
-
-function wrapText(context: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
-  const words = text.trim().split(/\s+/)
-  if (words.length === 0) return []
-
-  const lines: string[] = []
-  let currentLine = words[0]
-
-  for (let index = 1; index < words.length; index += 1) {
-    const candidate = `${currentLine} ${words[index]}`
-    if (context.measureText(candidate).width <= maxWidth) {
-      currentLine = candidate
-      continue
-    }
-
-    lines.push(currentLine)
-    currentLine = words[index]
-  }
-
-  lines.push(currentLine)
-  return lines
 }
 
 function roundedRectPath(
