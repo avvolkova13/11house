@@ -63,7 +63,6 @@ describe('marketing brief copy contract', () => {
   it('includes the approved desktop and mobile header navigation', () => {
     const headerCopy = [
       'Возможности',
-      'Как работает',
       'Тарифы',
       'FAQ',
       'RU',
@@ -81,7 +80,8 @@ describe('marketing brief copy contract', () => {
       'От построения карты до оплаты —<br />один рабочий процесс.',
       'AI берёт рутину на себя.<br />Последнее слово — за вами.',
       'Один кабинет вместо<br />нескольких сервисов.',
-      'Начните бесплатно<br />Расширяйте возможности по мере роста',
+      '<h2 id="pricing-title">Начните бесплатно</h2>',
+      '<p className="pricing-section__subtitle">Расширяйте возможности по мере роста</p>',
       'Частые вопросы',
       'Соберите практику<br />в одном кабинете.',
     ]

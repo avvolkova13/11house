@@ -16,7 +16,6 @@
 .eh-journey .eh-walkthrough__visual { --eh-fragment-width: 470px; min-width: 0; display: flex; flex-direction: column; align-self: stretch; margin-top: -4px; margin-bottom: -18px; }
 .eh-journey .eh-walkthrough__action { display: flex; align-items: flex-start; gap: 10px; width: min(var(--eh-fragment-width), 100%); min-height: 18px; margin: 0 auto 26px; color: #dccb9e; font-size: 12px; line-height: 1.5; }
 .eh-journey .eh-walkthrough__visual:has(.eh-source__calculation) { --eh-fragment-width: 440px; }
-.eh-journey .eh-walkthrough__visual:has(.eh-source__flow) { --eh-fragment-width: 350px; }
 .eh-journey .eh-walkthrough__action > span { font-size: 18px; line-height: 1; }
 .eh-journey .eh-walkthrough__stage { width: min(var(--eh-fragment-width), 100%); margin-inline: auto; text-align: left; flex-shrink: 0; }
 .eh-journey .eh-walkthrough__footer { width: min(var(--eh-fragment-width), 100%); margin: auto auto 0; padding-top: 22px; flex-shrink: 0; }
@@ -40,7 +39,7 @@
 .eh-journey .eh-source__drawing > div { width: 100%; justify-content: center; }
 .eh-journey .eh-source__chart-help { border-top: 1px solid var(--line-strong); padding-top: 14px; margin: 0; color: var(--text-2); font-size: 12px; line-height: 1.65; }
 .eh-journey .eh-walkthrough .eh-source__flow { flex-direction: column; gap: 18px; padding: 0; }
-.eh-journey .eh-walkthrough .eh-source__flow-node { flex: none; width: min(350px, 100%); }
+.eh-journey .eh-walkthrough .eh-source__flow-node { flex: none; width: 100%; }
 .eh-journey .eh-walkthrough .eh-source__flow-node:not(:last-child)::after { left: 50%; top: 100%; width: 0; height: 18px; border-top: 0; border-left: 1px solid var(--accent-line); }
 .eh-journey .eh-walkthrough .eh-source__flow-node[data-pending="true"] { opacity: .4; }
 @keyframes eh-story-copy { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }

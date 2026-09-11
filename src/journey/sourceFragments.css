@@ -144,7 +144,7 @@
 .eh-journey .eh-source__journal-entry p { margin: 0 0 10px; }
 .eh-journey .eh-source__flow { display: flex; gap: 26px; align-items: center; justify-content: center; padding: 25px 0; }
 .eh-journey .eh-source__flow-node { position: relative; width: 235px; flex: 1 1 0; border-radius: 16px; background: linear-gradient(180deg, #1A1736, #14122B); border: 1px solid; box-shadow: 0 14px 30px -20px #000d; }
-.eh-journey .eh-source__flow-node > div:first-child { border-radius: 16px 16px 0 0; }
+.eh-journey .eh-source__flow-surface { border-radius: 15px; overflow: hidden; }
 .eh-journey .eh-source__flow-node:not(:last-child)::after { content: ''; position: absolute; top: 50%; left: 100%; width: 26px; border-top: 1px solid var(--accent-line); }
 .eh-journey .eh-source__flow-node .chip { white-space: normal; font-size: 10px; padding: 5px 8px; text-align: left; }
 .eh-journey .eh-source__balances { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }

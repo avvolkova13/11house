@@ -131,7 +131,8 @@ export function PricingSection() {
   return (
     <section className="pricing-section" id="pricing" aria-labelledby="pricing-title" ref={sectionRef}>
       <header className="pricing-section__heading">
-        <h2 id="pricing-title">Начните бесплатно<br />Расширяйте возможности по мере роста</h2>
+        <h2 id="pricing-title">Начните бесплатно</h2>
+        <p className="pricing-section__subtitle">Расширяйте возможности по мере роста</p>
         <p>Выберите объём инструментов под текущую практику. Pro остаётся основным тарифом для регулярной работы.</p>
       </header>
 

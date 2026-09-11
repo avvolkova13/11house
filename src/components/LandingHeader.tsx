@@ -7,7 +7,6 @@ type LandingHeaderProps = {
 
 const navigation = [
   { label: 'Возможности', target: '#product-proof-title' },
-  { label: 'Как работает', target: '#ai-routine-title' },
   { label: 'Тарифы', target: '#pricing-title' },
   { label: 'FAQ', target: '#faq-title' },
 ]
