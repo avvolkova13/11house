@@ -1,0 +1,76 @@
+/* Adapt the original comparison and metric reels to the journey palette.
+   Scoped overrides leave global typography, Hero and animation logic intact. */
+.eh-journey .workflow-compare {
+  padding: clamp(64px, 6vw, 112px) clamp(24px, 4vw, 64px);
+  color: #edf2fb;
+  background: #071221;
+}
+.eh-journey .workflow-compare::before { display: none; }
+.eh-journey .workflow-compare__intro {
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 80px);
+  padding-bottom: clamp(32px, 4vw, 60px);
+  border-color: #a0bde42b;
+}
+.eh-journey .workflow-compare__intro h2 {
+  max-width: 21ch;
+  font-size: clamp(36px, 4.8vw, 76px);
+  line-height: 1.08;
+  letter-spacing: -.05em;
+}
+.eh-journey .workflow-compare__intro .workflow-compare__eyebrow {
+  max-width: none;
+  margin: 0 0 20px;
+  color: #abc2df;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.eh-journey .workflow-compare__head { color: #96a9c2; border-color: #a0bde42b; }
+.eh-journey .workflow-compare__head span:last-child { color: #bcd8ff; }
+.eh-journey .workflow-compare__row { min-height: clamp(84px, 6vw, 104px); border-color: #a0bde42b; }
+.eh-journey .workflow-compare__row header span { color: #8babcF; }
+.eh-journey .workflow-compare__row h3 { font-size: clamp(16px, 1.4vw, 22px); }
+.eh-journey .workflow-compare__row p { font-size: clamp(18px, 1.7vw, 26px); line-height: 1.4; }
+.eh-journey .workflow-compare__manual { color: #96a9c2; }
+.eh-journey .workflow-compare__manual::before { right: calc(100% + 10px); width: 10px; background: #96a9c2; }
+.eh-journey .workflow-compare__system { color: #edf2fb; }
+.eh-journey .workflow-compare__system::before { background: #9bc6ff; }
+.eh-journey .workflow-metrics { width: 100%; margin: clamp(32px, 3vw, 48px) 0 0; }
+.eh-journey .workflow-metrics__value-row,
+.eh-journey .workflow-metrics__suffix { color: #bcd8ff; }
+.eh-journey .workflow-metrics__grid::before,
+.eh-journey .workflow-metrics__line { background: #a0bde466; }
+.eh-journey .workflow-metrics__point { background: #9bc6ff; }
+.eh-journey .workflow-metrics__item > p { color: #c1ccdc; }
+.eh-journey .workflow-metrics__note { color: #96a9c2; }
+@media (max-width: 980px) {
+  .eh-journey .workflow-compare__intro { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .eh-journey .workflow-compare { padding-block: 56px; }
+  .eh-journey .workflow-compare__intro h2 { font-size: clamp(32px, 8vw, 48px); }
+  .eh-journey .workflow-compare__intro .workflow-compare__eyebrow { font-size: 10px; }
+  .eh-journey .workflow-compare__row { min-height: 0; gap: 20px; padding-block: 28px; }
+  .eh-journey .workflow-compare__manual > span { color: #96a9c2; }
+  .eh-journey .workflow-compare__system > span { color: #bcd8ff; }
+}
+
+/* Four original outcomes; retain the existing hover motion across the first three. */
+.eh-journey .workflow-metrics__item:nth-child(1) { flex-basis: calc(var(--workflow-column-1) * .75); }
+.eh-journey .workflow-metrics__item:nth-child(2) { flex-basis: calc(var(--workflow-column-2) * .75); }
+.eh-journey .workflow-metrics__item:nth-child(3) { flex-basis: calc(var(--workflow-column-3) * .75); }
+.eh-journey .workflow-metrics__item:nth-child(4) { flex-basis: 25%; }
+.eh-journey .workflow-metrics__item { min-height: 190px; padding: clamp(28px, 3vw, 42px) clamp(16px, 2vw, 28px); }
+.eh-journey .workflow-metrics__prefix,
+.eh-journey .workflow-metrics__number { font-size: clamp(48px, 5vw, 80px); }
+.eh-journey .workflow-metrics__item > p { font-size: clamp(14px, 1.2vw, 18px); }
+@media (max-width: 700px) {
+  .eh-journey .workflow-metrics__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .eh-journey .workflow-metrics__item { min-height: 150px; padding: 24px 14px; }
+  .eh-journey .workflow-metrics__prefix,
+  .eh-journey .workflow-metrics__number { font-size: clamp(36px, 10vw, 54px); }
+  .eh-journey .workflow-metrics__suffix { font-size: 22px; }
+  .eh-journey .workflow-metrics__item > p { font-size: 13px; }
+}

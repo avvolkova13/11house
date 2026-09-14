@@ -33,7 +33,7 @@ export function LandingHeader({ onNavigate, destinations }: LandingHeaderProps) 
           <button type="button" aria-pressed="false">EN</button>
         </div>
         <a className="landing-header__login" href="https://app.elevenhouse.ai">Войти</a>
-        <a className="landing-header__cta" href="https://app.elevenhouse.ai" aria-label="Создать кабинет бесплатно"><span>Создать кабинет бесплатно</span><span className="landing-header__cta-short" hidden>Создать кабинет</span></a>
+        <a className="landing-header__cta" href="https://app.elevenhouse.ai">Создать кабинет</a>
       </div>
     </header>
   )

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import { CosmicHero } from '../components/CosmicHero'
 import { LandingHeader } from '../components/LandingHeader'
+import { OneClientStory } from '../sections/OneClientStory'
 import { PractitionerResults } from '../sections/PractitionerResults'
 import { PricingSection } from '../sections/PricingSection'
 import { FaqSection } from '../sections/FaqSection'
@@ -11,6 +12,7 @@ import { attachFinaleScrollCompletion } from './finaleScrollCompletion'
 import { attachOpeningScrollCompletion } from './openingScrollCompletion'
 import { clamp01, sampleFinaleCurtain, sampleJourneyScene, type JourneyLayout } from './journeyMotion'
 import './journey.css'
+import './visualSystem.css'
 
 // Keep the section available for a later launch without mounting its animations.
 const showPractitionerResults = false
@@ -147,11 +149,13 @@ export function JourneyLanding() {
             <a className="eh-journey__start" href="#journey-access" onClick={(event) => navigate(event, '#journey-access')}>
               Начать <span aria-hidden="true">↓</span>
             </a>
-            <a className="eh-journey__explore" href="#journey-access"><span>От первого входа —<br />до вашей целой практики</span><span aria-hidden="true">↓</span></a>
+            <p className="eh-journey__opening-description">Карты, клиенты, запись, оплаты и AI-помощник — чтобы меньше заниматься рутиной и больше консультировать.</p>
+            <a className="eh-journey__explore" href="#journey-access" aria-label="Листайте вниз — перейти к знакомству с ElevenHouse"><span className="eh-journey__explore-label">Листайте вниз</span><span aria-hidden="true">↓</span></a>
           </div>
         </section>
         <ProductExperience reducedMotion={reducedMotion} onNavigate={openSection} />
         <div id="journey-commercial" tabIndex={-1} className="landing-sections eh-journey__commercial" data-entered="true" data-motion={reducedMotion ? 'reduced' : 'full'}>
+          <OneClientStory />
           {showPractitionerResults && <PractitionerResults />}
           <PricingSection />
           <FaqSection />
@@ -160,11 +164,10 @@ export function JourneyLanding() {
           <div className="eh-journey__finale-stage">
             <h2 id="journey-finale-title" className="eh-journey__split-title">
               <span className="eh-journey__split-start"><span>Меньше времени<br />на рутину</span></span>
-              <span className="eh-journey__split-end"><span>больше<br />на консультацию</span></span>
+              <span className="eh-journey__split-end"><span>больше<br />на консультации</span></span>
             </h2>
             <div className="eh-journey__finale-action">
-              <a href="https://app.elevenhouse.ai">Создать кабинет</a>
-              <p>Бесплатно без банковской карты</p>
+              <a href="https://app.elevenhouse.ai">Начать бесплатно</a>
             </div>
             <FinaleFooter />
           </div>

@@ -68,7 +68,7 @@ describe('marketing brief copy contract', () => {
       'RU',
       'EN',
       'Войти',
-      'Создать кабинет бесплатно',
+      'Создать кабинет',
     ]
 
     headerCopy.forEach((copy) => expect(componentSource).toContain(copy))
@@ -96,7 +96,7 @@ describe('marketing brief copy contract', () => {
     expect(heroComponentSource).not.toContain('Больше времени на консультации')
     expect(clientStorySource).not.toContain('client-story__title-part')
     expect(clientStorySource).not.toContain('client-story__header')
-    expect(clientStorySource).toContain('Больше времени на клиентов. Меньше — на рутину.')
+    expect(clientStorySource).toContain('Меньше рутины — больше времени на клиентов')
   })
 
   it('shows four setup steps followed by five benefit-led product screens', () => {
@@ -213,51 +213,19 @@ describe('marketing brief copy contract', () => {
     expect(resultsPosition).toBeLessThan(pricingPosition)
   })
 
-  it('compares the five workflow stages with the approved product copy and metrics', () => {
-    const stages = [
-      'Сбор данных',
-      'Построение карты',
-      'Подготовка разбора',
-      'Запись и оплата',
-      'Повторный контакт',
+  it('compares four workflows and retains the original outcome metrics', () => {
+    const copy = [
+      'Переписки и таблицы', 'Единая история клиента',
+      'Запись вручную', 'Онлайн-запись',
+      'Отдельные ссылки на оплату', 'Оплата выбранной услуги',
+      'Подготовка разбора с нуля', 'Карта и AI-черновик под контролем астролога',
+      '−12 ч', '×3', '+34%', '24/7',
     ]
-
-    expect(clientStorySource).toContain('Ручной режим')
-    expect(clientStorySource).toContain('ElevenHouse')
-    stages.forEach((stage) => expect(clientStorySource).toContain(stage))
-    expect(clientStorySource).toMatch(
-      /Та же практика, те же клиенты\. Разница — сколько времени остаётся\s*на новые консультации\./,
-    )
-    expect(clientStorySource).toContain('Заявки в директе: «Напомните дату и время рождения?»')
-    expect(clientStorySource).toContain('Запись сама собирает данные рождения один раз')
-    expect(clientStorySource).toContain('Данные переносите в отдельную программу')
-    expect(clientStorySource).toContain('Карта строится сразу и остаётся в карточке клиента')
-    expect(clientStorySource).toContain('Каждый разбор пишете с нуля — уходит целый вечер')
-    expect(clientStorySource).toContain('AI собирает черновик за минуты — вы проверяете и дополняете')
-    expect(clientStorySource).toContain('Оплата переводом «на карту»')
-    expect(clientStorySource).not.toContain('Время согласуете в переписке')
-    expect(clientStorySource).toContain('Запись, предоплата и платёжная ссылка работают в одном процессе')
-    expect(clientStorySource).toContain('Клиент пропадает после первой консультации')
-    expect(clientStorySource).not.toContain('После первой консультации клиент пропадает')
-    expect(clientStorySource).toContain('Астрокалендарь и воронки находят повод вернуть клиента')
-    expect(clientStorySource).toContain("value: '−12 ч'")
-    expect(clientStorySource).toContain("value: '×3'")
-    expect(clientStorySource).toContain("value: '+34%'")
-    expect(clientStorySource).not.toContain("value: '24/7'")
-    expect(clientStorySource.match(/value:/g) ?? []).toHaveLength(3)
-    expect(clientStorySource).toContain(
-      'Медианные показатели активных практиков после двух месяцев на платформе.',
-    )
-    expect(clientStorySource).not.toContain('≈5 минут')
-    expect(clientStorySource).not.toContain('−40%')
-    expect(clientStorySource).not.toContain('https://pmc.ncbi.nlm.nih.gov/articles/PMC5709849/')
-    expect(clientStorySource).not.toContain('https://journals.sagepub.com/doi/10.3233/SHTI260505')
-    expect(clientStorySource).not.toContain('https://economics.mit.edu/sites/default/files/inline-files/Noy_Zhang_1.pdf')
-    expect(clientStorySource).not.toContain('Что дают автоматизированные операции.')
-    expect(clientStorySource).not.toContain('Ориентиры экономии')
-    expect(clientStorySource).not.toContain('data-client-scene')
-    expect(clientStorySource).not.toContain('client-story__rail')
-    expect(clientStorySource).not.toContain('Клиент Анна')
+    copy.forEach((text) => expect(clientStorySource).toContain(text))
+    expect(clientStorySource).not.toContain('workflow-compare__source')
+    expect(clientStorySource).toContain('<WorkflowMetrics')
+    expect(journeySource.indexOf('<OneClientStory />')).toBeGreaterThan(journeySource.indexOf('<ProductExperience '))
+    expect(journeySource.indexOf('<OneClientStory />')).toBeLessThan(journeySource.indexOf('<PricingSection />'))
   })
 
   it('contains all eight risk-closing FAQ questions', () => {

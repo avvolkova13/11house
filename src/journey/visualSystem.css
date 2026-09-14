@@ -1,0 +1,218 @@
+/* Visual audit, September 2026. Existing cosmic composition and motion stay intact.
+   Rules are scoped to the live journey; no global reset or renderer changes.
+   Reference: approved ElevenHouse screens, retaining their editorial headings,
+   two-column walkthroughs, outlined CTAs, and navy/gold palette. */
+.eh-journey {
+  --eh-heading-size: clamp(32px, 4vw, 56px);
+  --eh-subheading-size: clamp(22px, 2.2vw, 32px);
+  --eh-copy-size: 16px;
+  --eh-caption-size: 12px;
+  --eh-ink: #edf1f7;
+  --eh-muted: #bac5d5;
+  --eh-subtle: #9aaec6;
+  --eh-accent: #e2ca79;
+  --eh-navy: #071221;
+  --eh-line: rgba(161, 186, 220, .2);
+  --eh-page-gutter: clamp(24px, 4vw, 64px);
+  --eh-section-space: clamp(64px, 6vw, 96px);
+  --eh-group-space: clamp(32px, 3vw, 48px);
+  --eh-card-radius: 20px;
+  --eh-control-radius: 12px;
+}
+
+/* One scale for section titles, separate from the two cinematic display titles. */
+.eh-journey :is(.eh-experience__heading h2, .workflow-compare__intro h2, .pricing-section__heading > h2, .faq-section h2) {
+  font-size: var(--eh-heading-size);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -.045em;
+  color: var(--eh-ink);
+  text-wrap: balance;
+  margin: 0;
+}
+.eh-journey :is(.eh-journey__eyebrow, .workflow-compare__intro .workflow-compare__eyebrow) {
+  font-size: var(--eh-caption-size);
+  line-height: 1.5;
+  font-weight: 600;
+  letter-spacing: .1em;
+  color: var(--eh-accent);
+  margin: 0 0 16px;
+}
+.eh-journey .eh-experience__heading { width: min(1120px, 100%); margin-bottom: 32px; }
+.eh-journey .eh-experience__heading:not(.eh-experience__heading--feature) h2 { max-width: 30ch; margin-inline: auto; }
+.eh-journey .eh-experience__heading > p:last-child:not(.eh-journey__eyebrow) { margin-top: 16px; color: var(--eh-muted); font-size: var(--eh-copy-size); line-height: 1.6; }
+.eh-journey .eh-experience { padding-inline: var(--eh-page-gutter); padding-top: 120px; padding-bottom: var(--eh-section-space); }
+.eh-journey .eh-experience__choices { width: min(1120px, 100%); gap: 16px; }
+.eh-journey .eh-experience__choice { padding: 24px; gap: 12px; border-radius: var(--eh-card-radius); border-color: var(--eh-line); color: var(--eh-ink); }
+.eh-journey .eh-experience__choice-top { margin-bottom: 4px; color: var(--eh-accent); }
+.eh-journey .eh-experience__choice-top > span { font-size: 12px; color: var(--eh-subtle); }
+.eh-journey .eh-experience__choice strong { font-size: 20px; line-height: 1.3; font-weight: 600; }
+.eh-journey .eh-experience__choice-bottom { font-size: 14px; line-height: 1.5; color: var(--eh-muted); }
+.eh-journey .eh-experience__continue { margin-top: 32px; font-size: 14px; color: var(--eh-muted); }
+
+/* A real card inset replaces the protruding backplate. Both columns use one grid. */
+.eh-journey .eh-experience__selected:has(.eh-walkthrough),
+.eh-journey .eh-experience__heading--feature { width: min(1120px, 100%); }
+.eh-journey .eh-walkthrough__purpose { margin: -8px auto var(--eh-group-space); font-size: var(--eh-copy-size); line-height: 1.6; color: var(--eh-muted); max-width: 72ch; }
+.eh-journey .eh-walkthrough__body { grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: clamp(32px, 4vw, 64px); align-items: stretch; }
+.eh-journey .eh-walkthrough__explanation { padding: 24px; border: 1px solid var(--eh-line); border-radius: var(--eh-card-radius); background: rgba(3, 9, 23, .9); }
+.eh-journey .eh-walkthrough__explanation::before { display: none; }
+.eh-journey .eh-walkthrough__counter { margin-bottom: 24px; font-size: 12px; color: var(--eh-accent); }
+.eh-journey .eh-walkthrough__copy { min-height: 190px; }
+.eh-journey .eh-walkthrough__copy h3 { font-size: var(--eh-subheading-size); line-height: 1.2; font-weight: 450; letter-spacing: -.035em; margin-bottom: 16px; }
+.eh-journey .eh-walkthrough__copy p { font-size: var(--eh-copy-size); line-height: 1.65; color: var(--eh-muted); }
+.eh-journey .eh-walkthrough__playback { margin-top: 32px; }
+.eh-journey .eh-walkthrough__controls button { font-size: 13px; }
+.eh-journey .eh-walkthrough__steps { margin-top: 32px; }
+.eh-journey .eh-walkthrough__steps button { font-size: 14px; min-height: 48px; }
+.eh-journey .eh-walkthrough__steps button span { font-size: 12px; }
+.eh-journey .eh-walkthrough__visual { --eh-fragment-width: 100%; margin-block: 0; }
+.eh-journey .eh-walkthrough__visual:has(.eh-source__calculation) { --eh-fragment-width: 100%; }
+.eh-journey .eh-walkthrough__action { margin-bottom: 24px; min-height: 24px; font-size: 14px; line-height: 1.6; color: #e8d69e; }
+.eh-journey .eh-walkthrough__outcome { width: 100%; margin-top: 24px; font-size: var(--eh-copy-size); line-height: 1.6; color: var(--eh-muted); }
+.eh-journey .eh-walkthrough__footer { padding-top: 24px; }
+.eh-journey .eh-experience__back { font-size: 14px; min-height: 44px; }
+
+/* Shared surfaces and controls for every product demonstration. */
+.eh-journey .eh-source {
+  --font: 'Manrope', 'Helvetica Neue', sans-serif;
+  --text-1: var(--eh-ink); --text-2: var(--eh-muted); --text-3: var(--eh-subtle);
+  --moon: #dce6f5; --violet-deep: #203653; --amethyst: #8fb8e9;
+  --bg-1: #0a1425; --surface-1: #101b2e; --surface-2: #142037;
+  --surface-3: #1b2b45; --surface-4: #223653;
+  --line: rgba(161,186,220,.14); --line-strong: var(--eh-line);
+  --accent: var(--eh-accent); --accent-text: #edda9d;
+  --accent-soft: rgba(226,202,121,.12); --accent-line: rgba(226,202,121,.5);
+  --accent-glow: transparent; --text-on-accent: #131b29;
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px;
+}
+.eh-journey :is(.eh-access__form, .eh-source__narrow, .eh-source__calculation) { background: rgba(10,20,37,.96); border-color: var(--eh-line); border-radius: var(--eh-card-radius); padding: 24px; box-shadow: 0 16px 48px -32px #0008; }
+.eh-journey .eh-walkthrough :is(.eh-source__narrow, .eh-source__calculation) { width: 100%; }
+.eh-journey .eh-source__flow-node { background: #142037; }
+.eh-journey .eh-source .input { font-size: 16px; min-height: 48px; border-radius: var(--eh-control-radius); }
+.eh-journey .eh-source .label { font-size: 14px; line-height: 1.5; margin-bottom: 8px; }
+.eh-journey .eh-source .btn { font-size: 14px; line-height: 1.4; min-height: 44px; border-radius: var(--eh-control-radius); }
+.eh-journey .eh-source__action, .eh-journey .eh-access__form > .btn { min-height: 48px; margin-top: 24px; }
+.eh-journey .eh-source__narrow p { font-size: 14px; line-height: 1.6; }
+.eh-journey :is(.eh-source__muted, .eh-source__status, .eh-source .hint, .eh-source__calculation-caption span, .eh-source__chart-help) { font-size: 12px; line-height: 1.6; }
+.eh-journey .eh-source__person { margin: 0 0 24px; gap: 12px; }
+.eh-journey .eh-source__person strong, .eh-journey .eh-source__narrow h3 { font-size: 18px; line-height: 1.3; font-weight: 600; }
+.eh-journey .eh-source__person div > span { font-size: 14px; }
+.eh-journey .eh-source__field { margin-bottom: 24px; }
+.eh-journey .eh-source__slots .chip { min-height: 44px; }
+.eh-journey .eh-source__flow-node .chip { font-size: 12px; }
+.eh-journey .eh-access { width: min(440px, 100%); }
+.eh-journey .eh-access__controls { gap: 24px; padding-top: 16px; }
+.eh-journey .eh-access__controls button { font-size: 13px; min-height: 44px; }
+
+/* Commercial sections share alignment, hierarchy, and section spacing. */
+.eh-journey :is(.workflow-compare, .pricing-section, .faq-section) { padding: var(--eh-section-space) var(--eh-page-gutter); background: var(--eh-navy); color: var(--eh-ink); }
+.eh-journey .workflow-compare__intro { padding-bottom: 32px; }
+.eh-journey .workflow-compare__intro h2 { max-width: 30ch; }
+.eh-journey .workflow-compare__head { font-size: 12px; }
+.eh-journey .workflow-compare__row h3 { font-size: 18px; font-weight: 600; line-height: 1.3; color: var(--eh-accent); }
+.eh-journey .workflow-compare__row p { font-size: 18px; line-height: 1.5; letter-spacing: -.01em; }
+.eh-journey .workflow-compare__row header span { font-size: 12px; color: var(--eh-accent); }
+.eh-journey .workflow-metrics__note { font-size: 12px; line-height: 1.6; }
+.eh-journey .workflow-metrics__item:last-child .workflow-metrics__suffix { font-size: clamp(48px, 5vw, 80px); line-height: .95; margin: 0; letter-spacing: -.05em; }
+.eh-journey .pricing-section__heading { gap: 16px; }
+.eh-journey .pricing-section__heading > .pricing-section__subtitle { font-size: var(--eh-subheading-size); line-height: 1.3; color: var(--eh-ink); }
+.eh-journey .pricing-section__heading > p:not(.pricing-section__subtitle) { font-size: var(--eh-copy-size); line-height: 1.6; color: var(--eh-muted); }
+.eh-journey .pricing-motion-stage { margin-top: var(--eh-group-space); }
+/* Keep the orbit, but raise the readable type scale of its active card. */
+.eh-journey .pricing-native-body ul { font-size: 4.1cqw; line-height: 1.45; }
+.eh-journey .pricing-native-audience { font-size: 3.8cqw; line-height: 1.5; }
+.eh-journey .pricing-native-commission { font-size: 3.6cqw; }
+.eh-journey .pricing-includes-label { font-size: 3.5cqw; }
+.eh-journey .pricing-native-capacity span { font-size: 3.4cqw; }
+.eh-journey .pricing-native-price small { font-size: 3.4cqw; }
+.eh-journey .pricing-card-action { font-size: 4.1cqw; min-height: clamp(44px, 11cqw, 54px); }
+.eh-journey .pricing-plan-switcher button { min-height: 56px; font-size: 12px; }
+.eh-journey .pricing-plan-switcher__recommendation { font-size: 12px; line-height: 1.4; }
+.eh-journey .faq-section { grid-template-columns: minmax(0, .8fr) minmax(0, 1.4fr); gap: var(--eh-group-space); }
+.eh-journey .faq-section__list { border-color: var(--eh-line); }
+.eh-journey .faq-section details { border-color: var(--eh-line); }
+.eh-journey .faq-section summary { grid-template-columns: 24px minmax(0, 1fr) 20px; gap: 16px; min-height: 80px; padding-block: 20px; }
+.eh-journey .faq-section summary > span { font-size: 12px; color: var(--eh-subtle); }
+.eh-journey .faq-section summary strong { font-size: 18px; line-height: 1.5; font-weight: 500; letter-spacing: -.02em; }
+.eh-journey .faq-section details p { font-size: var(--eh-copy-size); line-height: 1.65; margin: -4px 36px 24px 40px; color: var(--eh-muted); }
+
+/* The display compositions remain distinct; their supporting text is readable. */
+.eh-journey .eh-journey__opening-description { font-size: var(--eh-copy-size); line-height: 1.6; }
+.eh-journey :is(.eh-journey__start, .eh-experience__another, .eh-journey__finale-action a) { min-height: 54px; font-size: 12px; line-height: 1.4; font-weight: 600; letter-spacing: .08em; border-color: #e2ca79b8; color: #f5e6bd; }
+.eh-journey .eh-finale-footer { font-size: 12px; line-height: 1.5; gap: 8px 24px; }
+.eh-journey .eh-finale-footer :is(a, button) { min-height: 44px; }
+.eh-journey .eh-finale-footer__documents > button { max-width: 100%; overflow-wrap: anywhere; }
+.eh-journey .landing-header__nav a { font-size: 12px; }
+.eh-journey .landing-header__login, .eh-journey .landing-header__cta, .eh-journey .landing-header__languages button { font-size: 11px; }
+.eh-journey .landing-header__login, .eh-journey .landing-header__cta { min-height: 44px; }
+.eh-journey .landing-header__languages button { min-height: 34px; }
+
+@media (max-width: 1000px) {
+  .eh-journey .eh-walkthrough__body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 24px; }
+  .eh-journey .eh-walkthrough__explanation { padding: 20px; }
+  .eh-journey .eh-experience__another { padding-inline: 20px; gap: 12px; font-size: 11px; letter-spacing: .04em; }
+  .eh-journey .landing-header__nav { gap: 16px; }
+  .eh-journey .landing-header__nav a { font-size: 11px; }
+}
+@media (max-width: 700px) {
+  .eh-journey { --eh-heading-size: 32px; --eh-subheading-size: 24px; --eh-copy-size: 14px; --eh-page-gutter: 20px; --eh-section-space: 56px; --eh-group-space: 32px; }
+  .eh-journey .eh-experience { padding-top: 104px; }
+  .eh-journey .eh-experience__heading--feature { gap: 16px; }
+  .eh-journey .eh-experience__choices { grid-template-columns: 1fr; gap: 16px; }
+  .eh-journey .eh-experience__choice { padding: 20px; }
+  .eh-journey .eh-experience__choice strong { font-size: 18px; }
+  .eh-journey .eh-experience__choice-bottom svg { display: block; }
+  .eh-journey .eh-experience__back { font-size: 13px; }
+  .eh-journey .eh-walkthrough__body { display: flex; flex-direction: column; gap: 32px; }
+  .eh-journey .eh-walkthrough__explanation { position: relative; top: auto; margin: 0; padding: 20px; }
+  .eh-journey .eh-walkthrough__copy { min-height: 0; }
+  .eh-journey .eh-walkthrough__counter { margin-bottom: 16px; }
+  .eh-journey .eh-walkthrough__playback { margin-top: 24px; }
+  .eh-journey .eh-walkthrough__action { font-size: 13px; }
+  .eh-journey .eh-access__controls { gap: 16px; }
+  .eh-journey :is(.eh-access__form, .eh-source__narrow, .eh-source__calculation) { padding: 20px; }
+  .eh-journey .faq-section { grid-template-columns: 1fr; }
+  .eh-journey .faq-section summary strong { font-size: 16px; }
+  .eh-journey .workflow-compare__row p { font-size: 16px; }
+  .eh-journey .workflow-metrics__item:last-child .workflow-metrics__suffix { font-size: clamp(36px, 10vw, 54px); }
+  .eh-journey .workflow-compare__row h3 { font-size: 18px; }
+  .eh-journey .workflow-compare__row :is(.workflow-compare__manual, .workflow-compare__system) > span { font-size: 12px; }
+  .eh-journey .eh-journey__opening-description { bottom: 92px; font-size: 14px; }
+  .eh-journey .eh-journey__opening .eh-journey__split-end { bottom: 196px; }
+  .eh-journey .eh-finale-footer { gap: 8px 12px; font-size: 12px; }
+  .eh-journey .eh-journey__finale .eh-journey__split-end { bottom: 232px; }
+  .eh-journey .landing-header__login, .eh-journey .landing-header__cta, .eh-journey .landing-header__languages button { font-size: 10px; }
+  .eh-journey .landing-header__actions { gap: 8px; }
+  .eh-journey .landing-header__languages { margin: 0; }
+}
+@media (max-width: 380px) {
+  .eh-journey .eh-finale-footer__documents { grid-template-columns: 1.7fr 1fr .8fr; gap: 8px; font-size: 11px; }
+}
+
+/* Center the visible label, including Manrope's optical baseline correction.
+   Paired icon gutters keep a trailing arrow from shifting the label left. */
+.eh-journey :is(.eh-journey__start, .eh-experience__another, .eh-journey__finale-action a) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-block: 13px 11px;
+  line-height: 1.4;
+}
+.eh-journey .landing-header__cta { padding-block: 11px 9px; }
+.eh-journey .eh-source :is(.btn, .chip) { justify-content: center; text-align: center; line-height: 1.4; }
+.eh-journey .eh-source .btn { padding-block: 11px 9px; }
+.eh-journey .eh-source .chip { padding-block: 6px 4px; }
+.eh-journey :is(.eh-journey__start, .eh-experience__another, .eh-source__action, .eh-access__form > .btn) {
+  display: inline-grid;
+  grid-template-columns: 18px minmax(0, 1fr) 18px;
+  align-items: center;
+  column-gap: 8px;
+}
+.eh-journey :is(.eh-journey__start, .eh-experience__another, .eh-source__action, .eh-access__form > .btn)::before { content: ''; width: 18px; }
+.eh-journey :is(.eh-journey__start, .eh-experience__another) > span { line-height: 1; }
+.eh-journey :is(.eh-source__action, .eh-access__form > .btn) > svg { justify-self: center; }
+.eh-journey :is(.eh-access__controls button, .eh-walkthrough__controls button) { display: inline-flex; align-items: center; justify-content: center; line-height: 1.4; padding-block: 9px 7px; }
+.eh-journey .landing-header__languages button { padding-block: 1px 0; line-height: 1.4; }
+.eh-journey :is(.pricing-card-action, .pricing-fallback-action) { padding-block: calc(2cqw + 1px) calc(2cqw - 1px); text-align: center; line-height: 1.4; }
