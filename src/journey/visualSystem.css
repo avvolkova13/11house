@@ -190,8 +190,8 @@
   .eh-journey .eh-finale-footer__documents { grid-template-columns: 1.7fr 1fr .8fr; gap: 8px; font-size: 11px; }
 }
 
-/* Center the visible label, including Manrope's optical baseline correction.
-   Paired icon gutters keep a trailing arrow from shifting the label left. */
+/* Center the complete visible content, with a small optical baseline correction.
+   Icons stay beside the label; no invisible balancing columns. */
 .eh-journey :is(.eh-journey__start, .eh-experience__another, .eh-journey__finale-action a) {
   display: inline-flex;
   align-items: center;
@@ -204,15 +204,18 @@
 .eh-journey .eh-source :is(.btn, .chip) { justify-content: center; text-align: center; line-height: 1.4; }
 .eh-journey .eh-source .btn { padding-block: 11px 9px; }
 .eh-journey .eh-source .chip { padding-block: 6px 4px; }
-.eh-journey :is(.eh-journey__start, .eh-experience__another, .eh-source__action, .eh-access__form > .btn) {
-  display: inline-grid;
-  grid-template-columns: 18px minmax(0, 1fr) 18px;
+.eh-journey :is(.eh-experience__another, .eh-source__action, .eh-access__form > .btn) {
+  display: inline-flex;
   align-items: center;
-  column-gap: 8px;
+  justify-content: center;
+  gap: 10px;
 }
-.eh-journey :is(.eh-journey__start, .eh-experience__another, .eh-source__action, .eh-access__form > .btn)::before { content: ''; width: 18px; }
-.eh-journey :is(.eh-journey__start, .eh-experience__another) > span { line-height: 1; }
-.eh-journey :is(.eh-source__action, .eh-access__form > .btn) > svg { justify-self: center; }
+.eh-journey :is(.eh-experience__another, .eh-source .btn, .eh-source .chip, .eh-access__controls button, .eh-walkthrough__controls button) > svg {
+  display: block;
+  flex: 0 0 auto;
+}
+.eh-journey :is(.eh-access__controls button, .eh-walkthrough__controls button) { gap: 6px; }
+.eh-journey .eh-source .btn[aria-label]:has(> svg:only-child) { padding-block: 10px; }
 .eh-journey :is(.eh-access__controls button, .eh-walkthrough__controls button) { display: inline-flex; align-items: center; justify-content: center; line-height: 1.4; padding-block: 9px 7px; }
 .eh-journey .landing-header__languages button { padding-block: 1px 0; line-height: 1.4; }
 .eh-journey :is(.pricing-card-action, .pricing-fallback-action) { padding-block: calc(2cqw + 1px) calc(2cqw - 1px); text-align: center; line-height: 1.4; }

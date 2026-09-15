@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { featureStories } from './featureStories'
 import { isStoryReadable, storyFrame } from './featurePlayback'
 import { SourceFragment, type FeatureId } from './SourceFragments'
+import { Icon } from './SourceIcons'
 import './featureWalkthrough.css'
 
 export function FeatureWalkthrough({ feature, reducedMotion, onExplore }: { feature: FeatureId; reducedMotion: boolean; onExplore: () => void }) {
@@ -75,13 +76,13 @@ export function FeatureWalkthrough({ feature, reducedMotion, onExplore }: { feat
     <div className="eh-walkthrough__playback">
       <div className="eh-walkthrough__track" aria-hidden="true"><span style={{ transform: `scaleX(${reducedMotion ? (frame.index + 1) / story.beats.length : time / frame.total})` }} /></div>
       <div className="eh-walkthrough__controls">
-        <button type="button" disabled={frame.index === 0} onClick={() => seek(frame.index - 1)}>← Назад</button>
+        <button type="button" disabled={frame.index === 0} onClick={() => seek(frame.index - 1)}><Icon.chevL size={16} />Назад</button>
         {frame.done ? <button type="button" onClick={replay}>Посмотреть ещё раз</button> : !reducedMotion && <button className="eh-walkthrough__toggle" type="button" aria-label={paused ? 'Продолжить анимацию' : 'Приостановить анимацию'} onClick={() => setPaused((value) => !value)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
             {paused ? <path d="M8 5v14l11-7z" /> : <><rect x="7" y="5" width="3" height="14" rx="1" /><rect x="14" y="5" width="3" height="14" rx="1" /></>}
           </svg>
         </button>}
-        {!frame.done && <button type="button" onClick={next}>{frame.index === story.beats.length - 1 ? 'Завершить' : 'Следующий шаг'} →</button>}
+        {!frame.done && <button type="button" onClick={next}>{frame.index === story.beats.length - 1 ? 'Завершить' : 'Следующий шаг'}<Icon.chevR size={16} /></button>}
       </div>
     </div>
         <nav className="eh-walkthrough__steps" aria-label="Шаги знакомства">{story.beats.map((item, index) => <button key={item.id} type="button" aria-current={index === frame.index ? 'step' : undefined} onClick={() => seek(index)}><span aria-hidden="true">{index < frame.index ? '✓' : String(index + 1).padStart(2, '0')}</span>{item.label}</button>)}</nav>
@@ -93,7 +94,7 @@ export function FeatureWalkthrough({ feature, reducedMotion, onExplore }: { feat
           {frame.done && <p className="eh-walkthrough__outcome" role="status">{story.outcome}</p>}
         </div>
         <div className="eh-walkthrough__footer">
-          <button type="button" className="eh-experience__another" onClick={onExplore}>Посмотреть другую возможность <span aria-hidden="true">↗</span></button>
+          <button type="button" className="eh-experience__another" onClick={onExplore}>Посмотреть другую возможность <Icon.arrowUR size={20} /></button>
         </div>
       </div>
     </div>

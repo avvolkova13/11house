@@ -147,7 +147,7 @@ export function JourneyLanding() {
               <span className="eh-journey__split-end"><span>в одном<br />приложении</span></span>
             </h1>
             <a className="eh-journey__start" href="#journey-access" onClick={(event) => navigate(event, '#journey-access')}>
-              Начать <span aria-hidden="true">↓</span>
+              Начать
             </a>
             <p className="eh-journey__opening-description">Карты, клиенты, запись, оплаты и AI-помощник — чтобы меньше заниматься рутиной и больше консультировать.</p>
             <a className="eh-journey__explore" href="#journey-access" aria-label="Листайте вниз — перейти к знакомству с ElevenHouse"><span className="eh-journey__explore-label">Листайте вниз</span><span aria-hidden="true">↓</span></a>

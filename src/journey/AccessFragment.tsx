@@ -84,7 +84,7 @@ export function AccessFragment({ reducedMotion, onEnter }: { reducedMotion: bool
       {reducedMotion && time < ACCESS_DURATION && <button type="button" onClick={advance}>Продолжить</button>}
       {!reducedMotion && time < ACCESS_DURATION && <button type="button" onClick={() => setPaused((value) => !value)}>{paused ? 'Продолжить' : 'Пауза'}</button>}
       <button type="button" onClick={replay}>Сначала</button>
-      <button type="button" onClick={onEnter}>К возможностям <span aria-hidden="true">↓</span></button>
+      <button type="button" onClick={onEnter}>К возможностям <Icon.arrowDown size={16} /></button>
     </div>
   </div>
 }

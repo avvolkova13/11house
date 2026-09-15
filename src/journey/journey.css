@@ -90,7 +90,6 @@
   text-decoration: none;
   transition: background .2s, border-color .2s;
 }
-.eh-journey__start span { font-size: 18px; font-weight: 400; }
 .eh-journey__start:hover { background: rgba(226, 202, 121, .16); border-color: #e2ca79; }
 .eh-journey__opening-description { position: absolute; bottom: 62px; left: clamp(28px, 4vw, 64px); width: min(420px, 35vw); margin: 0; color: #d3d7e1; font-size: clamp(14px, 1.1vw, 17px); line-height: 1.65; text-align: left; text-wrap: pretty; text-shadow: 0 2px 12px #030917; }
 .eh-journey__opening .eh-journey__split-title > span > span { display: block; transform: translateY(110%); opacity: 0; transition: transform 760ms cubic-bezier(.22,1,.36,1), opacity 620ms; }
