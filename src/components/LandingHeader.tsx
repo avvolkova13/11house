@@ -28,10 +28,6 @@ export function LandingHeader({ onNavigate, destinations }: LandingHeaderProps) 
       </nav>
 
       <div className="landing-header__actions">
-        <div className="landing-header__languages" aria-label="Переключатель языков">
-          <button type="button" aria-pressed="true">RU</button>
-          <button type="button" aria-pressed="false">EN</button>
-        </div>
         <a className="landing-header__login" href="https://app.elevenhouse.ai">Войти</a>
         <a className="landing-header__cta" href="https://app.elevenhouse.ai">Создать кабинет</a>
       </div>
