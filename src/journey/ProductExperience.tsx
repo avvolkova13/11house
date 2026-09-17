@@ -3,6 +3,7 @@ import { AccessFragment } from './AccessFragment'
 import { featureChoices, type FeatureId } from './SourceFragments'
 import { FeatureWalkthrough } from './FeatureWalkthrough'
 import { Icon } from './SourceIcons'
+import { featureChoiceIcons } from './featureChoiceIcons'
 import './sourceFragments.css'
 import './productExperience.css'
 import './textBackplates.css'
@@ -40,7 +41,7 @@ export function ProductExperience({ reducedMotion, onNavigate }: { reducedMotion
       </header>
       {feature ? <div className="eh-experience__selected" key={feature.id}>
         <FeatureWalkthrough feature={feature.id} reducedMotion={reducedMotion} onExplore={() => choose(null)} />
-      </div> : <div className="eh-experience__choices">{featureChoices.map((item, index) => { const IC = Icon[item.icon]; return <button type="button" key={item.id} className="eh-experience__choice" onClick={() => choose(item.id)} aria-label={`Посмотреть: ${item.title}`}><span className="eh-experience__choice-top"><IC size={25} /><span>{visited.includes(item.id) ? <Icon.check size={15} /> : String(index + 1).padStart(2, '0')}</span></span><strong>{item.title}</strong><span className="eh-experience__choice-bottom"><span>{item.detail}</span><Icon.arrowUR size={17} /></span></button> })}</div>}
+      </div> : <div className="eh-experience__choices">{featureChoices.map((item, index) => <button type="button" key={item.id} className="eh-experience__choice" onClick={() => choose(item.id)} aria-label={`Посмотреть: ${item.title}`}><span className="eh-experience__choice-top"><img src={featureChoiceIcons[item.id]} width={32} height={32} alt="" aria-hidden="true" /><span>{visited.includes(item.id) ? <Icon.check size={15} /> : String(index + 1).padStart(2, '0')}</span></span><strong>{item.title}</strong><span className="eh-experience__choice-bottom"><span>{item.detail}</span><Icon.arrowUR size={17} /></span></button>)}</div>}
       <a className="eh-experience__continue" href="#pricing-title" onClick={(event) => { event.preventDefault(); onNavigate('#pricing-title') }}>Тарифы <span aria-hidden="true">↓</span></a>
     </section>
   </>

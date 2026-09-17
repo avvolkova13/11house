@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Запись и календарь — ElevenHouse</title>
+  <g stroke="#E2CA79" stroke-width="3.6" stroke-linecap="butt" stroke-linejoin="round">
+    <path d="M22 7V20M42 7V20"/>
+    <path d="M16 14H48L54 20V48L48 54H16L10 48V20Z"/>
+    <path d="M10 26H54M20 36H28M36 36H44M20 45H28"/>
+    </g>
+</svg>

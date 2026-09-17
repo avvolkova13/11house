@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Клиенты — ElevenHouse</title>
+  <g stroke="#E2CA79" stroke-width="3.6" stroke-linecap="butt" stroke-linejoin="round">
+    <path d="M19 10C14.6 10 12 13 12 17.5S14.6 25 19 25S26 22 26 17.5S23.4 10 19 10Z"/>
+    <path d="M44 10C39.6 10 37 13 37 17.5S39.6 25 44 25S51 22 51 17.5S48.4 10 44 10Z"/>
+    <path d="M8 54V44C8 36.5 12 32 19 32H24"/>
+    <path d="M23 54L27 41C28.8 35.2 33 32 39 32H43C50.5 32 55 36.5 55 44V54"/>
+    </g>
+</svg>
