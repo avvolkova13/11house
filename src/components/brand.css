@@ -1,0 +1,30 @@
+/* Supplied brand artwork; scoped to logos, with no Hero or global style changes. */
+.landing-header__brand:has(.eh-brand-header) {
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+}
+
+.landing-header__brand .eh-brand-header {
+  display: block;
+  width: 80px;
+  line-height: 0;
+}
+
+.eh-brand-header img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pricing-section .pricing-native-brand .eh-brand-card {
+  display: block;
+  width: 12cqw;
+  height: auto;
+}
+
+@media (max-width: 700px) {
+  .landing-header__brand .eh-brand-header { width: 40px; }
+  .eh-brand-header img { aspect-ratio: 421 / 405; }
+}

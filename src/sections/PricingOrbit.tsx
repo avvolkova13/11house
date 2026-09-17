@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react'
+import monogram from '../assets/brand/eh-monogram-gold.svg'
 
 import {
   getPricingCardRole,
@@ -146,7 +147,7 @@ export function PricingOrbit({
           <article className="pricing-native-card" data-plan={plan.key} data-active={motionState.phase === 'holding' && motionState.activeKey === plan.key} aria-label={`Тариф ${plan.name}`} key={plan.key}
             ref={(element) => { cardElements.current[index] = element }}
             style={{ aspectRatio: `${PRICING_TEXTURE_WIDTH} / ${PRICING_TEXTURE_HEIGHT}` }}>
-            <span className="pricing-native-brand">ELEVENHOUSE</span>
+            <span className="pricing-native-brand"><img className="eh-brand-card" src={monogram} alt="ElevenHouse" width="421" height="405" /></span>
             {plan.key === 'pro' && <span className="pricing-recommendation">Рекомендуем</span>}
             <div className="pricing-native-capacity"><strong>{plan.capacityTitle}</strong><span>{plan.capacityDetail}</span></div>
             <div className="pricing-native-body">
